@@ -3,27 +3,30 @@ layout: post
 title:  "学习笔记：单页面案例——外卖商家页面"
 date:   2018-08-16 19:40:12 +0800
 categories: learning-notes
+tags: Vue WEB前端 HTML CSS JS
 ---
+* content
+{:toc}
 ## 1. vue.cli的安装和使用
 
 ### 1.1 全局安装vue-cli
-```
+```bash
 npm install -g vue-cli
 ```
 
 ### 1.2 以webpack为模板创建项目
 cd至目标文件夹，运行：
-```
+```bash
 vue init webpack sell
 ```
 
 ### 1.3 启动:
 cd至项目所在文件夹，运行：
-```
+```bash
 npm run dev
 ```
 成功后提示：
-```
+```bash
 Your application is running here: http://localhost:8080
 ```
 
@@ -46,7 +49,7 @@ Your application is running here: http://localhost:8080
   2. 打开sell/build/dev-server.js，在里面添加请求本地数据的代码；<br>
   **说明1：**新版的 build 目录中没有 dev-server.js 和 dev-client.js 这两个文件，也没有默认依赖 http-proxy-middleware 插件。<br>
   **解决方法：**在webpack.dev.conf.js中配置。[配置参考](https://blog.csdn.net/qq_34645412/article/details/78833860)
-  ```
+  ```js
   //第一步
   const express = require('express');
   const app = express(); //请求server
@@ -56,8 +59,6 @@ Your application is running here: http://localhost:8080
   var ratings = appData.ratings;
   var apiRoutes = express.Router();
   app.use('/api', apiRoutes);  //通过路由请求数据
-  ```
-  ```
   //第二步：在devServer里添加before(){}方法
   before(app){
     app.get('/api/seller',function(req, res){
@@ -82,7 +83,7 @@ Your application is running here: http://localhost:8080
   ```
   **说明2：**提示express模块没有添加在package.json的dependencies中<br>
   **解决方法：**在sell文件夹下打开terminal，输入：
-  ```
+  ```bash
   npm install express --save-dev
   ```
 
@@ -91,19 +92,19 @@ Your application is running here: http://localhost:8080
 ### 5.1 css样式重置
 在sell/static文件夹下新增css/reset.css，并把[cssreset.com](http://cssreset.com)中的内容拷贝至此文件：<br>
 并把此css文件引入到index.html中；
-```
+```html
 <link rel="stylesheet" href="static/css/reset.css">
 ```
 
 ### 5.2 移动端scale设置
 因为是移动端，新增meta标签：
-```
+```html
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
 ```
 
 ### 5.3 配置.eslintrc.js文件
 在rules:{}中新增：
-```
+```bash
 'semi': ['error', 'always']  //分号的配置；
 'indent': 0  //缩进的配置；
 ```
@@ -113,28 +114,28 @@ Your application is running here: http://localhost:8080
 
 ### 5.5 stylus和stylus-loader
 修改style标签的属性：
-```
+```html
 <style lang="stylus" rel="stylesheet/stylus"></style>
 ```
 报错：<br>
-```
+```bash
 This dependency was not found:
 !!vue-style-loader!css-loader?{"sourceMap":true}!……
 ```
 **说明：**devDependencies中缺少stylus和stylus-loader<br>
 **解决方法：**在sell文件夹下打开terminal，输入:
-```
+```bash
 npm install stylus stylus-loader --save-dev
 ```
 
 ### 5.6 弹性布局
 display: flex; 弹性布局，子元素的float、clear、vertical-align属性将失效。
 拥有弹性布局元素的子元素中：flex 属性是 flex-grow、flex-shrink 和 flex-basis 属性的简写属性，默认是0 1 auto。<br>
-```
+```css
 flex: 1; 
 ```
 等价于:
-```
+```css
 flex-grow: 1; flex-shrink: 1; flex-basis:0%;
 ```
 + flex-grow: 1; // 如果存在剩余空间，放大元素；
@@ -151,26 +152,26 @@ flex-grow: 1; flex-shrink: 1; flex-basis:0%;
 
 ### 6.1 导入Vue-router
 在main.js导中Vue-router：
-```
+```js
 import VueRouter from 'vue-router';
 ```
 如果在一个模块化工程中使用它，必须要通过 Vue.use() 明确地安装路由功能：
-```
+```js
 Vue.use(VueRouter);
 ```
 关于import中的当前路径，前面要添加./，比如：
-```
-./components/header/header.vue。
+```js
+./components/header/header.vue
 ```
 如果想省略掉./，可以在webpack.base.conf.js中的resolve:{alias:{新增内容}}中添加：
-````
+````js
 ‘components’: path.resolve(_dirname, '../src/components')
 ````
 
 ### 6.2 路由配置
 将组件 (components) 映射到路由 (routes)，然后告诉 Vue Router 在哪里渲染它们。<br>
 在main.js中通过import导入各个组件，然后按照官网步骤配置路由：
-```
+```js
 // 2. 定义路由
 const routes = [
   {path: '/goods', component: goods},
@@ -193,7 +194,7 @@ const app = new Vue({
 
 ### 6.3 编辑App.vue
 在App.vue中：
-```
+```html
 <template>
   <div id="app">
     <v-header></v-header>
@@ -221,7 +222,7 @@ const app = new Vue({
 说明：当前路由会新增两个class：router-link-exact-active和router-link-active。<br>
 **修改默认的class名称方法：**<br>
 JS中：
-```
+```js
 const router = new VueRouter({
   routes,
   linkActiveClass: 'active',
@@ -229,13 +230,13 @@ const router = new VueRouter({
 });
 ```
 CSS中：
-```
+```css
 a.active
   color: rgb(240, 20, 20)
 ```
 **如何实现1px边框：**
 + 1) src/common/stylus/下新建mixin.styl文件：
-```
+```css
 border-1px($color)
   position: relative
   &:after
@@ -248,46 +249,48 @@ border-1px($color)
     content: ''
 ```
 + 2) src/common/stylus/下新建base.styl文件：
-```
+```css
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-device-pixel-ratio: 1.5)
   .border-1px:after
     transform: scaleY(0.7)
     -webkit-transform: scaleY(0.7)
 ```
-```
+```css
 @media (-webkit-min-device-pixel-ratio: 2.0), (min-device-pixel-ratio: 2.0)
   .border-1px:after
     transform: scaleY(0.5)
     -webkit-transform: scaleY(0.5)
 ```
 + 3) src/common/stylus/下新建index.styl文件：
-```
-@import './base'
-@import './icon'
-@import './mixin'
+```css
+@import './base';
+@import './icon';
+@import './mixin';
 ```
 + 4) 在main,js中引入index.styl文件：
-```
+```js
 import './common/stylus/index.styl';
 ```
 + 5) 在App.vue中：
-```
+```css
 @import './common/stylus/mixin.styl'
 ```
 然后调用mixinstyl中定义好的函数border-1px()：
-```
+```js
 border-1px(rgba(7,17,27,0.1))
 ```
 + 6) 给导航div新增一个class：border-1px<br>
-`<div class="tab border-1px">`<br>
+  ```html
+  <div class="tab border-1px">
+  ```
 **Tips：**如何在手机上访问电脑的本地服务器：
 Webpack dev server 默认只能localhost 本机访问，如果希望局域网内其它机器访问进行测试
 需要修改 添加 –host 0.0.0.0 参数：
-```
+```bash
 webpack-dev-server   --host 0.0.0.0
 ```
 即在package.json中修改:
-```
+```js
 "scripts": {"dev"："webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 0.0.0.0"}）
 ```
 此外，还需要在电脑防火墙的高级设置中的入站规则中添加8080端口，允许局域网内其他机器访问本机的8080端口。
@@ -299,18 +302,18 @@ Header组件拿到通过异步请求获得的数据后，进行渲染。<br>
 
 ### 7.1 安装和使用vue-resource
 安装：
-```
+```bash
 npm install vue-resource --save
 ```
 然后，在main.js中引入并使用vue-resource：
-```
+```js
 import VueResource from 'vue-resource';
 Vue.use(VueResource);
 ```
 
 ### 7.2 使用this.$http.get方法请求数据
 在App.vue的export default{}中：
-```
+```js
 data() {
   return {
     seller: {}
@@ -328,11 +331,11 @@ created() {
 
 ### 7.3 传递数据seller
 把seller对象传给Header组件：
-```
+```html
 <v-header :seller="seller"></v-header>
 ```
 在Header.vue中export default{ }中接收父组件传入的seller：
-```
+```js
 props: {  seller: Object  }
 ```
 
@@ -342,25 +345,27 @@ props: {  seller: Object  }
 + 1) inline-block排列的两个div之间有间隙。<br>
 解决办法：给这两个div的父元素设置`font-size：0;`，然后给这两个div分别设置相应字体大小。
 或者删除HTML中的换行符：
-```
+```html
 <span>内容1</span><span>内容2</span>。
 ```
 + 2) inline-block排列的两个div，一个是图片，一个是文字，顶部没有对齐。<br>
 解决办法：给图片元素设置：
-```
+```css
 vertical-align: top
 ```
 + 3) 文本不换行，超出的文本用省略号显示：
-```
-white-space: nowrap	//文本不换行
-overflow: hidden
-text-overflow: ellipsis	//超出的文本用省略号显示
+```css
+/*文本不换行*/
+white-space: nowrap;	
+overflow: hidden;
+/*超出的文本用省略号显示*/
+text-overflow: ellipsis;	
 ```
 
 ### 7.5 Sticky footers设计：
 如果页面内容不够长，页脚块(.detai-close)位于视窗底部；如果内容过长，页脚块会被内容向下推送。<br>
 + 此案例中使用了负margin方法（兼容性好）:
-  ```
+  ```css
   .detail-main
     padding-bottom: 64px
   .detail-close
@@ -373,16 +378,16 @@ text-overflow: ellipsis	//超出的文本用省略号显示
   ```
 + 此外还有flex方法：<br>
   父元素：
-  ```
+  ```css
   {display: flex;flex-direction: column;}
   ```
   子元素：
-  ```
+  ```css
   .content{flex: 1;}
   .footer{flex: 0;}
   ```
   思考：为何Sticky footers的wrapper层需要清楚浮动？代码如下：
-  ```
+  ```css
   .clearfix
     //不能少
     display: inline-block
@@ -399,13 +404,13 @@ text-overflow: ellipsis	//超出的文本用省略号显示
 经测试，把.detail-main的margin-top改为padding-top，也可以避免此现象。
 
 ### 7.6 新增评星组件：star.vue
-```
+```html
 <div class="star">
   <span v-for="(singleStar, index) in allStars" :key="index" class="star-item" :class="[sizeType, singleStar]"></span>
 </div>
 ```
 渲染后：
-```
+```html
 <div class="star">
   <span class="star-item size-48 on">
   <span class="star-item size-48 on">
@@ -418,18 +423,18 @@ text-overflow: ellipsis	//超出的文本用省略号显示
 export dafault { } 中：`components: {  star  }`<br>
 之后就可以在header.vue中使用star组件：
 
-```
+```html
 <star :size="48" :score="4.2"></star>
 ```
 
 ### 7.7 Vue过渡动画：
-```
+```html
 <transition name="fade">
   <p v-if="show">hello</p>
 </transition>
 ```
 CSS中：
-```
+```css
 .fade-enter-active, .fade-leave-active {  
   transition: opacity .5s;
 }
@@ -440,7 +445,7 @@ CSS中：
 
 ### 7.8 弹窗后的内容模糊
 给.detail添加css特性:
-```
+```css
 backdrop-filter: blur(5px)
 ```
 
@@ -448,7 +453,7 @@ backdrop-filter: blur(5px)
 
 ### 8.1 左侧menu布局
 多行文字垂直居中：父元素.menu-item下面的子元素是.text
-```
+```css
 .menu-item
   display: table
 .text
@@ -457,7 +462,7 @@ backdrop-filter: blur(5px)
 
 ### 8.2 右侧内容布局
 取消1px的横线：
-```
+```css
 border-none()
   &:after
     display: none
@@ -466,7 +471,7 @@ border-none()
 ### 8.3 滚动库better-scroll
 + 安装：`npm better-scroll --save`
 + 导入和使用：
-```
+```js
 import BScroll from 'better-scroll'
 const wrapper = document.querySelector('.wrapper')	//vue中如何拿到DOM见下方Tips
 const scroll = new BScroll(wrapper)
@@ -475,7 +480,7 @@ const scroll = new BScroll(wrapper)
 **Tips:**
 + 1). 如何在vue中拿到某一个元素或者组件 —— ref=" "<br>
   ref 被用来给元素或子组件注册引用信息。引用信息将会注册在父组件的 $refs 对象上。如果在普通的 DOM 元素上使用，引用指向的就是 DOM 元素；如果用在子组件上，引用就指向组件实例：<br>
-  ```
+  ```html
   <!-- "vm.$refs.p" will be the DOM node -->
   <p ref="p">hello</p>
 
@@ -487,12 +492,12 @@ const scroll = new BScroll(wrapper)
 + 3). 关联左侧菜单栏和右侧食物详情栏。<br>
    + 3.1) 右侧滚动，左侧菜单相应地高亮。
       + 3.1.1）data(){return {...}}里添加：
-        ```
+        ```js
         listHeight: [],
         scrollY: 0
         ```
       + 3.1.2）修改this.foodsScroll:
-        ```
+        ```js
         this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {probeType: 3});
         // 1 滚动的时候会派发scroll事件，会截流。
         // 2 滚动的时候实时派发scroll事件，不会截流。
@@ -500,25 +505,25 @@ const scroll = new BScroll(wrapper)
         // default：1
         ```
       + 3.1.3）监听scroll事件，拿到实时的pos.y值，并赋值给this.scrollY。
-        ```
+        ```js
         this.foodsScroll.on('scroll', (pos) => {
           this.scrollY = Math.abs(Math.round(pos.y));
         });
         ```
    + 3.2) 点击左侧菜单，右侧相应地滚动。
       + 3.2.1）修改this.menuScroll:（添加click: true参数）
-        ```
+        ```js
         this.menuScroll = new BScroll(this.$refs.menuWrapper, {click: true});
         // 点击列表是否派发click事件
         // default：true
         ```
       + 3.2.2）PC端模式下，会出现两次点击事件（实际未出现）。为了阻止默认的click事件：<br>
         HTML中：
-        ```
+        ```html
         @click="menuSelected(index, $event)"
         ```
         JS中：
-        ```
+        ```js
         menuSelected(index, event) {
           if(!event._constructed){
             return;
@@ -526,7 +531,7 @@ const scroll = new BScroll(wrapper)
         }
         ```
       + 3.2.3）在menuSelected() {...}中添加：
-        ```
+        ```js
         this.foodsScroll.scrollTo(0, -this.listHeight[index], 300);
         ```
 
@@ -535,19 +540,19 @@ const scroll = new BScroll(wrapper)
 ### 9.1 seller数据的传递
   App.vue中的data() { }中有seller，可以传递给路由中的goods组件。方法如下：
   路由的出口也可以传递参数
-  ```
+  ```html
   <router-view :seller="seller"></router-view>
   ```
 
 ### 9.2 seller数据的使用
   这样goods组件中就能使用seller，并且可以向下传递给cart组件。方法如下：
-  ```
+  ```html
   <cart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :selectedList="selectedList" ref="cart"></cart>
   ```
 
 ### 9.3 数组selectedList
 cart组件中（props: { }中），有由goods组件传入的selectedList：
-```
+```js
 selectedList: {
   type: Array,
   default() {
@@ -559,28 +564,28 @@ selectedList: {
 
 ### 9.4 countCtrl组件
 tips：给countCtrl中添加click事件，发现单机无响应，是因为countCtrl的父组件goods里，使用betterScroll时，禁用了click事件。修改如下：（添加click: true）
-```
+```js
 this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {probeType: 3, click: true});
 ```
 + 1）父组件goods中：
   **HTML：**
-  ```
+  ```html
   <countCtrl @countChanged="(newCount) => {changeCount(index,index1,newCount)}" :count="food.userCount"></countCtrl>
   ```
   **Scripts：**
   // 监听子组件countCtrl中initCount值的改变
-  ```
+  ```js
   changeCount(index, index1, newCount) {
     this.goods[index].foods[index1].userCount = newCount;
   }
   ```
 + 2）子组件countCtrl中：<br>
   **HTML：**
-  ```
+  ```html
   <span @click="minusCount"> <i ...></i> </span>
   ```
   **Scripts：**
-  ```
+  ```js
   minusCount() {
     this.initCount--;
     this.$emit('countChanged', this.initCount);// 触发事件，传给其父组件goods
@@ -591,12 +596,12 @@ this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {probeType: 3, click: tr
   **HTML：**
   用transition元素包裹减号按钮标签:
 
-  ```
+  ```html
   <transition name="popup">  <span>..减号按钮..</span> </transition>
   ```
   **Style：**
 
-  ```
+  ```css
   .popup-enter-active, .popup-leave-active
     transition: all 0.5s
 
@@ -608,7 +613,7 @@ this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {probeType: 3, click: tr
 ### 9.5 小球飞入购物车动画
 新建组件cartBall.vue：<br>
 **HTML:**
-```
+```html
 <div class="balls-container">
   <!--推荐对于仅使用 JavaScript 过渡的元素添加 v-bind:css="false"，-->
   <!--Vue 会跳过 CSS 的检测。这也可以避免过渡过程中 CSS 的影响。-->
@@ -630,7 +635,7 @@ this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {probeType: 3, click: tr
 疑点：在过渡效果没完成时，就已经执行完了afterEnter。<br>
 **目前不完美的解决办法：**在afterEnter方法中，用一个延时函数，时间等于CSS中transition的时间。目的是执行此函数时，运动已完成，然后再延时函数中，恢复小球至初始状态：
 （PC端正常，移动端在快速点击+号时，有BUG。）**BUG已解决，见下面代码后的内容。**
-```
+```js
 setTimeout(() => {
   let ball = this.droppingBalls.shift();
   if (ball) {
@@ -642,7 +647,7 @@ setTimeout(() => {
 }, 400);
 ```
 **CSS:**
-```
+```css
 .balls-container
   .ball
     position: fixed
@@ -660,9 +665,9 @@ setTimeout(() => {
 **移动端小球动画BUG已解决：**<br>
 + 1）用transition替代transition-group
 + 2）修改enter函数：
-  ```
+  ```js
   enter(el, done) {
-    。。。
+    // 。。。
     // 在el上监听transitionend事件，动画完成后调用afterEnter函数
     el.addEventListener('transitionend', done);
   }
@@ -672,27 +677,27 @@ setTimeout(() => {
 1. 父组件goods监听到子组件countCtrl中的事件后，如何调用其他子组件中的方法：
    + goods组件中：
      HTML：
-     ```
+     ```html
      <countCtrl  @count-changed="(newCount, target) => {changeCountFromCountCtrl(index,index1,newCount,target)}"></countCtrl>
      <cart ref="cart"></cart>
      ```
      JS：（通过this.$refs.cart调用cart组件的cartDrop方法）
-     ```
+     ```js
      changeCountFromCountCtrl(index, index1, newCount, target) {
        this.$refs.cart.cartDrop(target);
      }
      ```
    + cart组件中：
      HTML：
-     ```
+     ```html
      <cartBall ref="cartBall"></cartBall>
      ```
      JS：（通过this.$refs.cartBall调用cart组件的cartBallDrop方法）
-     ```
+     ```js
      cartDrop(target) {this.$refs.cartBall.cartBallDrop(target);}
      ```
    + carBall组件中：
-     ```
+     ```js
      methods: {
        cartBallDrop(target) {
          。。。
@@ -702,7 +707,7 @@ setTimeout(() => {
    总结：通过在HTML中定义ref=""和在组件的methods：{ }中定义方法，并通过this.$refs调用子组件的方法，最终一层层传递至真正需要执行函数的组件。
 2. Element.getBoundingClientRect()方法返回元素的大小及其相对于视口的位置，其中有四个只读属性：left、top、right和bottom。
 3. JavaScript钩子中的enter() { }
-   ```
+   ```js
    enter: function (el) {
      // 没有第二个参数
      // 由 CSS transitionend 事件决定过渡何时结束
@@ -717,11 +722,11 @@ setTimeout(() => {
 ### 9.6 购物车列表
 + 1）点击购物车时，购物车列表从底部向上弹出，由于购物车列表高度不确定。<br>
 解决方法：
-```
+```css
 transform: translate3d(0, 100%, 0)
 ```
 + 2）购物车列表有个最大高度，当所选择的食物超过最大高度时，让列表能够滚动。注意使用this.$nextTick()。
-```
+```js
 switchCartList() {
   this.cartListShow = !this.cartListShow && this.totalCount > 0;
   // 新建、刷新listScroll，让列表能够滚动
@@ -739,7 +744,7 @@ switchCartList() {
 + 3）在购物车列表当中使用better-scroll，会出现列表无法滚动：<br>
 解决办法：<br>
 给ul的父元素list-wrapper设置最大高度和overflow：hidden属性。
-```
+```css
   .list-wrapper
     max-height: 265px
     background: white
@@ -754,21 +759,21 @@ switchCartList() {
 ## 10.食物详情页面
 **tips：**
 1. 举个例子，如果触发一个 camelCase 名字的事件：
-  ```
+  ```js
   this.$emit('myEvent')
   ```
   则监听这个名字的 kebab-case 版本是不会有任何效果的：
-  ```
+  ```html
     <my-component v-on:my-event="doSomething"></my-component>
   ```
   因此，我们推荐你始终使用 kebab-case 的事件名。
 2. goods组件包含了food组件，food组件又包含了countCtrl组件。然而，goods组件中：
-  ```
+  ```html
     <food @count-changed="changeCountInFood"></food>
   ```
   不能直接监听countCtrl组件中的自定义事件：count-changed。
   解决办法：在food组件中监听其子组件countCtrl的count-changed事件，
-  ```
+  ```html
     <countCtrl @count-changed="changeCountInFood"></countCtrl>
   ```
   然后再emit一个count-changed事件，传递给goods组件。
@@ -777,7 +782,7 @@ switchCartList() {
   此外还会影响内层使用better-scroll的滚动层出现可以无限往上滚的情况。(原因未知)<br>
   解决办法：设置width：100%。
 4. 移动端分辨率不一样，想让一张图片的宽度为屏幕的100%，高度等于宽度，则应该设置：
-  ```
+  ```css
   .food-header
     position: relative	// 相对定位
     width: 100%
@@ -793,15 +798,15 @@ switchCartList() {
   ```
 5. 格式化日期和时间
    + 1）HTML：
-   ```
+   ```html
      <div class="rate-time">{{rating.rateTime | formatDate}}</div>
    ```
    + 2）JS：
-   ```
+   ```js
    import {formatDate} from "../../common/js/date";
    ```
    注意：要使用花括号，因为date.js中通过export方式导出，在导入时要加{ }。
-   ```
+   ```js
    filters: {
      formatDate(time){
        let date = new Date(time);
@@ -810,7 +815,7 @@ switchCartList() {
    },
    ```
    + 3）在src/common/js中新建date.js：
-   ```
+   ```js
    export function formatDate(date, fmt) {
      // fmt: 'yyyy-MM-dd hh:mm'
      // 替换年份
@@ -845,7 +850,7 @@ switchCartList() {
 
 ### 11.1 seller数据的传递
 由于APP.vue中的<router-view>中传入了seller：
-```
+```html
 <router-view :seller="seller"></router-view>
 ```
 因此，在ratings.vue组件props中定义好seller后，可以直接使用seller。
@@ -859,14 +864,14 @@ switchCartList() {
 使用flex左右布局，在小分辨率手机，如iphone5s上，如果内容太多会出现换行的情况。<br>
 解决办法：<br>
 左侧：<br>
-```
+```css
 flex: 0 0 137px;  width: 137px
 @media only screen and (max-width: 320px)
   flex: 0 0 120px
   width: 120px
 ```
 右侧：
-```
+```css
 padding-left: 24px
 @media only screen and (max-width: 320px)
   padding-left: 6px
@@ -894,7 +899,7 @@ seller.vue组件会接收父组件APP.vue组件的值：seller，且在父组件
 + 1）在商家页面为当前页面时，刷新页面：mounted先执行，watch后执行
 + 2）从其他页面切到商家页面时，mouted执行，watch不执行。（seller未发生变化）
 注：因为refreshVerScroll函数中没有用到this.seller，所以在watch中可以取消对它的调用。
-```
+```js
 mounted() {
   this.refreshVerScroll();
   this.refreshHorScroll();
@@ -908,7 +913,7 @@ watch: {
 },
 ```
 在methods: { }中定义这两个滚动函数
-```
+```js
 // 刷新垂直滚动
 refreshVerScroll() {
   this.$nextTick(() => {
@@ -942,7 +947,7 @@ refreshHorScroll() {
 ### 12.2 收藏/已收藏的逻辑
 + 1）修改APP.vue中的seller：{ }
 修改前：
-```
+```js
 data() {
   return {
     seller: {}
@@ -950,7 +955,7 @@ data() {
 },
 ```
 修改后：
-```
+```js
 data() {
   return {
     seller: {
@@ -964,10 +969,10 @@ data() {
 ```
 + 2）在common/js目录下新建util.js：
 tips：再浏览器中输入：window.location.search，回车后出现：
-```
+```bash
 "?id=666&a=b"
 ```
-```
+```js
 export function urlParse () {
   let url = window.location.search;
   let obj = {};
@@ -985,25 +990,25 @@ export function urlParse () {
 }
 ```
 + 3）在APP.vue中引入urlParse方法：
-```
+```js
 import {urlParse} from './common/js/util';
 ```
 修改created（）{ }：
 修改前：
-```
+```js
 this.$http.get('/api/seller' ).then(response => {
 ```
 修改后：
-```
+```js
 this.$http.get('/api/seller?id=' + this.seller.id).then(response => {
 ```
 刷新页面，点击浏览器中Network中的"seller？id=666"，再点击右侧顶部的Headers，General中的Request URL变为:
-```
+```bash
 http://localhost:8080/api/seller?id=666
 ```
 后端会根据这个请求返回id=666的商家的信息。
 为防止this.seller中的id被抛弃，采用vue.js官网中的建议，使用Object.assign方法：
-```
+```js
 created() {
   this.$http.get('/api/seller?id=' + this.seller.id).then(response => {
     if (response.body.errno === 0) {
@@ -1015,7 +1020,7 @@ created() {
 ```
 + 4）数据的缓存部分<br>
 在common/store/js中新建store.js文件：
-```
+```js
   // 储存
   export function saveToLocal(id, key, value) {
     // 只读的localStorage 允许你访问一个Document 的远端（origin）对象 Storage；数据存储为跨浏览器会话。
@@ -1058,24 +1063,24 @@ created() {
   }
 ```
 + 5）在seller.vue中导入store.js：
-```
+```js
 import {saveToLocal, loadFromLocal} from '../../common/js/store';
 ```
 修改methods中的方法switchCollect：
-```
+```js
 switchCollect() {
   this.hasCollected = !this.hasCollected;
   saveToLocal(this.seller.id, 'fav', this.hasCollected);
 },
 ```
 在浏览器点击收藏前后，两次在Console输入localStorage按回车出现：
-```
+```bash
 前：Storage {loglevel:webpack-dev-server: "WARN", length: 1}
 后：Storage {__seller__: "{"666":{"fav":true}}", loglevel:webpack-dev-server: "WARN", length: 2}
 ```
 修改data中的hasCollected:
 修改前：
-```
+```js
 data() {
   return {
     hasCollected: false
@@ -1083,7 +1088,7 @@ data() {
 },
 ```
 修改后：
-```
+```js
 data() {
   return {
     hasCollected: (() => {
@@ -1096,7 +1101,7 @@ data() {
 ## 13. 体验优化
 
 ### 13.1 keep-alive让失活的组件缓存下来。
-```
+```html
 <keep-alive>
   <router-view :seller="seller"></router-view>
 </keep-alive>
@@ -1111,20 +1116,20 @@ build完成之后，sell目录下会多一个dist文件夹。
 ### 14.2 用express启动小型server
 + 1）在根目录下创建JS文件：prod.server.js，内容见3）后的附录
 + 2）在config/index.js中的build：{ }中定义port：
-```
+```js
 port: 9000,
 ```
 + 3）在config/index.js中的build：{ }中修改productionSourceMap: true为false，取消调试。
-```
+```js
 productionSourceMap: true,
 ```
 更改为：
-```
+```js
 productionSourceMap: false,
 ```
 附录：
 prod.server.js内容
-```
+```js
   let express = require('express');
   let config = require('./config/index');
   
