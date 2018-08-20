@@ -24,6 +24,7 @@ npm install webpack --save-dev
 ```
 npm install webpack-cli --save-dev
 ```
+**官网tips：**如果你使用 webpack 4+ 版本，你还需要安装 CLI。<br>
 完成后，打开package.json文件，我们会发现文件中多了devDependencies字段：
 ```json
 // devDependencies：开发和测试环境中依赖的包。项目上线之后不需要。
@@ -33,7 +34,7 @@ npm install webpack-cli --save-dev
   }
 ```
 
-## 2. 使用webpack
+## 2. 使用webpack打包
 ### 2.1 打包多个js文件
 + 1) 在exercise webpack文件夹下新建名为‘01’的文件夹，并在其中新建index.html、app.js、01.js、02.js：<br>
   index.html:
@@ -159,3 +160,165 @@ Error: Cannot find module 'loader-runner'
 npm install
 ```
 完成之后，webpack运行正常。
+## 3. webpack配置
+官网中对webpack配置的作用的描述：
+>因为 webpack 配置是标准的 Node.js CommonJS 模块，你可以做到以下事情：
+>+ 通过 require(...) 导入其他文件
+>+ 通过 require(...) 使用 npm 的工具函数
+>+ 使用 JavaScript 控制流表达式，例如 ?: 操作符
+>+ 对常用值使用常量或变量
+>+ 编写并执行函数来生成部分配置
+
+### 3.1 基本配置文件webpack.config.js
++ 1) 在配置webpack.config.js之前，我们先把文件夹'02'中的文件拷贝出来，重新整理一下：
+   + index.html放在根目录下，即文件夹'exercise webpack'中；
+   + 在根目录下新建文件夹'src'，并在src中新建文件夹'js'和'css'；
+   + 把app.js、01.js和02.js放至src/js文件夹中；
+   + 把style.css、01.css和02.css放至src/css文件夹中。
++ 2) 由于各文件之间的相对位置发生了变化，需要修改文件中的引用路径。<br>
+index.html:
+```html
+<script src="./dist/main.js"></script>
+```
+app.js:
+```js
+// 修改前：require('!style-loader!css-loader!./style.css');
+require('../css/style.css');
+// 不需要在路径中添加'!style-loader!css-loader!'，我们将在下一步的配置文件中为.css文件指定loader
+```
++ 3) 在根目录下(即文件夹'exercise webpack')，新建webpack.config.js文件：
+```js
+module.exports = {
+    // 入口文件
+    entry: './src/js/app.js',
+    // 指定输出文件
+    output: {
+        path: __dirname + '/dist',
+        filename: 'main.js'
+    },
+    // 模式
+    mode: 'development',
+    // 模块
+    module: {
+        // module.rules允许你在webpack配置中指定多个loader。
+        rules:[
+            {
+                // 正则表达式，以.css为扩展名的文件
+                test: /\.css$/,
+                // 指定使用的loader
+                use: [
+                    {loader: 'style-loader'},
+                    {loader: 'css-loader'}
+                ]
+            }
+        ]
+    }
+};
+```
+完成后的exercise webpack目录结构如下：
+```
+exercise webpack
+├── node_modules
+├── src
+|   ├── css
+|   |   ├── 01.css
+|   |   ├── 02.css
+|   |   └── style.css
+|   ├── js
+|   |   ├── 01.js
+|   |   ├── 02.js
+|   |   └── app.js
+├── index.html
+├── package.json
+└── webpack.config.js
+```
++ 4) 在package.json文件中定义脚本命令：
+```js
+  "scripts": {
+    "test01": "webpack --mode=development 01/app.js",
+    "test02": "webpack --mode=development 02/app.js",
+    "dev": "webpack"
+  },
+```
++ 5) 在exercise webpack文件夹下打开CMD，运行：
+```
+npm run dev
+```
+运行完成后，dist/main.js会被新生成的main.js覆盖掉。<br>
+
+打开根目录下的index.html，查看效果：(为了与前面的效果区分开，修改了src中相应的代码)
+<div style="background: skyblue;color:grey;font-size:40px">HELLO WEBPACK!——使用配置文件</div>
+
+## 4. webpack安装第三方库
+如何在webpack工具里安装第三方库：(以jQuery为例)
++ 1) 在根目录处打开CMD，安装jQuery:
+```
+npm install jquery --save-dev
+```
++ 2) 在app.js中引入jQuery，并使用：
+```js
+  const $ = require('jquery');// 引入第三方库jQuery
+
+  let div = $("div");
+  div.html( div.html() + "——使用第三方库jQuery").css({'font-size': '20px'});
+```
++ 3) 在exercise webpack文件夹下打开CMD，运行：
+```
+npm run dev
+```
+
+打开根目录下的index.html，查看效果：
+<div style="background: skyblue;color:grey;font-size:20px">HELLO WEBPACK!——使用配置文件——使用第三方库jQuery</div>
+
+## 5. webpack-dev-server模块
+关于webpack-dev-server模块的功能，以下引用了github页面的原文描述：
+>Use webpack with a development server that provides live reloading. This should be used for development only.<br>
+
+让webpack提供具有实时重载功能的开发服务器。 这应该仅用于开发模式。(mode: 'development')
+
+### 5.1 安装和使用
++ 1) 安装此模块
+```
+npm install webpack-dev-server --save-dev
+```
++ 2) 在package.json文件中定义脚本命令：
+```json
+  "scripts": {
+    "test01": "webpack --mode=development 01/app.js",
+    "test02": "webpack --mode=development 02/app.js",
+    "dev": "webpack",
+    "start": "webpack-dev-server --entry ./src/js/app.js --output-filename ./dist/main.js"
+  }
+```
++ 3) 在exercise webpack文件夹下打开CMD，运行：
+  ```
+  npm run start
+  ```
+我们会看到提示：`Project is running at http://localhost:8080/`。<br>
+
+在浏览器中打开此地址，我们会看到和3中同样的内容：<br>
+<div style="background: skyblue;color:grey;font-size:20px">HELLO WEBPACK!——使用配置文件——使用第三方库jQuery</div>
+现在，我们修改js或者css文件后，webpack-dev-server模块会自动打包文件，因此我们在浏览器就能查看最新的页面。<br>
+**注意：**webpack-dev-server模块并没有生成main.js文件，我们可以在运行`npm run start`前删除dist目录下的main.js来验证。
+
+### 5.2 devServer
+devServer选项影响webpack-dev-server的行为。
++ 1) devServer.port<br>
+指定要监听请求的端口号。
+  ```js
+  devServer: {
+    port: 8080
+  }
+  ```
++ 2) devServer.before<br>
+用于指定在其他中间件前执行的自定义中间件，引用官网的描述：
+>Provides the ability to execute custom middleware prior to all other middleware internally within the server. This could be used to define custom handlers, for example:
+>```js
+>devServer: {
+>  before(app){
+>    app.get('/some/path', function(req, res) {
+>      res.json({ custom: 'response' });
+>    });
+>  }
+>}
+>```
