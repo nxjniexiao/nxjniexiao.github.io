@@ -7,21 +7,21 @@ tags: webpack WEB前端
 ---
 * content
 {:toc}
-虽然在商家单页面案例([学习笔记](https://nxjniexiao.github.io/2018/08/16/Sell-APP-Learning-Notes/))中使用了webpack，但其实不是很理解webpack的工作原理。因此还是很有必要去学习一下webpack。
+虽然在[商家单页面案例](https://nxjniexiao.github.io/2018/08/16/Sell-APP-Learning-Notes/)中使用了webpack，但其实不是很理解webpack的工作原理。因此还是很有必要去学习一下webpack。
 ## 1. 安装webpack
 在网上搜了一些教程，大都是全局安装并使用webpack。由于实际项目中大都是局部安装的。因此特意去搜了一下如何局部安装webpack：
 + 1) 新建一个文件夹exercise webpack，用来存放学习代码；
 + 2) 在此文件夹中打开CMD，运行：
-```
+```bash
 npm init
 ```
 生成一个package.json文件;
 + 3) 安装webpack：
-```
+```bash
 npm install webpack --save-dev
 ```
 + 4) 安装webpack-cli：
-```
+```bash
 npm install webpack-cli --save-dev
 ```
 **官网tips：**如果你使用 webpack 4+ 版本，你还需要安装 CLI。<br>
@@ -76,7 +76,7 @@ module.exports = function upper(str) {
 ```
 `--mode=development`表示webpack的运行模式为开发模式。
 + 3) 在exercise webpack文件夹下打开CMD，运行：
-```
+```bash
 npm run test01
 ```
 打包完成后，exercise webpack文件夹下会多一个dist文件夹，其中有个main.js文件；
@@ -89,7 +89,7 @@ npm run test01
 ### 2.2 打包样式
 在exercise webpack文件夹下拷贝一份01文件夹，命名为：02。
 + 1) 安装css-loader和style-loader。在exercise webpack文件夹下打开CMD，运行:
-```
+```bash
 npm install css-loader style-loader --save-dev
 ```
 《入门webpack》中关于这两个加载器的解释：
@@ -125,7 +125,7 @@ require('!style-loader!css-loader!./style.css');// 注意顺序：style-loader�
   }
 ```
 + 5) 在exercise webpack文件夹下打开CMD，运行：
-```
+```bash
 npm run test02
 ```
 运行完成后，2.1产生的dist/main.js会被新生成的main.js覆盖掉。<br>
@@ -156,12 +156,12 @@ Error: Cannot find module 'loader-runner'
   }
 ```
 然后运行：
-```
+```bash
 npm install
 ```
 完成之后，webpack运行正常。
 ## 3. webpack配置
-官网中对webpack配置的作用的描述：
+官网[www.webpackjs.com](https://www.webpackjs.com/concepts/configuration/)中对webpack配置的作用的描述：
 >因为 webpack 配置是标准的 Node.js CommonJS 模块，你可以做到以下事情：
 >+ 通过 require(...) 导入其他文件
 >+ 通过 require(...) 使用 npm 的工具函数
@@ -241,7 +241,7 @@ exercise webpack
   },
 ```
 + 5) 在exercise webpack文件夹下打开CMD，运行：
-```
+```bash
 npm run dev
 ```
 运行完成后，dist/main.js会被新生成的main.js覆盖掉。<br>
@@ -252,7 +252,7 @@ npm run dev
 ## 4. webpack安装第三方库
 如何在webpack工具里安装第三方库：(以jQuery为例)
 + 1) 在根目录处打开CMD，安装jQuery:
-```
+```bash
 npm install jquery --save-dev
 ```
 + 2) 在app.js中引入jQuery，并使用：
@@ -263,7 +263,7 @@ npm install jquery --save-dev
   div.html( div.html() + "——使用第三方库jQuery").css({'font-size': '20px'});
 ```
 + 3) 在exercise webpack文件夹下打开CMD，运行：
-```
+```bash
 npm run dev
 ```
 
@@ -278,7 +278,7 @@ npm run dev
 
 ### 5.1 安装和使用
 + 1) 安装此模块
-```
+```bash
 npm install webpack-dev-server --save-dev
 ```
 + 2) 在package.json文件中定义脚本命令：
@@ -291,7 +291,7 @@ npm install webpack-dev-server --save-dev
   }
 ```
 + 3) 在exercise webpack文件夹下打开CMD，运行：
-  ```
+  ```bash
   npm run start
   ```
 我们会看到提示：`Project is running at http://localhost:8080/`。<br>
@@ -322,3 +322,113 @@ devServer选项影响webpack-dev-server的行为。
 >  }
 >}
 >```
+
+## 6. webpack中使用babel
+官网[www.babeljs.cn](https://www.babeljs.cn/)中是这样描述babel的：<br>
+>Babel是一个JavaScript编译器。它通过语法转换器支持最新版本的JavaScript。这些插件允许你立刻使用新语法，无需等待浏览器支持。<br>
+
+### 6.1 为何要使用babel
+在本篇的例子中，除了let和const的使用，没有使用**ES6**的其他语法。因此，我们用IE11浏览器能正常访问`http://localhost:8080/`。<br>
+**注：**IE11支持一小部分ES6，如let和const的；IE10几乎不支持ES6。<br>
+如果我们在js文件中使用更多的ES6语法，我们将无法用IE11浏览器访问`http://localhost:8080/`。<br>
+app.js文件：
+```js
+import show from './01';// 引入01.js(ES6)
+import '../css/style.css';// 引入style.css样式文件(ES6)
+import $ from 'jquery';// 引入第三方库jQuery(ES6)
+
+let str = show("Hello webpack!——使用配置文件");
+document.write('<div>' + str + '</div>');
+let div = $("div");
+div.html( div.html() + "——使用第三方库jQuery").css({'font-size': '20px'});
+```
+01.js文件：
+```js
+import upper from './02';// 引入02.js(ES6)
+
+export default function (str) {
+    return upper(str);
+}
+```
+02.js文件：
+```js
+// 箭头函数(ES6)
+let show = (str) => {
+    return str.toUpperCase();
+};
+export default show;
+```
+但是使用已经支持ES6的浏览器，如最新版本的chrome、firefox等等，是能够正常访问的。为了兼容未支持ES6的浏览器，我们可以使用babel把ES6语法转换成ES5。<br>
+
+### 6.2 安装和使用babel
+关于如何在webpack中使用babel，参考了官网[www.babeljs.cn](https://www.babeljs.cn/docs/setup/#installation)中的步骤。
++ 1) 安装
+```bash
+npm install babel-loader babel-core --save-dev
+```
++ 2) 修改webpack.config.js文件
+  ```js
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,// 排除特定条件
+        use: ['babel-loader']// [{loader: 'label-loader'}]的简写
+      }       
+    ]
+  }
+  ```
++ 3) 安装babel-preset-env
+```bash
+npm install babel-preset-env --save-dev
+```
++ 4) 创建.babelrc文件：
+```json
+{
+  "presets": ["env"]
+}
+```
+
+完成babel的安装和配置后，运行`npm run start`，之后就可以用IE11浏览器正常访问`http://localhost:8080`了。但IE8无法正常访问，因为IE8不支持ES5。
+
+
+## 7. webpack模块
+>在模块化编程中，开发者将程序分解成离散功能块(discrete chunks of functionality)，并称之为模块。
+
+### 7.1 什么是 webpack 模块
+此节引用自[www.webpackjs.com](https://www.webpackjs.com/concepts/modules/)。
+>对比 Node.js 模块，webpack 模块能够以各种方式表达它们的依赖关系，几个例子如下：
+>+ ES2015 import 语句
+>+ CommonJS require() 语句
+>+ AMD define 和 require 语句
+>+ css/sass/less 文件中的 @import 语句。
+>+ 样式(url(...))或 HTML 文件(&lt;img src=...&gt;)中的图片链接(image url)
+>
+>**tips：**webpack 1 需要特定的 loader 来转换 ES 2015 import，然而通过 webpack 2 可以开箱即用。
+
+### 7.2 模块解析
+此节引用自[www.webpackjs.com](https://www.webpackjs.com/concepts/module-resolution/)。
+>resolver 是一个库(library)，用于帮助找到模块的绝对路径。一个模块可以作为另一个模块的依赖模块，然后被后者引用，如下：
+>```js
+>import foo from 'path/to/module'
+>// 或者
+>require('path/to/module')
+>```
+>所依赖的模块可以是来自应用程序代码或第三方的库(library)。resolver 帮助 webpack 找到 bundle 中需要引入的模块代码，这些代码在包含在每个 require/import 语句中。 当打包模块时，webpack 使用 enhanced-resolve 来解析文件路径。<br>
+>使用 enhanced-resolve，webpack 能够解析三种文件路径：
+>+ 绝对路径
+>```js
+>import "/home/me/file";// '/'表示根目录
+>import "C:\\Users\\me\\file";
+>```
+>+ 相对路径
+>```js
+>import "../src/file1";// '../'表示当前文件夹的上一级文件夹
+>import "./file2";// './'表示当前文件夹
+>```
+>+ 模块路径
+>```js
+>import "module";
+>import "module/lib/file";
+>```
+>模块将在 resolve.modules 中指定的所有目录内搜索。 你可以替换初始模块路径，此替换路径通过使用 resolve.alias 配置选项来创建一个别名。
