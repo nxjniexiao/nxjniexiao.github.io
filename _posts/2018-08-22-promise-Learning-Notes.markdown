@@ -90,7 +90,7 @@ Promise构造函数执行时，立即调用作为参数的executor函数。<br>
 + 如果n&gt;=0，使用`resolve();`把p1(一个Promise对象)的状态设为fulfilled；
 + 如果n&lt;0，使用`reject()`把p1的状态设为rejected。
 
-然后在p1.then()函数中传入两个函数作为参数。1秒钟后：
+然后根据p1的状态执行p1.then()函数：
 + p1的状态若由pending变为fulfilled，执行第一个函数，打印n的值；
 + p1的状态若由pending变为rejected，执行第二个函数，打印错误。
 
