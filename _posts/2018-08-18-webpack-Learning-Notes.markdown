@@ -224,10 +224,10 @@ exercise webpack
 |   |   ├── 01.css
 |   |   ├── 02.css
 |   |   └── style.css
-|   ├── js
-|   |   ├── 01.js
-|   |   ├── 02.js
-|   |   └── app.js
+|   └── js
+|       ├── 01.js
+|       ├── 02.js
+|       └── app.js
 ├── index.html
 ├── package.json
 └── webpack.config.js
