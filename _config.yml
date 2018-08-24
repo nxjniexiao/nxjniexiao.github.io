@@ -10,6 +10,9 @@ title: Nie Xiaojun
 brief-intro: Front-end Web Engineer
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://nxjniexiao.github.io" # the base hostname & protocol for your site
+# This will require each of these plugins automatically.
+plugins:
+  - jekyll-sitemap
 
 permalink: /:year/:month/:day/:title/
 
