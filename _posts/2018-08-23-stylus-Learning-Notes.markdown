@@ -201,7 +201,7 @@ module.exports = {
 exercise Stylus
 ├── node_modules
 ├── src
-|   ├── css
+|   ├── styl
 |   |   ├── 01.styl
 |   |   ├── 02.styl
 |   |   └── style.styl
@@ -273,3 +273,785 @@ export default show;
 npm run start
 ```
 提示编译成功后，在浏览器中打开`http://localhost:8080`。
+
+## 3. Stylus语法
+
+此节代码和内容来自于官网[http://stylus-lang.com](http://stylus-lang.com/)。
+
+## 3.1 选择器 selectors
+
+### 3.1.1 缩进 Indentation
+
+Stylus采用缩进式语法，可以省略`{`、`}`、`;`和`:`。
+```
+body
+  color white
+```
+或者选择保留`:`：
+```
+body
+  color: white
+```
+编译后：
+```css
+body {
+  color: #fff;
+}
+```
+
+### 3.1.2 规则集 Rule Sets
+
+和css一样，可以使用`,`为多个选择器定义属性：
+```
+textarea, input
+  border 1px solid #eee
+```
+也可以换行：
+```
+textarea
+input
+  border 1px solid #eee
+```
+编译后：
+```css
+textarea,
+input {
+  border: 1px solid #eee;
+}
+```
+
+### 3.1.3 引用父选择器 Parent Reference
+
+可以使用`&`引用父选择器：
+```
+textarea
+input
+  color #A7A7A7
+  &:hover
+    color #000
+```
+编译后：
+```css
+textarea,
+input {
+  color: #a7a7a7;
+}
+textarea:hover,
+input:hover {
+  color: #000;
+}
+```
+在下面的例子中，在mixin中使用`&`给IE浏览器设置2px的border：
+```
+box-shadow()
+  -webkit-box-shadow arguments
+  -moz-box-shadow arguments
+  box-shadow arguments
+  html.ie8 &,
+  html.ie7 &,
+  html.ie6 &
+    border 2px solid arguments[length(arguments) - 1]
+body
+  #login
+    box-shadow 1px 1px 3px #eee
+```
+**注：**`&`指向 `body #login`，`html.ie8`等会拼接在`body`前面。<br>
+编译后：
+```css
+body #login {
+  -webkit-box-shadow: 1px 1px 3px #eee;
+  -moz-box-shadow: 1px 1px 3px #eee;
+  box-shadow: 1px 1px 3px #eee;
+}
+html.ie8 body #login,
+html.ie7 body #login,
+html.ie6 body #login {
+  border: 2px solid #eee;
+}
+```
+
+### 3.1.4 部分引用 Partial Reference
+
+`^[N]`表示部分引用，其中N是数字(-1, 0, 1等等)。<br>
+`^[0]`引用嵌套选择器中的第一层，`^[1]`则引用**<font color="red">第一层和第二层</font>**。
+```
+.foo
+  &__bar
+    width: 10px
+
+    ^[0]:hover &
+      width: 20px
+```
+注：第一层和第二层是一个完整的选择器`.foo__bar`，但`^[0]`部分引用第一层，即`.foo`。<br>
+编译后：
+```css
+.foo__bar {
+  width: 10px;
+}
+.foo:hover .foo__bar {
+  width: 20px;
+}
+```
+**<font color="red">若N为负数</font>**，则从尾部计算。如`^[-1]`表示去除最后一层后剩下部分的引用。
+```
+.foo
+  &__bar
+    &_baz
+      width: 10px
+
+      ^[-1]:hover &
+        width: 20px
+```
+编译后：
+```css
+.foo__bar_baz {
+  width: 10px;
+}
+.foo__bar:hover .foo__bar_baz {
+  width: 20px;
+}
+```
+
+### 3.1.5 带范围的部分引用 Ranges in partial references
+
+`^[N..M]`：其中一个数字是起始索引，另一个是结束索引。由于选择器是从第一层渲染至最后一层，所以N和M的顺序不影响结果。
+```
+.foo
+  & .bar
+    & .baz
+      width: 10px
+
+      ^[0]:hover ^[2..1]
+        width: 20px
+```
+编译后：
+```css
+.foo .bar .baz {
+  width: 10px;
+}
+.foo:hover .bar .baz {
+  width: 20px;
+}
+```
+
+### 3.1.6 初始引用 Initial Reference
+
+`~/`代表第一层，等价于`^[0]`，缺点是只能在选择器的首部使用。
+```
+.block
+  &__element
+    ~/:hover &
+      color: red
+```
+编译后：
+```css
+.block:hover .block__element {
+  color: #f00;
+}
+```
+
+### 3.1.7 相对引用 Relative Reference
+
+`../`表示相对引用，它只能在选择器首部使用。`../../`表示更深一层。
+```
+.foo
+  .bar
+    .baz
+      width: 10px
+
+      &,
+      ../../ .foobar
+        height: 10px
+```
+编译后：
+```css
+.foo .bar .baz {
+  width: 10px;
+}
+.foo .bar .baz,
+.foo .foobar {
+  height: 10px;
+}
+```
+
+### 3.1.8 根引用 Root Reference
+`/`适用于给不在当前范围中的选择器设置样式，如下面例子中的`.is-hovered`。
+```
+textarea
+input
+  color #A7A7A7
+  &:hover,
+  /.is-hovered
+    color #000
+```
+编译后：
+```css
+textarea,
+input {
+  color: #a7a7a7;
+}
+textarea:hover,
+input:hover,
+.is-hovered {
+  color: #000;
+}
+```
+
+### 3.1.9 歧义 Disambiguation
+例如表达式`margin - n`可以被解析为减法运算，或具有一元减号的属性。为了消除歧义，可以在表达式外使用一对括号。
+```
+pad(n)
+  margin (- n)
+
+body
+  pad(5px)
+```
+编译后：
+```css
+body {
+  margin: -5px;
+}
+```
+
+## 3.2 变量 variables
+
+我们可以在在stylus中使用变量：
+```
+ font-size = 14px
+
+ body
+   font font-size Arial, sans-serif
+```
+编译后：
+```css
+ body {
+   font: 14px Arial, sans-serif;
+ }
+```
+变量也可以包含表达式列表：
+```
+font-size = 14px
+font = font-size "Lucida Grande", Arial
+
+body
+  font font, sans-serif
+```
+编译后：
+```css
+body {
+  font: 14px "Lucida Grande", Arial, sans-serif;
+}
+```
+此外，标识符(变量、函数等)可以在前面加`$`：
+```
+$font-size = 14px
+body {
+  font: $font-size sans-serif;
+}
+```
+
+### 3.2.1 属性查询 Property Lookup
+
+我们可以选择不单独给变量赋值，而是直接在属性中赋值，如下例中的`width: w = 150px`和`height: h = 80px`：
+```
+#logo
+  position: absolute
+  top: 50%
+  left: 50%
+  width: w = 150px
+  height: h = 80px
+  margin-left: -(w / 2)
+  margin-top: -(h / 2)
+```
+注意先后顺序，`w`和`h`要先赋值，才能在后面使用。<br>
+或者干脆不使用变量名称`w`和`h`，改用`@width`和`@height`获取宽度和高度:
+```
+#logo
+  position: absolute
+  top: 50%
+  left: 50%
+  width: 150px
+  height: 80px
+  margin-left: -(@width / 2)
+  margin-top: -(@height / 2)
+```
+此特性的另一个用途是可以在mixins中，根据其他存在的属性来定义属性。下例中，如果不存在z-index，则设置`z-index: 1`：
+```
+ position()
+    position: arguments
+    z-index: 1 unless @z-index
+
+  #logo1
+    z-index: 20
+    position: absolute
+
+  #logo2
+    position: absolute
+```
+编译后：
+```css
+#logo1 {
+  z-index: 20;
+  position: absolute;
+}
+#logo2 {
+  position: absolute;
+  z-index: 1;
+}
+```
+属性查找，如`@color`，会逐层向上冒泡，直到找到`color`为止。如果找不到，则返回null。
+
+## 3.3 插值 interpolation
+
+此插值特性类似于ES6的模板字符串，让我们可以使用`{}`包裹表达式，把它们嵌入到标识符和选择器中。
+
+### 3.3.1 标识符插值 Identifier Interpolation
+
+例如`-webkit-{'border' + '-radius'}`等价于`-webkit-border-radius`。下面的例子中使用了浏览器前缀(vendor prefixes)来扩展属性。
+```
+vendor(prop, args)
+  -webkit-{prop} args
+  -moz-{prop} args
+  {prop} args
+border-radius()
+  vendor('border-radius', arguments)
+
+box-shadow()
+  vendor('box-shadow', arguments)
+button
+  border-radius 1px 2px / 3px 4px
+```
+编译后：
+```css
+button {
+  -webkit-border-radius: 1px 2px / 3px 4px;
+  -moz-border-radius: 1px 2px / 3px 4px;
+  border-radius: 1px 2px / 3px 4px;
+}
+```
+
+### 3.3.1 选择器插值 Selector Interpolation
+
+插值同样适用于选择器。下面例子中，我们迭代给表格前5行设置不同的高度：
+```
+table
+  for row in 1 2 3 4 5
+    tr:nth-child({row})
+      height: 10px * row
+```
+编译后：
+```css
+table tr:nth-child(1) {
+  height: 10px;
+}
+table tr:nth-child(2) {
+  height: 20px;
+}
+table tr:nth-child(3) {
+  height: 30px;
+}
+table tr:nth-child(4) {
+  height: 40px;
+}
+table tr:nth-child(5) {
+  height: 50px;
+}
+```
+我们还可以通过创建一个字符串变量，并把其放入`{}`中来实现把多个选择器放一起：
+```
+mySelectors = '#foo,#bar,.baz'
+
+{mySelectors}
+  background: #000
+```
+编译后：
+```css
+#foo,
+#bar,
+.baz {
+  background: #000;
+}
+```
+
+## 3.4 运算符 Operators
+
+### 3.4.1 运算符优先级 Operator Precedence
+
+运算符的优先级由高到低如下：
+```
+ .
+ []
+ ! ~ + -
+ is defined
+ ** * / %
+ + -
+ ... ..
+ <= >= < >
+ in
+ == is != is not isnt
+ is a
+ && and || or
+ ?:
+ = := ?= += -= *= /= %=
+ not
+ if unless
+```
+
+### 3.4.2 一元运算符 Unary Operators
+
+有效的一目运算符有：`!`, `not`, `-`, `+`, 和 `~`。
+```
+!0
+// => true
+
+!!0
+// => false
+
+!1
+// => false
+
+!!5px
+// => true
+
+-5px
+// => -5px
+
+--5px
+// => 5px
+
+not true
+// => false
+
+not not true
+// => true
+```
+一元运算符中`not`的优先级最低。
+```
+a = 0
+b = 1
+
+!a and !b
+// => false
+// parsed as: (!a) and (!b)
+```
+```
+not a or b
+// => false
+// parsed as: not (a or b)
+```
+
+### 3.4.3 下标 []
+下标能够让我们通过索引拿到表达式中的值。下标为负数时，从尾至首取值。
+  ```
+   list = 1 2 3
+   list[0]
+   // => 1
+
+   list[-1]
+   // => 3
+  ```
+带括号的表达式可以充当元组(例如(15px 5px)，(1 2 3))。
+
+### 3.4.4 范围 Range .. ...
+
+`N..M`包括N和M，`N...M`包括N，但是不包括M。
+```
+1..5
+ // => 1 2 3 4 5
+
+ 1...5
+ // => 1 2 3 4
+
+ 5..1
+ // => 5 4 3 2 1
+```
+
+### 3.4.5 加减法 Additive: + -
+做加减法运算时，既可以在同类型单位之间转换，如`ms`和`s`，又可以在不同类型单位之间转换，如`5s - 2px`得到`3s`。
+```
+15px - 5px
+// => 10px
+
+5 - 2
+// => 3
+
+5in - 50mm
+// => 3.031in
+
+5s - 1000ms
+// => 4s
+
+20mm + 4in
+// => 121.6mm
+
+"foo " + "bar"
+// => "foo bar"
+
+"num " + 15
+// => "num 15"
+```
+
+### 3.4.6 乘除法和求余 Multiplicative: / * %
+
+在属性值中使用`/`时请使用括号，因为css中`/`后面的值为行高`line-height`。<br>
++ `font: 14px/1.5;`：字体大小14px，行高为字体的1.5倍；
++ `font: (14px/1.5);`：字体大小(14÷1.5)px。
+
+```
+2000ms + (1s * 2)
+// => 4000ms
+
+5s / 2
+// => 2.5s
+
+4 % 2
+// => 0
+```
+
+### 3.4.7 指数 Exponent: **
+
+```
+2 ** 8
+// => 256
+```
+
+### 3.4.8 相等和关系运算符 Equality & Relational: == != >= <= > <
+
+相等运算符可以用来比较单位、颜色、字符串，甚至标识符。<br>
+`0 == false` 和 `null == false` 返回 `false`.
+```
+5 == 5
+// => true
+
+10 > 5
+// => true
+
+#fff == #fff
+// => true
+
+true == false
+// => false
+
+wahoo == yay
+// => false
+
+wahoo == wahoo
+// => true
+
+"test" == "test"
+// => true
+
+true is true
+// => true
+
+'hey' is not 'bye'
+// => true
+
+'hey' isnt 'bye'
+// => true
+
+(foo bar) == (foo bar)
+// => true
+
+(1 2 3) == (1 2 3)
+// => true
+
+(1 2 3) == (1 1 3)
+// => false
+```
+别名：
+```
+==    is
+!=    is not
+!=    isnt
+```
+
+### 3.4.9 真、假 Truthfulness
+true: `0%`、 `0px`、 `1px`、 `-1`、 `-1px`、 `hey`、 `'hey'`、 `(0 0 0)`、 `('' '')`。<br>
+
+false: `0`、 `null`、 `false`、 `''`。
+
+### 3.4.10 逻辑运算符 Logical Operators: && || and or
+
+`&&`、`||`分别是`and`、`or`的别名。
+```
+5 && 3
+// => 3
+
+0 || 5
+// => 5
+
+0 && 5
+// => 0
+
+#fff is a 'rgba' and 15 is a 'unit'
+// => true
+```
+
+### 3.4.11 存在运算符 Existence Operator: in
+
+判断`in`左边的对象是否存在于`in`右边的表达式中。
+```
+nums = 1 2 3
+1 in nums
+// => true
+
+5 in nums
+// => false
+```
+适用于未定义的标识符：
+```
+words = foo bar baz
+bar in words
+// => true
+HEY in words
+// => false
+```
+适用于元组(tuples)：
+```
+vals = (error 'one') (error 'two')
+error in vals
+// => false
+
+(error 'one') in vals
+// => true
+(error 'two') in vals
+// => true
+(error 'something') in vals
+// => false
+```
+混合(mixin)中使用`in`：
+```
+pad(types = padding, n = 5px)
+  if padding in types
+    padding n
+  if margin in types
+    margin n
+body
+  pad()
+body
+  pad(margin)
+body
+  pad(padding margin, 10px)
+```
+编译后：
+```css
+body {
+  padding: 5px;
+}
+body {
+  margin: 5px;
+}
+body {
+  padding: 10px;
+  margin: 10px;
+}
+```
+
+### 3.4.12 条件赋值 Conditional Assignment: ?= :=
+
+`?=`和`:=`：如果一个变量未被赋值，则赋值；如果变量已经有值了，则不赋值。
+```
+color := white
+color ?= white
+color = color is defined ? color : white
+```
+下例中，color不会被赋予值`black`，因为color已经被赋值`white`了。
+```
+color = white
+color ?= black
+
+color
+// => white
+```
+
+### 3.4.13 实例判断 Instance Check: is a
+
+Stylus中能够使用`is a`来进行类型判断。
+```
+15 is a 'unit'
+// => true
+
+#fff is a 'rgba'
+// => true
+
+15 is a 'rgba'
+// => false
+```
+或者采用内置函数type()
+```
+type(#fff) == 'rgba'
+// => true  
+```
+
+### 3.4.14 变量声明 Variable Definition: is defined
+
+`is defined`用来判断一个变量是否已经被赋值。
+```
+foo is defined
+// => false
+
+foo = 15px
+foo is defined
+// => true
+
+#fff is defined
+// => 'invalid "is defined" check on non-variable #fff'
+```
+或者采用内置函数`lookup(name)`：
+```
+name = 'blue'
+lookup('light-' + name)
+// => null
+
+light-blue = #80e2e9
+lookup('light-' + name)
+// => #80e2e9
+```
+`is defined`很重要。如下例中，由于未声明的标识符会返回true，即使`ohnoes`未声明，`body`仍会被添加属性：`padding: 5px;`。
+```
+body
+  if ohnoes
+    padding 5px
+```
+使用`is defined`更合理：
+```
+body
+  if ohnoes is defined
+    padding 5px
+```
+
+### 3.4.15 三元运算符 Ternary
+
+```
+num = 15
+num ? unit(num, 'px') : 20px
+// => 15px
+```
+
+### 3.4.16 转型 Casting
+
+`(expr) unit`和内置函数`unit()`一样，可以用来添加后缀。
+```
+body
+  n = 5
+  foo: (n)em
+  foo: (n)%
+  foo: (n + 5)%
+  foo: (n * 5)px
+  foo: unit(n + 5, '%')
+  foo: unit(5 + 180 / 2, deg)
+```
+
+### 3.4.17 格式化 Sprintf
+
+使用字符串格式化操作符`%`可以生成字面值，它在内部使用内置函数`s()`来转换参数：
+```
+'X::Microsoft::Crap(%s)' % #fc0
+// => X::Microsoft::Crap(#fc0)
+```
+多个值的情况要使用括号：
+```
+'-webkit-gradient(%s, %s, %s)' % (linear (0 0) (0 100%))
+// => -webkit-gradient(linear, 0 0, 0 100%)
+```
