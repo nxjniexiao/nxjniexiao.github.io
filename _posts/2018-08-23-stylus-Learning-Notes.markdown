@@ -1055,3 +1055,381 @@ body
 '-webkit-gradient(%s, %s, %s)' % (linear (0 0) (0 100%))
 // => -webkit-gradient(linear, 0 0, 0 100%)
 ```
+
+## 3.5 混合 Mixins
+混合(mixins)和函数以相同的方式定义，但以不同的方式使用。<br>
+例如下面所示的函数`border-radius(n)`，它也可以被当作混合(mixins)调用：
+```
+border-radius(n)
+  -webkit-border-radius n
+  -moz-border-radius n
+  border-radius n
+```
++ 当作函数使用：
+  ```
+  form input[type=button]
+    border-radius(5px)
+  ```
+编译后：
+  ```css
+  form input[type=button] {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+  }
+  ```
++ 当作混合(mixins)使用，我们能省略括号，提供出色的、透明的浏览器属性支持。
+  ```
+  form input[type=button]
+    border-radius 5px
+  ```
+**注意：**作为混合(mixins)的border-radius被视为属性，而不是函数的调用。
+
+我们可以利用局部变量`arguments`来传递更多的参数：
+```
+border-radius()
+  -webkit-border-radius arguments
+  -moz-border-radius arguments
+  border-radius arguments
+```
+这样我们就可以这样使用此混合(mixins)了：`border-radius 1px 2px / 3px 4px`。<br>
+此特性还可以给指定的浏览器提供透明的支持，如IE中的`opacity`属性：
+```
+support-for-ie ?= true
+opacity(n)
+  opacity n
+  if support-for-ie
+    filter unquote('progid:DXImageTransform.Microsoft.Alpha(Opacity=' + round(n * 100) + ')')
+#logo
+  &:hover
+    opacity 0.5
+```
+编译后：
+```css
+#logo:hover {
+  opacity: 0.5;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+}
+```
+
+### 3.5.1 引用父选择器 Parent References
+
+混合(mixins)可以使用父引用符`&`，作用于父级而不是进一步的嵌套。<br>
+下面的例子创建了一个混合(mixins)`stripe(even, odd)`来给表格中的行设置`background-color`，其中`even`和`odd`有默认值。<br>
+在`tr`的嵌套中，先给所有行设置背景颜色`odd`，然后使用`&`引用`tr`，给偶数行设置颜色`even`：
+```
+stripe(even = #fff, odd = #eee)
+  tr
+    background-color odd
+    &.even
+    &:nth-child(even)
+      background-color even
+```
+然后我们可以使用此混合(mixins)：
+```
+table
+  stripe()
+  td
+    padding 4px 10px
+table#users
+  stripe(#303030, #494848)
+  td
+    color white
+```
+或者，我们也可以在`stripe(even, odd)`中取消`&`的使用：
+```
+stripe(even = #fff, odd = #eee)
+  tr
+    background-color odd
+  tr.even
+  tr:nth-child(even)
+    background-color even
+```
+我们可以把`stripe`当成属性一样来调用：`stripe #fff #000`。
+
+### 3.5.2 块混合 Block mixins
+
+我们使用`+`前缀可以给混合(mixins)传递块(blocks):
+```
+foo()
+  .bar
+    {block}
+
++foo()
+  width: 10px
+```
+编译后：
+```css
+.bar {
+   width: 10px;
+ }
+```
+被传入的块(blocks)在混合(mixins)内将作为`block`变量使用。此功能以后会加强。
+
+### 3.5.3 混合内使用混合 Mixing Mixins in Mixins
+
+混合(mixins)可以调用其他混合(mixins)。<br>
+下例创建了一个行内的list(由inline-list完成)，并使用逗号分隔(由comma-list完成)。
+```
+inline-list()
+  li
+    display inline
+comma-list()
+  inline-list()
+  li
+    &:after
+      content ', '
+    &:last-child:after
+      content ''
+ul
+  comma-list()
+```
+编译后：
+```css
+ul li:after {
+  content: ", ";
+}
+ul li:last-child:after {
+  content: "";
+}
+ul li {
+  display: inline;
+}
+```
+
+## 3.6 函数 Functions
+
+函数定义与mixins相同，但是函数可能返回一个值。
+
+### 3.6.1 返回值 Return Values
+
+创建一个求和的函数：
+```
+add(a, b)
+  a + b
+```
+然后我们可以在属性值中使用：
+```
+body 
+  padding add(10px, 5)
+```
+编译后：
+```css
+body {
+  padding: 15px;
+}
+```
+
+### 3.6.2 参数默认值 Argument Defaults
+
+可选参数可以默认是一个表达式，在Stylus中它还可以默认是一个其他早期参数。
+```
+add(a, b = a)
+  a + b
+add(10, 5)
+// => 15
+
+add(10)
+// => 20
+```
+**由于给参数设置默认值是赋值，我们也可以在设置默认值使用函数：**
+```
+add(a, b = unit(a, px))
+  a + b
+```
+
+### 3.6.3 命名参数 Named Parameters
+
+函数能使用命名参数，这能让你不需要记住参数的顺序，或者简单地提升代码的阅读性。
+```
+subtract(a, b)
+  a - b
+
+subtract(b: 10, a: 25)
+```
+
+### 3.6.4 函数体 Function Bodies
+
+在前面的`add()`函数中，我们使用内置函数`unit()`把每个参数的单位强制改成`px`。这样可以忽略单位自动转换，如`ms`和`s`之间的自动转换。
+```
+add(a, b = a)
+  a = unit(a, px)
+  b = unit(b, px)
+  a + b
+
+add(15%, 10deg)
+// => 25
+```
+
+### 3.6.5 多个返回值 Multiple Return Values
+
+就像我们可以给变量赋多个值一样，我们可以在函数中返回多个值：
+```
+sizes = 15px 10px
+
+sizes[0]
+// => 15px 
+```
+函数中返回多个值：
+```
+sizes()
+  15px 10px
+
+sizes()[0]
+// => 15px
+```
+
+一个小例外是返回值是标识符。例如，以下内容看起来像是对Stylus的属性赋值（因为没有运算符）：
+```
+swap(a, b)
+  b a
+```
+为消除歧义，我们可以用括号，或者使用return关键字：
+```
+swap(a, b)
+  (b a)
+
+swap(a, b)
+  return b a
+```
+
+### 3.6.6 条件语句 Conditionals
+
+假设我们想创建一个名为`stringish()`的函数来确定参数是否可以转换为字符串。我们检查`val`是字符串，还是`ident`（类似于字符串）。因为未定义的标识符将自己作为值，我们可以将它们与自己进行比较，如下所示（其中yes和no代替true和false）：
+```
+stringish(val)
+  if val is a 'string' or val is a 'ident'
+    yes
+  else
+    no
+```
+使用：
+```
+stringish('yay') == yes
+// => true
+  
+stringish(yay) == yes
+// => true
+  
+stringish(0) == no
+// => true
+```
+**注意：**'yes'和'no'不是布尔值。此例中，它们只是未定义的标识符。<br>
+另一个例子：
+```
+compare(a, b)
+  if a > b
+    higher
+  else if a < b
+    lower
+  else
+    equal
+```
+使用：
+```
+compare(5, 2)
+// => higher
+
+compare(1, 5)
+// => lower
+
+compare(10, 10)
+// => equal
+```
+
+### 3.6.7 别名 Aliasing
+
+要为函数设置别名，只需将函数名称赋值给新标识符即可。例如，我们的`add()`函数可以设置别名为`plus()`，如下所示：
+```
+plus = add
+
+plus(1, 2)
+// => 3
+```
+
+### 3.6.8 函数作为变量 Variable Functions
+
+函数的参数可是其他函数。下例中，我们的`invoke()`函数接受一个函数，所以我们可以传递`add()`或`sub()`。
+```
+add(a, b)
+  a + b
+
+sub(a, b)
+  a - b
+
+invoke(a, b, fn)
+  fn(a, b)
+
+body
+  padding invoke(5, 10, add)
+  padding invoke(5, 10, sub)
+```
+编译后：
+```css
+body {
+  padding: 15;
+  padding: -5;
+}
+```
+
+### 3.6.9 匿名函数 Anonymous functions
+
+我们可以使用`@(){}`语法在需要时使用匿名函数。以下是如何使用它来创建自定义`sort()`函数：
+```
+sort(list, fn = null)
+  // default sort function
+  if fn == null
+    fn = @(a, b) {
+      a > b
+    }
+
+  // bubble sort
+  for $i in 1..length(list) - 1
+    for $j in 0..$i - 1
+      if fn(list[$j], list[$i])
+        $temp = list[$i]
+        list[$i] = list[$j]
+        list[$j] = $temp
+  return list
+
+  sort('e' 'c' 'f' 'a' 'b' 'd')
+  // => 'a' 'b' 'c' 'd' 'e' 'f'
+
+  sort(5 3 6 1 2 4, @(a, b){
+    a < b
+  })
+  // => 6 5 4 3 2 1
+```
+
+### 3.6.10 参数 arguments
+
+`arguments`可用于所有函数体，它包含传递进来的所有参数。
+
+```
+sum()
+  n = 0
+  for num in arguments
+    n = n + num
+
+sum(1,2,3,4,5)
+// => 15
+```
+
+### 3.6.11 哈希的例子 Hash Example
+
+下面我们定义了`get(hash，key)`函数，它返回`key`(或`null`)。我们遍历hash中的每一对，当第一个节点(`key`)匹配时返回该对的第二个节点。
+```
+get(hash, key)
+  return pair[1] if pair[0] == key for pair in hash
+```
+使用：
+```
+hash = (one 1) (two 2) (three 3)
+
+get(hash, two)
+// => 2
+get(hash, three)
+// => 3
+get(hash, something)
+// => null
+```
