@@ -68,7 +68,7 @@ module.exports = function upper(str) {
 };
 ```
 我们可以看出，app.js引入了01.js，而01.js引入了02.js。
-+ 2) 在package.json文件中定义脚本命令：
++ 2) 在package.json文件中定义脚本命令`"test01"`：
 ```json
   "scripts": {
     "test01": "webpack --mode=development 01/app.js"
@@ -117,7 +117,7 @@ div{
 ```js
 require('!style-loader!css-loader!./style.css');// 注意顺序：style-loader在前面
 ```
-+ 4) 在package.json文件中定义脚本命令：
++ 4) 在package.json文件中定义脚本命令`"test02"`：
 ```json
   "scripts": {
     "test01": "webpack --mode=development 01/app.js",
@@ -161,7 +161,7 @@ npm install
 ```
 完成之后，webpack运行正常。
 ## 3. webpack配置
-官网[www.webpackjs.com](https://www.webpackjs.com/concepts/configuration/)中对webpack配置的作用的描述：
+[webpack.docschina.org](https://webpack.docschina.org/concepts/configuration/)中对webpack配置的作用的描述：
 >因为 webpack 配置是标准的 Node.js CommonJS 模块，你可以做到以下事情：
 >+ 通过 require(...) 导入其他文件
 >+ 通过 require(...) 使用 npm 的工具函数
@@ -170,6 +170,10 @@ npm install
 >+ 编写并执行函数来生成部分配置
 
 ### 3.1 基本配置文件webpack.config.js
+[webpack.docschina.org](https://webpack.docschina.org/configuration)中对webpack.config.js文件的描述：
+>webpack 开箱即用，可以无需使用任何配置文件。然而，webpack 会假定项目的入口起点为 src/index，然后会在 dist/main.js 输出结果，并且在生产环境开启压缩和优化。<br>
+>通常，你的项目还需要继续扩展此能力，为此你可以在项目根目录下创建一个 webpack.config.js 文件，**webpack 会自动使用它**。
+
 + 1) 在配置webpack.config.js之前，我们先把文件夹'02'中的文件拷贝出来，重新整理一下：
    + index.html放在根目录下，即文件夹'exercise webpack'中；
    + 在根目录下新建文件夹'src'，并在src中新建文件夹'js'和'css'；
@@ -188,12 +192,14 @@ require('../css/style.css');
 ```
 + 3) 在根目录下(即文件夹'exercise webpack')，新建webpack.config.js文件：
 ```js
+const path = require('path');
 module.exports = {
     // 入口文件
     entry: './src/js/app.js',
     // 指定输出文件
+    // 删除output.path: __dirname + '/dist',
+    // 见代码后面的注释
     output: {
-        path: __dirname + '/dist',
         filename: 'main.js'
     },
     // 模式
@@ -215,6 +221,18 @@ module.exports = {
     }
 };
 ```
+**<font color="red">注：</font>**关于`output`选项，官网[webpack.js.org](https://webpack.js.org/concepts/output/)中这样解释：
+`output`中至少要有一个值：`filename`，用于指定输出的文件名。<br>
+**webpack.config.js**
+ ```js
+ module.exports = {
+   output: {
+     filename: 'bundle.js',
+   }
+ };
+ ```
+**不需要在配置中指定，webpack会自动在`dist`目录下生成文件`bundle.js`。**<br>
+<br>
 完成后的exercise webpack目录结构如下：
 ```
 exercise webpack
@@ -232,7 +250,7 @@ exercise webpack
 ├── package.json
 └── webpack.config.js
 ```
-+ 4) 在package.json文件中定义脚本命令：
++ 4) 在package.json文件中定义脚本命令`"dev"`：
 ```js
   "scripts": {
     "test01": "webpack --mode=development 01/app.js",
@@ -271,17 +289,19 @@ npm run dev
 <div style="background: skyblue;color:grey;font-size:20px">HELLO WEBPACK!——使用配置文件——使用第三方库jQuery</div>
 
 ## 5. webpack-dev-server模块
+
+修改代码后，手动运行`npm run dev`会很繁琐。我们可以使用webpack-dev-server，让代码发生变化后自动编译。<br>
 关于webpack-dev-server模块的功能，以下引用了github页面的原文描述：
 >Use webpack with a development server that provides live reloading. This should be used for development only.<br>
 
-让webpack提供具有实时重载功能的开发服务器。 这应该仅用于开发模式。(mode: 'development')
+让webpack提供具有实时重载功能的开发服务器。 这应该仅用于开发模式(mode: 'development')。
 
 ### 5.1 安装和使用
 + 1) 安装此模块
 ```bash
 npm install webpack-dev-server --save-dev
 ```
-+ 2) 在package.json文件中定义脚本命令：
++ 2) 在package.json文件中定义脚本命令`"start"`：
 ```json
   "scripts": {
     "test01": "webpack --mode=development 01/app.js",
@@ -302,15 +322,46 @@ npm install webpack-dev-server --save-dev
 **注意：**webpack-dev-server模块并没有生成main.js文件，我们可以在运行`npm run start`前删除dist目录下的main.js来验证。
 
 ### 5.2 devServer
-devServer选项影响webpack-dev-server的行为。
-+ 1) devServer.port<br>
+
+devServer选项影响webpack-dev-server的行为。<br>
+在前面的例子中，我们在package.json文件中定义了脚本命令`"start"`，并把参数写在了命令`webpack-dev-server`后面：
+```json
+"scripts": {
+  "start": "webpack-dev-server --entry ./src/js/app.js --output-filename ./dist/main.js"
+}
+```
+但是在实际项目中`webpack-dev-server`会需要更多的配置参数，因此我们修改此命令，使用配置文件：
+```json
+"scripts": {
+  "start": "webpack-dev-server --config webpack.config.js"
+}
+```
+**<font color="red">然后最重要的一点是</font>**，我们要在`webpack.config.js`文件中新增`devServer.publicPath`属性：
+```js
+devServer: {
+  // 打包的文件能通过http://localhost:8080/dist/{output.filename}访问
+  publicPath: '/dist/'
+}
+```
+
+下面是devServer中常用的几个属性：
++ **1) devServer.publicPath**<br>
+指定能够访问打包文件的路径名，在下例中的配置可以让我们通过`http://localhost:8080/dist/main.js`访问打包后的js文件：
+```js
+devServer: {
+    // 打包的文件能通过http://localhost:8080/dist/{output.filename}访问
+    publicPath: '/dist/'
+}
+```
+
++ 2) devServer.port<br>
 指定要监听请求的端口号。
   ```js
   devServer: {
     port: 8080
   }
   ```
-+ 2) devServer.before<br>
++ 3) devServer.before<br>
 用于指定在其他中间件前执行的自定义中间件，引用官网的描述：
 >Provides the ability to execute custom middleware prior to all other middleware internally within the server. This could be used to define custom handlers, for example:
 >```js
@@ -378,7 +429,7 @@ npm install babel-loader babel-core --save-dev
     ]
   }
   ```
-+ 3) 安装babel-preset-env
++ 3) 安装babel-preset-env，根据目标浏览器或运行时环境，自动决定适合的Babel插件和polyfills，从而将ES2015+编译为ES5。
 ```bash
 npm install babel-preset-env --save-dev
 ```
