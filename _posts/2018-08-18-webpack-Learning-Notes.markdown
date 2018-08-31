@@ -117,6 +117,7 @@ div{
 ```js
 require('!style-loader!css-loader!./style.css');// 注意顺序：style-loader在前面
 ```
+**<font color="red">注意：</font>**loader是从右向左执行的，即css-loader先执行，然后把结果传给style-loader处理，把样式打包到js文件中。因此要注意它们之间的顺序。
 + 4) 在package.json文件中定义脚本命令`"test02"`：
 ```json
   "scripts": {
@@ -182,7 +183,7 @@ npm install
 + 2) 由于各文件之间的相对位置发生了变化，需要修改文件中的引用路径。<br>
 index.html:
 ```html
-<script src="./dist/main.js"></script>
+<script src="dist/main.js"></script>
 ```
 app.js:
 ```js
@@ -307,7 +308,7 @@ npm install webpack-dev-server --save-dev
     "test01": "webpack --mode=development 01/app.js",
     "test02": "webpack --mode=development 02/app.js",
     "dev": "webpack",
-    "start": "webpack-dev-server --entry ./src/js/app.js --output-filename ./dist/main.js"
+    "start": "webpack-dev-server --output-filename ./dist/main.js"
   }
 ```
 + 3) 在exercise webpack文件夹下打开CMD，运行：
@@ -319,7 +320,22 @@ npm install webpack-dev-server --save-dev
 在浏览器中打开此地址，我们会看到和3中同样的内容：<br>
 <div style="background: skyblue;color:grey;font-size:20px">HELLO WEBPACK!——使用配置文件——使用第三方库jQuery</div>
 现在，我们修改js或者css文件后，webpack-dev-server模块会自动打包文件，因此我们在浏览器就能查看最新的页面。<br>
-**注意：**webpack-dev-server模块并没有生成main.js文件，我们可以在运行`npm run start`前删除dist目录下的main.js来验证。
+**<font color="red">注意：</font>**<br>
+   1. `"start"`命令中，`webpack-dev-server`后面添加参数`--output-filename ./dist/main.js`的原因：<br>
+   `webpack`会自动使用`webpack.config.js`中的`output.filename: "main.js"`，然后在本地文件夹`dist`下生成打包文件`main.js`。<br>
+   但是`webpack-dev-server`不会，它生成的文件在内存中，并且我们可以通过`http://localhost:8080/`访问。<br>
+   所以添加参数`--output-filename ./dist/main.js`之后，打包文件的路径将是：`http://localhost:8080/dist/main.js`。
+   否则将会是：`http://localhost:8080/main.js`。<br>
+   <br>
+   2. `index.html`中，导入`main.js`的`script`标签如下：
+   ```html
+   <script src="dist/main.js"></script>
+   ```
+   我们访问index.html时，会向下面的URL发送GET请求，获取上述打包文件`main.js`：
+   ```
+   Request URL: http://localhost:8080/dist/main.js
+   Request Method: GET
+   ```
 
 ### 5.2 devServer
 
@@ -374,11 +390,112 @@ devServer: {
 >}
 >```
 
-## 6. webpack中使用babel
+## 6. 插件(plugins)
+
+以下内容来自于[webpack.docschina.org](https://webpack.docschina.org/concepts/plugins/)。<br>
+插件是 webpack 的支柱功能。它的目的在于解决 loader 无法实现的其他事。<br>
+webpack 插件是一个具有 apply 方法的 JavaScript 对象。apply 属性会被 webpack compiler 调用，并且 compiler 对象可在整个编译生命周期访问。
+
+### 6.1 插件的使用和配置
+
+以下内容来自于[webpack.docschina.org](https://webpack.docschina.org/concepts/plugins/)。<br>
+由于插件可以携带参数/选项，你必须在 webpack 配置中，向 plugins 属性传入 new 实例。<br>
+根据你的 webpack 用法，这里有多种方式使用插件。
++ 1) 配置<br>
+**webpack.config.js**
+  ```js
+  const HtmlWebpackPlugin = require('html-webpack-plugin'); //通过 npm 安装
+  const webpack = require('webpack'); //访问内置的插件
+  const path = require('path');
+
+  module.exports = {
+    entry: './path/to/my/entry/file.js',
+    output: {
+      filename: 'my-first-webpack.bundle.js',
+      path: path.resolve(__dirname, 'dist')
+    },
+    module: {
+      rules: [
+        {
+          test: /\.(js|jsx)$/,
+          use: 'babel-loader'
+        }
+      ]
+    },
+    plugins: [
+      new HtmlWebpackPlugin({template: './src/index.html'})
+    ]
+  };
+  ```
++ 2) Node API<br>
+**some-node-script.js**
+  ```js
+  const webpack = require('webpack'); //访问 webpack 运行时(runtime)
+  const configuration = require('./webpack.config.js');
+
+  let compiler = webpack(configuration);
+  compiler.apply(new webpack.ProgressPlugin());
+
+  compiler.run(function(err, stats) {
+    // ...
+  });
+```
+
+### 6.2 插件html-webpack-plugin
+
+在前面的例子中，我们使用了`webpack-dev-server`模块，并在`index.html`中通过`script`标签手动引入打包后的js文件。<br>
+```html
+<script src="dist/main.js"></script>
+```
+我们可以使用`html-webpack-plugin`插件，自动完成上述工作，并以指定的html文件为模板生成一个html文件。
+在这之前，我们先注销根目录下`index.html`中引入`main.js`文件的`script`标签。
+
++ 1) 安装`webpack-dev-server`：
+```bash
+npm install --save-dev html-webpack-plugin
+```
++ 2) 修改`webpack.config.js`：<br>
+新增插件：
+```js
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+// 插件
+plugins: [
+  // 以根目录下的index.html为模板
+  new HtmlWebpackPlugin({template: 'index.html', filename: 'index.html'})
+]
+```
+删除devServer.publicPath的配置：
+```js
+devServer: {
+    // 打包的文件能通过http://localhost:8080/dist/{output.filename}访问
+    // publicPath: '/dist/'
+}
+```
+**注意：**如果不删除此配置，`html-webpack-plugin`生成的`index.html`的路径将会为：`http://localhost:8080/dist/index.html`。<br>
+而我们的目的是想在根目录下生成`index.html`，这样我们访问`http://localhost:8080/`时，会自动打开此`index.html`。<br>
+
+最后我们运行`npm run start`，并在浏览器中打开`http://localhost:8080/`，就能看到内容了。<br>
+用浏览器查看此网页的代码如下：
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+    <!--<script src="dist/main.js"></script>-->
+</head>
+<body>
+<script type="text/javascript" src="main.js"></script></body>
+</html>
+```
+我们可以看到`body`标签中多了一个引入`main.js`文件的`script`标签。
+
+
+## 7. webpack中使用babel
 官网[www.babeljs.cn](https://www.babeljs.cn/)中是这样描述babel的：<br>
 >Babel是一个JavaScript编译器。它通过语法转换器支持最新版本的JavaScript。这些插件允许你立刻使用新语法，无需等待浏览器支持。<br>
 
-### 6.1 为何要使用babel
+### 7.1 为何要使用babel
 在本篇的例子中，除了let和const的使用，没有使用**ES6**的其他语法。因此，我们用IE11浏览器能正常访问`http://localhost:8080/`。<br>
 **注：**IE11支持一小部分ES6，如let和const的；IE10几乎不支持ES6。<br>
 如果我们在js文件中使用更多的ES6语法，我们将无法用IE11浏览器访问`http://localhost:8080/`。<br>
@@ -411,7 +528,7 @@ export default show;
 ```
 但是使用已经支持ES6的浏览器，如最新版本的chrome、firefox等等，是能够正常访问的。为了兼容未支持ES6的浏览器，我们可以使用babel把ES6语法转换成ES5。<br>
 
-### 6.2 安装和使用babel
+### 7.2 安装和使用babel
 关于如何在webpack中使用babel，参考了官网[www.babeljs.cn](https://www.babeljs.cn/docs/setup/#installation)中的步骤。
 + 1) 安装
 ```bash
@@ -443,11 +560,11 @@ npm install babel-preset-env --save-dev
 完成babel的安装和配置后，运行`npm run start`，之后就可以用IE11浏览器正常访问`http://localhost:8080`了。但IE8无法正常访问，因为IE8不支持ES5。
 
 
-## 7. webpack模块
+## 8. webpack模块
 >在模块化编程中，开发者将程序分解成离散功能块(discrete chunks of functionality)，并称之为模块。
 
-### 7.1 什么是 webpack 模块
-此节引用自[www.webpackjs.com](https://www.webpackjs.com/concepts/modules/)。
+### 8.1 什么是 webpack 模块
+此节引用自[webpack.docschina.org](https://webpack.docschina.org/concepts/modules/)。
 >对比 Node.js 模块，webpack 模块能够以各种方式表达它们的依赖关系，几个例子如下：
 >+ ES2015 import 语句
 >+ CommonJS require() 语句
@@ -457,8 +574,8 @@ npm install babel-preset-env --save-dev
 >
 >**tips：**webpack 1 需要特定的 loader 来转换 ES 2015 import，然而通过 webpack 2 可以开箱即用。
 
-### 7.2 模块解析
-此节引用自[www.webpackjs.com](https://www.webpackjs.com/concepts/module-resolution/)。
+### 8.2 模块解析
+此节引用自[webpack.docschina.org](https://webpack.docschina.org/concepts/module-resolution/)。
 >resolver 是一个库(library)，用于帮助找到模块的绝对路径。一个模块可以作为另一个模块的依赖模块，然后被后者引用，如下：
 >```js
 >import foo from 'path/to/module'
