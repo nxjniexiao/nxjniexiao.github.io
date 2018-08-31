@@ -129,7 +129,7 @@ require('!style-loader!css-loader!./style.css');// 注意顺序：style-loader�
 ```bash
 npm run test02
 ```
-运行完成后，2.1产生的dist/main.js会被新生成的main.js覆盖掉。<br>
+运行完成后，dist/main.js会被新生成的main.js覆盖掉。<br>
 
 打开02/index.html，查看效果：
 <div style="background: tomato;color:white;font-size:40px">HELLO WEBPACK!</div>
@@ -343,7 +343,7 @@ devServer选项影响webpack-dev-server的行为。<br>
 在前面的例子中，我们在package.json文件中定义了脚本命令`"start"`，并把参数写在了命令`webpack-dev-server`后面：
 ```json
 "scripts": {
-  "start": "webpack-dev-server --entry ./src/js/app.js --output-filename ./dist/main.js"
+  "start": "webpack-dev-server --output-filename ./dist/main.js"
 }
 ```
 但是在实际项目中`webpack-dev-server`会需要更多的配置参数，因此我们修改此命令，使用配置文件：

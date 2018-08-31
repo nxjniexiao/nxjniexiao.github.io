@@ -23,6 +23,7 @@ tags: WEB前端 webpack react
 在安装react相关模块前，我们先安装以下模块：
 + webpack和webpack-cli；
 + webpack-dev-server，提供实时重载的服务器；
++ html-webpack-plugin，自动生成index.html，并把打包后的js文件引入其中；
 + style-loader和css-loader，把样式嵌入打包后的js文件中；
 + babel-core和babel-loader，把ES6语法转换成ES5；
 + babel-preset-env，根据目标浏览器或运行时环境，自动决定适合的Babel插件和polyfills，从而将ES2015+编译为ES5。
@@ -31,7 +32,7 @@ tags: WEB前端 webpack react
 + react和react-dom；
 + babel-preset-react，所有React插件的Babel预设。
 
-安装完成后，package.json中的`devDependencies`如下：
+安装完成后，package.json中的`"dependencies"`和`devDependencies`如下：
 ```json
 "devDependencies": {
   "babel-core": "^6.26.3",
@@ -39,12 +40,15 @@ tags: WEB前端 webpack react
   "babel-preset-env": "^1.7.0",
   "babel-preset-react": "^6.24.1",
   "css-loader": "^1.0.0",
-  "react": "^16.4.2",
-  "react-dom": "^16.4.2",
+  "html-webpack-plugin": "^3.2.0",
   "style-loader": "^0.23.0",
   "webpack": "^4.17.1",
   "webpack-cli": "^3.1.0",
   "webpack-dev-server": "^3.1.7"
+},
+"dependencies": {
+  "react": "^16.4.2",
+  "react-dom": "^16.4.2"
 }
 ```
 在使用过程中遇到了一个坑，`babel-loader`模块的版本为`8.0.0`，报错：`Error: Cannot find module '@babel/core'`。<br>
@@ -57,11 +61,22 @@ npm install babel-loader@7 --save-dev
 
 安装好这些模块后，在项目根目录下新建配置文件webpack.config.js:
 ```js
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports={
+    // 入口文件
+    entry: './src/js/app.js',
+    // 指定输出文件
+    output: {
+        filename: 'dist/main.js',
+    },
     // 模式
     mode: 'development',
     // 启用source-map
     devtool: 'source-map',
+    // 插件
+    plugins: [
+        new HtmlWebpackPlugin({template: 'index.html', filename: 'index.html'})
+    ],
     // 模块
     module: {
         // module.rules 允许你在 webpack 配置中指定多个 loader。
@@ -92,9 +107,9 @@ module.exports={
 ```
 最后修改package.json中`scripts`：
 ```json
-  "scripts": {
-    "start": "webpack-dev-server --entry ./src/js/app.js --output-filename ./dist/main.js"
-  }
+"scripts": {
+  "start": "webpack-dev-server --config webpack.config.js"
+}
 ```
 
 ## 3. 使用react
