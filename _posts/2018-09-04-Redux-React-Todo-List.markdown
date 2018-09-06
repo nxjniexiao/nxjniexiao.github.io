@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Redux搭配React完成迷你型任务管理应用"
+title:  "Redux搭配React完成迷你型任务管理应用 Todo List"
 date:   2018-09-04 15:36:12 +0800
 categories: learning-notes
 tags: WEB前端 redux react
@@ -45,8 +45,8 @@ yarn start
 + 1) 其中有两个文件不能删除：
    + `public/index.html`：模板文件；
    + `src/index.js`：JS入口文件。
-+ 2) Webpack只能处理`src`中的文件，所以JS和CSS文件要放在src中，或其子目录中；
-+ 3) `public/index.html`只能引入`public`中的文件。
++ 2) Webpack只能处理`src`文件夹中的文件，所以JS和CSS文件要放在src中，或其子目录中；
++ 3) `public/index.html`只能引入`public`文件夹中的文件。
 
 ## 2. 准备工作
 
@@ -94,9 +94,9 @@ ReactDOM.render(<div>test</div>, document.getElementById('root'));
 
 在`src`文件夹中新建如下文件夹：
 + `actions`：存放actions创建函数的文件；
-+ `components`：存放展示组件(描述如何展现)；
-+ `containers`：存放容器组件(描述如何运行)；
-+ `reducers`：存放处理actions的纯函数reducers。
++ `components`：存放描述如何展现的展示组件；
++ `containers`：存放描述如何运行的容器组件；
++ `reducers`：存放处理actions的reducer文件。
 
 修改后文件结构如下：
 ```
@@ -354,9 +354,9 @@ Todo List各组件之间的关系如下：<br>
 
 >所有容器组件都可以访问 Redux store，所以可以手动监听它。一种方式是把它以 props 的形式传入到所有容器组件中。但这太麻烦了，因为必须要用 store 把展示组件包裹一层，仅仅是因为恰好在组件树中渲染了一个容器组件。
 
->建议的方式是使用指定的 React Redux 组件 <Provider> 来 魔法般的 让所有容器组件都可以访问 store，而不必显式地传递它。只需要在渲染根组件时使用即可。
+>建议的方式是使用指定的 React Redux 组件 &lt;Provider&gt; 来 魔法般的 让所有容器组件都可以访问 store，而不必显式地传递它。只需要在渲染根组件时使用即可。
 
-所以我们修改入口文件src/index.js(删除测试用的代码)：
+所以我们修改入口文件src/index.js(记得删除前面编写的测试用代码)：
 ```jsx
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -376,9 +376,9 @@ ReactDOM.render(
     document.getElementById('root')
 );
 ```
-### 4.2 根组件 App.js
+### 4.2 根组件 App
 
-三大子组件AddTodo、VisibleTodoList和Filter最终都引入到了根组件App.js中：
+三大子组件`AddTodo`、`VisibleTodoList`和`Filter`最终都引入到了根组件`App`中：
 ```jsx
 import './App.css';
 import React, {Component} from 'react';
@@ -400,12 +400,16 @@ export default App;
 
 ### 4.3 实现容器组件
 
-在编写组件之前，我们得先了解如何实现容器组件。官网建议使用 React Redux 库的 connect() 方法来生成，这个方法做了性能优化来避免很多不必要的重复渲染。
+在编写组件之前，我们得先了解如何实现容器组件，把组件和Redux store关联起来：<br>
++ Store中的State数据发生变化时，相应的组件重新渲染；
++ 在组件中派发actions时，修改Store中相应的State数据。
+
+官网建议使用 React Redux 库的 connect() 方法来生成容器组件，这个方法做了性能优化来避免很多不必要的重复渲染。
 
 #### 4.3.1 函数connect()
 
 `connect([mapStateToProps], [mapDispatchToProps], [mergeProps], [options])(MyComp)`<br>
-函数connect返回一个容器组件，能够让组件`MyComp`使用store中传入的值。
+函数connect返回一个容器组件，能够让组件`MyComp`使用由store传入的数据和方法。
 
 #### 4.3.2 函数mapStateToProps
 
@@ -416,7 +420,7 @@ export default App;
 ```js
 const mapStateToProps = state => {
   return {
-    name: value
+    name: value// value通常为state中的某一部分数据
   }
 }
 ```
@@ -442,7 +446,7 @@ const mapDispatchToProps = dispatch => {
 
 ### 4.4 新增事项组件
 
-AddTodo.js是一个混合型的小组件，目前没必要把它拆分成两个组件。<br>
+`AddTodo`是一个混合型的小组件，目前没必要把它拆分成两个组件。<br>
 containers/AddTodo.js:
 ```jsx
 import React, {Component} from 'react';
@@ -473,7 +477,7 @@ class AddTodo extends Component{
     }
 }
 
-// 定义mapDispathToProps，分发action，将action作为props传给组件
+// 定义mapDispathToProps，分发action，将addTodo函数作为props传给组件
 const mapDispatchToProps = dispatch => {
     return {
         addTodo: text => {
@@ -493,16 +497,228 @@ export default connect(null, mapDispatchToProps)(AddTodo);
 ### 4.5 显示事项组件
 
 根据前面的组件结构图，三个组件关系为：<br>
-VisibleTodoList.js --> TodoList.js --> Todo.js<br>
+`VisibleTodoList.js` --> `TodoList.js` --> `Todo.js`<br>
+
+#### 4.5.1 VisibleTodoList
+
+容器组件`VisibleTodoList`中引入了展示组件`TodoList`，然后使用`connect(...args)(TodoList)`传给`TodoList`组件两个属性：
++ 1) `filteredTodos`：根据`state.visibilityFilter`从`state.todos`数组中筛选出满足条件的数组；
++ 2) `toggle()`：发送修改todo.completed的action，待办事项被点击时调用此函数。
+
 containers/VisibleTodoList.js:
 ```jsx
+import {connect} from 'react-redux';
+import TodoList from '../components/TodoList.js';
+import {toggleTodo, VisibilityFilters} from "../actions";
 
+// 定义函数getFilteredTodos：根据条件筛选todos数组
+function getFilteredTodos (state) {
+    // 筛选条件:'SHOW_ALL'、'SHOW_COMPLETED'、'SHOW_UNCOMPLETED'
+    const filter = state.visibilityFilter;
+    switch (filter) {
+        case VisibilityFilters.SHOW_ALL:
+            return state.todos;
+        case VisibilityFilters.SHOW_COMPLETED:
+            return state.todos.filter((todo) => {
+                return todo.completed;
+            });
+        case VisibilityFilters.SHOW_UNCOMPLETED:
+            return state.todos.filter((todo) => {
+                return !todo.completed;
+            });
+        default:
+            throw new Error('Unknown Filter: ' + filter);
+    }
+}
+
+// 定义mapStateToProps，把store.state中筛选后的todos映射到组件
+const mapStateToProps = state => {
+    return {
+        filteredTodos: getFilteredTodos(state)
+    }
+};
+
+// 定义mapDispathToProps，分发action，将toggle函数作为props传给组件
+const mapDispatchToProps = dispatch => {
+    return {
+        toggle: id => {
+            dispatch(toggleTodo(id))
+        }
+    }
+};
+
+const VisibleTodoList = connect(mapStateToProps, mapDispatchToProps)(TodoList);
+export default VisibleTodoList;
 ```
+
+#### 4.5.2 TodoList
+
+`TodoList`拿到容器组件`VisibleTodoList`传递过来的`filteredTodos`和`toggle()`后，根据数组`filteredTodos`渲染引入进来的子组件`Todo`，并把`toggle()`传递给了`Todo.js`。<br>
 components/TodoList.js:
 ```jsx
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import Todo from './Todo.js';
 
+class TodoList extends Component{
+    render() {
+        return <ul>
+            {this.todosItem(this.props.filteredTodos)}
+        </ul>
+    }
+    // todosItem(): 根据数组返回一个包含li元素的数组
+    todosItem(filteredTodos) {
+        let todosItem = filteredTodos.map((todo, index) => {
+            return <Todo
+                key={index}
+                index={index}
+                text={todo.text}
+                completed={todo.completed}
+                toggle={this.props.toggle}
+            />
+        });
+        return todosItem;
+    }
+}
+// 使用 PropTypes 进行类型检查
+TodoList.propTypes={
+    // PropTypes.arrayOf: 一个指定元素类型的数组
+    // PropTypes.shape: 一个指定属性及其类型的对象
+    filteredTodos: PropTypes.arrayOf(PropTypes.shape({
+        text: PropTypes.string,
+        completed: PropTypes.bool
+    }).isRequired).isRequired,
+    toggle: PropTypes.func.isRequired
+};
+export default TodoList;
 ```
+
+#### 4.5.2 Todo
+
+`Todo`拿到了`TodoList`传递过来的`toggle()`后，渲染&lt;li&gt;元素，并给其添加一个点击函数，调用`toggle()`。<br>
 components/Todo.js:
 ```jsx
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
+class Todo extends Component{
+    render() {
+        return <li
+            onClick={this.toggle.bind(this)}
+            style={ {textDecoration: this.props.completed ? 'line-through': 'none'} }>
+            <a href="javascript:;">{this.props.text}</a>
+        </li>
+    }
+    // 定义li元素被点击时执行的函数toggle()
+    toggle() {
+        this.props.toggle(this.props.index);
+    }
+}
+// 使用 PropTypes 进行类型检查
+Todo.propTypes = {
+    index: PropTypes.number.isRequired,
+    text: PropTypes.string.isRequired,
+    completed: PropTypes.bool.isRequired,
+    toggle: PropTypes.func.isRequired
+};
+
+export default Todo;
+```
+
+### 4.6 筛选事项组件
+
+根据前面的组件结构图，三个组件关系为：<br>
+`Filter.js` --> `FilterButton.js` --> `Button.js`<br>
+
+#### 4.6.1 Filter
+展示组件`Filter`中引入容器组件`FilterButton`，然后根据数组`buttons`渲染出包含三个`FilterButton`组件的&lt;div&gt;元素。
+```jsx
+import React, {Component} from 'react';
+import FilterButton from '../containers/FilterButton.js';
+import {VisibilityFilters} from '../actions';
+
+class Filter extends Component{
+    render() {
+        return <div>
+            显示：
+            {this.getButtons()}
+        </div>
+    }
+    // getButtons()：根据数组buttons生成一个包含FilterButton组件的数组。
+    getButtons() {
+        let buttons = [
+            {name: '全部', filter: VisibilityFilters.SHOW_ALL},
+            {name: '未完成', filter: VisibilityFilters.SHOW_UNCOMPLETED},
+            {name: '已完成', filter: VisibilityFilters.SHOW_COMPLETED}
+        ];
+        return buttons.map((button, index) => {
+            return <FilterButton
+                key={index}
+                name={button.name}
+                filter={button.filter}
+            />
+        })
+    }
+}
+export default Filter;
+```
+
+#### 4.6.2 FilterButton
+容器组件`FilterButton`中引入了展示组件`Button`，然后使用`connect(...args)(Button)`传给`Button`组件两个属性：
++ `active`：true/false，Button组件通过`disabled={this.props.active}`控制button元素是否可以被点击；
++ `setFilter()`：发送修改state.visibilityFilter的action，Button组件中的button元素被点击时调用此函数。
+
+```jsx
+import {connect} from 'react-redux';
+import {setVisibilityFilter} from '../actions';
+import Button from '../components/Button.js';
+
+// 定义mapStateToProps，把active属性映射到组件
+const mapStateToProps = (state, ownProps) => {
+    return {
+        active: state.visibilityFilter === ownProps.filter
+    }
+};
+
+// 定义mapDispathToProps，分发action，将filter()作为props传给组件
+const mapDispatchToProps = (dispatch, ownProps) => {
+    return {
+        setFilter: () => {
+            dispatch(setVisibilityFilter(ownProps.filter))
+        }
+    }
+};
+
+const FilterButton = connect(mapStateToProps, mapDispatchToProps)(Button);
+export default FilterButton;
+```
+
+#### 4.6.3 Button
+
+展示组件`Button`根据传入的属性渲染button元素。
+```jsx
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+
+class Button extends Component{
+    render() {
+        return <button
+            className='button'
+            disabled={this.props.active}
+            onClick={this.setFilter.bind(this)}>
+            {this.props.name}
+        </button>
+    }
+    // 设置点击按钮调用的函数
+    setFilter() {
+        this.props.setFilter();
+    }
+}
+// 使用 PropTypes 进行类型检查
+Button.propTypes = {
+    name: PropTypes.string.isRequired,
+    active: PropTypes.bool.isRequired,
+    setFilter: PropTypes.func.isRequired
+};
+export default Button;
 ```
