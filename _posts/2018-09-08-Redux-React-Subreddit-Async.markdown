@@ -23,13 +23,44 @@ state的结构设计如下：<br>
 
 ## 2. 异步action
 
-在[ Redux 搭配 React 完成迷你型任务管理应用 Todo List ](https://nxjniexiao.github.io/2018/09/04/Redux-React-Todo-List/)例子中，我们的actions创建函数返回的是一个**action对象**，每当 dispatch action 时，state 会被立即更新。我们称之为同步action。<br>
+在[ Redux 搭配 React 完成迷你型任务管理应用 Todo List ](https://nxjniexiao.github.io/2018/09/04/Redux-React-Todo-List/)例子中，我们的actions创建函数返回的是一个**action对象**，每当 dispatch action 时，state 会被立即更新。我们称之为**同步action**。<br>
 <br>
-在使用了从`redux-thunk`库中引入的中间件`thunkMiddleware`后，我们可以在actions创建函数中返回一个**函数**，在返回的函数中我们可以做一些异步操作，然后根据操作的状态返回不同的**action对象**或另个一**thunk**。我们称之为<font color="red">异步action</font>。<br>
+在使用了从`redux-thunk`库中引入的中间件`thunkMiddleware`后，我们可以在actions创建函数中返回一个**函数**，在返回的函数中我们可以做一些异步操作，然后根据操作的状态dispatch不同的**action对象**或另个一**异步action**。我们称之为**异步action**。<br>
+<font color="red">重点：</font>
++ 1) 异步actions创建函数返回的是一个函数，不是action对象；
++ 2) 一个Thunk就是一个返回函数的函数，所以异步actions创建函数就是Thunk；
++ 3) 返回的函数能接收`dispatch`和`getState`参数，并稍后使用它们；
++ 4) Thunk中间件能让我们像 `dipatch` actions一样 `dispatch` 异步actions;
++ 5) dispatch()会返回内部函数中返回的值(即一个Promise对象)，如：<br>
+    `fetchPosts(subreddit)`是一个Thunk，它返回一个函数，此函数中返回一个Promise对象：
+    ```js
+    function fetchPosts(subreddit) {
+    return (dispatch) => {
+        dispatch(requestSubreddit(subreddit));
+        // fetch()会返回一个Promise对象
+        return fetch(`https://www.reddit.com/r/${subreddit}.json`)
+            .then(response => response.json())
+            // response.json()返回一个被解析为JSON格式的promise对象。
+            .then(json => dispatch(receiveSubreddit(subreddit, json)));
+        }
+    }
+    ```
+    所以另一个Thunk`fetchPostsIfNeeded(subreddit)`中的`dispatch()`也会返回此Promise对象。
+    ```js
+    return dispatch(fetchPosts(subreddit));
+    ```
++ 6) 我们可以用Promise创建自己的控制流：
+    ```js
+    store.dispatch(fetchPosts('reactjs'))
+        .then(() => store.dispatch(fetchPosts('frontend')))
+        .then(() => console.log('完成'));
+    ```
+    在成功获取到`reactjs.json`和`frontend.json`后，会输出`完成`。
+
 <br>
 此例子的actions结构如下图所示：<br>
 ![图片](/images/2018-09-08-Redux-React-Subreddit-Async/actions.png)<br>
-其中，异步action`fetchPostsIfNeeded(subreddit)`的流程图如下：<br>
+其中，`fetchPostsIfNeeded(subreddit)`的流程图如下：<br>
 ![图片](/images/2018-09-08-Redux-React-Subreddit-Async/fetchPostsIfNeeded.png)<br>
 actions/index.js
 ```js
@@ -101,7 +132,7 @@ function fetchPosts(subreddit) {
         // 使用 Fetch API 向指定的 url 请求数据
         //     https://www.reddit.com/r/reactjs.json
         //     https://www.reddit.com/r/frontend.json
-        fetch(`https://www.reddit.com/r/${subreddit}.json`)
+        return fetch(`https://www.reddit.com/r/${subreddit}.json`)
             .then(response => response.json())
             // response.json()返回一个被解析为JSON格式的promise对象。
             .then(json => dispatch(receiveSubreddit(subreddit, json)));
@@ -113,7 +144,6 @@ export function fetchPostsIfNeeded(subreddit) {
     return (dispatch, getState) => {
         if(shouldFetchPosts(getState(), subreddit)){
             // 一个 thunk 中返回另一个 thunk
-            /** 为何要使用return **/
             return dispatch(fetchPosts(subreddit));
         }else{
             // Promise.resolve()返回一个解析过的Promise对象。
@@ -390,13 +420,6 @@ const mapStateToProps = state => {
         didInvalidate,
         isFetching
     }
-    // return {
-    //     subreddit: state.selectedsubreddit,
-    //     posts: selectedPosts ? selectedPosts.items : [],
-    //     lastUpdate: (selectedPosts && selectedPosts.lastUpdate) ? selectedPosts.lastUpdate : null,
-    //     didInvalidate: selectedPosts ? selectedPosts.didInvalidate : false,
-    //     isFetching: selectedPosts ? selectedPosts.isFetching : false
-    // }
 };
 
 // 省略第二个参数：mapDispatchToProps时，React Redux 默认将 dispatch 作为 prop 传入。
