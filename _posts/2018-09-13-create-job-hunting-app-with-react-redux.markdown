@@ -291,4 +291,117 @@ mongodb 中不需要手动创建集合，insert 数据时，若不存在此集�
 + `db.COLLECTION_NAME.update({"name": "nxj"}, {$set:{"age": 20}})`：更新数据；
 + `db.COLLECTION_NAME.remove({"name": "nxj"})`：删除数据。
 
+## 3. 完善信息页面
 
+### 3.1 前端
+
+新建组件如下：
++ 1) `BossInfo`：Boss 完善信息页面；
++ 2) `GeniusInfo`：牛人完善信息页面；
++ 3) `AvatarSelector`：选择头像的组件。
+
+在`src/index.js`中使用了组件`BossInfo`和`GeniusInfo`：
+```jsx
+ReactDOM.render(
+    (<Provider store={store}>
+        <Router>
+            <div>
+                <AuthRoute/>
+                <Route path="/boss-info" component={BossInfo}/>
+                <Route path="/genius-info" component={GeniusInfo}/>
+                <Route path="/login" component={Login} />
+                <Route path="/register" component={Register} />
+            </div>
+        </Router>
+    </Provider>),
+    document.getElementById('root')
+);
+```
+
+在完善信息页面中填完信息后，点击保存按钮将 dispatch 一个异步 action ：update(info) 。<br>
+如`BossInfo`组件中：
+```jsx
+// boss-info.js
+class BossInfo extends Component {
+    // 省略...
+    render(){
+        const currPath = this.props.location.pathname;// 当前路径
+        const redirect = (this.props.redirectPath && (this.props.redirectPath !== currPath));// 是否需要跳转
+        return (<div>
+            {redirect ? <Redirect to={this.props.redirectPath}/> : null}
+            {/*省略...*/}
+            <Button type="primary" onClick={() => this.props.updateInfo(this.state)}>保存</Button>
+        </div>)
+    }
+}
+const mapStateToProps = state => {
+    return {
+        redirectPath: state.user.redirectPath
+    }
+};
+const mapDispatchToProps = dispatch => {
+    return {
+        updateInfo: info => dispatch(update(info))
+    }
+};
+export default connect(mapStateToProps,mapDispatchToProps)(BossInfo);
+```
+**注：**`{redirect ? <Redirect to={this.props.redirectPath}/> : null}`是为了实现点击保存按钮后由`/boss-info`至`/boss`的跳转。<br>
+<br>
+`actions.js`中定义的异步 action : `update()`中使用 POST 方法向后端传输信息：
+```js
+// Thunk(返回一个函数): 更新用户信息
+export function update(info){
+    return dispatch => {
+        axios.post('/user/update', info)
+            .then(res => {
+                if(res.status === 200 && res.data.code === 0){
+                    dispatch(authSuccess(res.data.info));//更新成功
+                }else {
+                    dispatch(errMsg(res.data.msg));//更新失败
+                }
+            }).catch(err => console.log(err));
+    }
+}
+```
+
+### 3.2 后端
+
+后端接收到信息后，将其保存到 mongodb 数据库中。<br>
+server/user.js:
+```js
+// 处理更新用户信息: axios.post('/user/update', {})
+router.post('/update', (req, res) => {
+    // 获取cookie中的_id，判断用户是否已登录
+    if(req.cookies && req.cookies._id){
+        // 已登录
+        const _id = req.cookies._id;
+        console.log('_id: '+_id);
+        User.findOneAndUpdate({_id}, req.body, (err, doc) => {
+            if(err){
+                res.json({code: 1, msg: '后端错误！'});
+            }else{
+                console.log(doc);
+                doc.pwd = null;
+                // doc为插入数据前，在数据库中查找到的数据
+                const info = Object.assign({}, {type: doc.type}, req.body);
+                // 注意：不要直接复制doc，因为会复制doc中其他不需要的可枚举属性。
+                // const info = Object.assign({}, doc, req.body);
+                res.json({code: 0, info: info});
+            }
+        });
+    } else {
+        // 未登录，_id不存在
+        res.json({code: 1, msg: '无登陆信息'});
+    }
+});
+```
+**注：**`Model.findOneAndUpdate(conditions, update, callback)`的回调函数 callback 中的参数 doc 为数据库中更新前的数据，所以返回 json 时，要和 req.body (要保存的信息) 一起返回：
+```js
+const info = Object.assign({}, {type: doc.type}, req.body);
+```
+其中我们没有直接复制 doc ：`const info = Object.assign({}, doc, req.body);`，原因是：<br>
+如果直接复制 doc，我们会发现 doc.type 等，实际是保存在 doc._doc.type 中的。<br>
+(不使用 Object.assign ，直接返回 doc ：`res.json({code: 0, info: doc});`则不会出现此情况。)<br>
+<br>
+我们只需要 doc.type 属性来更新 state.user.redirectPath 的值，实现点击保存后由`/boss-info`至`/boss`的跳转。
