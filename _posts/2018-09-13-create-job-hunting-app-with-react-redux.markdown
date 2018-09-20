@@ -405,3 +405,149 @@ const info = Object.assign({}, {type: doc.type}, req.body);
 (不使用 Object.assign ，直接返回 doc ：`res.json({code: 0, info: doc});`则不会出现此情况。)<br>
 <br>
 我们只需要 doc.type 属性来更新 state.user.redirectPath 的值，实现点击保存后由`/boss-info`至`/boss`的跳转。
+
+## 4. 牛人列表和Boss列表
+
+### 4.1 前端
+
+Boss 用户完善信息后，会看到牛人列表；而牛人用户完善信息后，会看到 Boss 列表：
+<img src="/images/2018-09-13-job-hunting/boss-list.PNG" width="375px" />
+<img src="/images/2018-09-13-job-hunting/genius-list.PNG" width="375px" />
+
+新增组件有：
++ 1) `Dashboard`：上图所示的界面；
++ 2) `NavLink`：底部导航栏；
++ 3) `Boss`：Boss 页面，显示牛人列表；
++ 4) `Genius`：牛人页面，显示 Boss 列表；
++ 5) `UserList`：列表；
+
+`src/index.js`中的`render()`:
+```jsx
+ReactDOM.render(
+    (<Provider store={store}>
+        <Router>
+            <div>
+                <AuthRoute/>
+                <Switch>
+                    <Route path="/boss-info" component={BossInfo}/>
+                    <Route path="/genius-info" component={GeniusInfo}/>
+                    <Route path="/login" component={Login} />
+                    <Route path="/register" component={Register} />
+                    <Route component={Dashboard} />
+                </Switch>
+            </div>
+        </Router>
+    </Provider>),
+    document.getElementById('root')
+);
+```
+其中`react-router`中的`<Switch></Switch>`表示：渲染和location匹配的第一个`<Route>`或`<Redirect>`。其余的不会被渲染。<br>
+`Dashboard`组件在 componentDidMount 阶段会向后端请求用户列表：
++ Boss 用户：获取牛人列表；
++ 牛人用户：获取 Boss 列表。
+
+```jsx
+class Dashboard extends Component {
+    componentDidMount () {
+        this.props.getList();// 后端根据_id获取type
+    }
+    // 省略...
+}
+const mapStateToProps = state => {
+    return {
+        type: state.user.type
+    };
+};
+const mapDispatchToProps = dispatch => {
+    return {
+        getList: () => dispatch(getChatList())
+    }
+};
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Dashboard));
+```
+其中异步action：`getChatList()`在`actions-chatList.js`中的定义如下：
+```js
+// 省略 getChatListSuccess()/getChatListFailed...
+// Thunk(返回一个函数): 获取聊天用户列表
+export function getChatList(){
+    return dispatch => {
+        axios.get('/user/list')
+            .then(res => {
+                if(res.status === 200 && res.data.code === 0){
+                    //获取成功
+                    dispatch(getChatListSuccess(res.data.chatList));
+                }else {
+                    //获取失败
+                    dispatch(getChatListFailed(res.data.msg));
+                }
+            }).catch(err => console.log(err));
+    }
+}
+```
+
+`NavLink`组件中使用了`antd-mobile`中的`TabBar`：
+```jsx
+render() {
+    const Item = TabBar.Item;
+    const currPath = this.props.location.pathname;
+    return (
+        <TabBar>
+            {this.props.filteredNavList.map((item, index) => (
+                <Item
+                    key={index}
+                    title={item.title}
+                    icon={ {uri: require(`./icons/${item.icon}.png`)} }
+                    selectedIcon={ {uri: require(`./icons/${item.icon}-active.png`)} }
+                    selected={currPath === item.path}
+                    onPress={() => this.props.history.push(item.path)}
+                />))
+            }
+        </TabBar>
+    );
+}
+```
+其中使用了`onPress={() => this.props.history.push(item.path)}`来实现点击 Item 跳转至相应的路由。
+
+### 4.2 后端
+
+后端服务器在收到前端的`axios.get('/user/list')`请求后，根据 cookie 中的 _id 验证用户是否已登录。若已登录，则根据用户的 type 属性，返回相应的用户列表：
++ 为`type: 'boss'`用户返回所有`type: 'genius'`的用户；
++ 为`type: 'genius'`用户返回所有`type: 'boss'`的用户。
+
+```js
+// 处理请求信息：axios.get('/user/list')
+router.get('/list', (req, res) => {
+    // 获取cookie中的_id
+    if(req.cookies && req.cookies._id){
+        const _id = req.cookies._id;
+        console.log('_id: '+_id);
+        User.findOne({_id}, (err, doc) => {
+            if(err){
+                res.json({code: 1, msg: '后端错误！'});
+                return;
+            }
+            if(doc){
+                // 找到与_id对应的用户信息
+                // let type = req.query.type;// BUG: 第一次加载有值，刷新时没有值
+                let type = doc.type;// 用户的类型
+                console.log('type = ', type);
+                type = (type==='boss') ? 'genius' : 'boss';
+                User.find({type}, (err, doc) => {
+                    if(err){
+                        res.json({code: 1, msg: '后端错误！'});
+                        return;
+                    }
+                    res.json({code: 0, chatList: doc});
+                });
+            }else{
+                // 未找到与_id对应的用户信息
+                res.clearCookie('_id');// 删除cookie
+                res.json({code: 1, msg: '未找到跟_id对应的用户信息'});
+            }
+        })
+    } else {
+        // cookies不存在
+        res.json({code: 1, msg: '无cookies信息'});
+    }
+});
+```
