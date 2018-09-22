@@ -551,3 +551,155 @@ router.get('/list', (req, res) => {
     }
 });
 ```
+
+## 5. 个人信息页面
+
+### 5.1 前端
+
+个人信息页面如下图：<br>
+<img src="/images/2018-09-13-job-hunting/my.PNG" width="375px" /><br>
+点击页面底部的退出登录按钮后，会 dispatch 一个异步 action ：`logout()`：<br>
+src/actions/actions-user.js：
+```js
+// 退出登录成功
+function logoutSuccess(msg){
+    return {
+        type: LOGOUT_SUCCESS,
+        msg
+    };
+}
+// Thunk(返回一个函数): 退出登录
+export function logout() {
+    return dispatch => {
+        axios.get('/user/logout')
+            .then(res => {
+            dispatch(logoutSuccess(res.data.msg));
+            });
+    }
+}
+```
+
+### 5.2 后端
+
+后端接收到前端`'/user/logout'`的 GET 请求后，删除 cookies 中的 _id：<br>
+server/user.js:
+```js
+// 处理登出请求：axios.get('/user/logout')
+router.get('/logout', (req, res) => {
+    res.clearCookie('_id');// 删除cookie
+    res.json({code: 0, msg: '已退出登录'});
+});
+```
+
+### 5.3 Tips
+
+#### 5.3.1 装饰器 @
+
++ 1) 安装插件 `babel-plugin-transform-decorators-legacy`：
+```bash
+yarn add babel-plugin-transform-decorators-legacy --dev
+```
++ 2) 在 package.json 中的 `"babel"` 字段下的 `"plugins"`数组中新增 `"transform-decorators-legacy"`：
+```json
+"babel": {
+  "presets": [
+    "react-app"
+  ],
+  "plugins": [
+    [
+      "import",
+      {
+        "libraryName": "antd-mobile",
+        "style": "css"
+      }
+    ],
+    "transform-decorators-legacy"
+  ]
+}
+```
+
+设置完成后我们就可以使用装饰器@了。
++ 使用装饰器前：
+```js
+class My extends Component {/*省略...*/}
+const mapStateToProps = state => {
+    return {
+        user: state.user
+    }
+};
+const mapDispatchToProps = dispatch => {
+    return {
+        logout: () => dispatch(logout())
+    }
+};
+export default connect(mapStateToProps, mapDispatchToProps)(My);
+```
++ 使用装饰器后：
+```js
+@connect(
+    state => {
+        return {
+            user: state.user
+        }
+    },
+    dispatch => {
+        return {
+            logout: () => dispatch(logout())
+        }
+    }
+)
+class My extends Component {/*省略...*/}
+export default My;
+```
+
+#### 5.3.2 高阶组件(初级)
+
+`Login`和`Register`组件中都有一个函数：`handleChange`，当输入框中的值发生变化时，调用此函数来更新 state 中相应的值。
+```js
+handleChange (key, value){
+    this.setState({
+        [key]: value
+    });
+}
+```
+我们可以新建一个简单的高阶组件 `handleChange` 代理 state 和 handleChange：
+```jsx
+import React, {Component} from 'react';
+
+export default function handleChange(Comp){
+    return class HandleChangeComp extends Component {
+        constructor(props){
+            super(props);
+            this.state={};
+            this.handleChange=this.handleChange.bind(this);
+        }
+        handleChange(key, value) {
+            this.setState({
+                [key]: value
+            });
+        }
+        render () {
+            return <Comp handleChange={this.handleChange} state={this.state} {...this.props} />;
+        };
+    }
+}
+```
+要点：
++ 1) 此高阶组件中传入一个组件 `Comp`作为参数;
++ 2) 新建一个组件 `HandleChangeComp` 并导出；
++ 3) `HandleChangeComp` 的 render() 中返回 `Comp`，并把自己的 `handleChange` 和 `state`传递给 `Comp`；
++ 4) 传递给 `HandleChangeComp` 的属性全部展开后，传给 `Comp`：`{...this.props}`
+
+组件 `Login` 中使用此高阶组件：
++ 1) 引入组件 `handleChange`：
+```js
+import handleChange from '../../components/handle-change/handle-change';
+```
++ 2) 使用装饰器@：
+```jsx
+@handleChange
+@connect(/*省略...*/)
+class Login extends Component {/*省略...*/}
+```
++ 3) 删除 `handleChange()`函数的定义和 `constructor()`中 state 的初始化`this.state={}`；
++ 4) `this.handleChange` 改成 `this.props.handleChange`，`this.state` 改成 `this.props.state`。
