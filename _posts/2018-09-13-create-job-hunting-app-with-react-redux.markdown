@@ -411,8 +411,8 @@ const info = Object.assign({}, {type: doc.type}, req.body);
 ### 4.1 前端
 
 Boss 用户完善信息后，会看到牛人列表；而牛人用户完善信息后，会看到 Boss 列表：
-<img src="/images/2018-09-13-job-hunting/boss-list.PNG" width="375px" />
-<img src="/images/2018-09-13-job-hunting/genius-list.PNG" width="375px" />
+<img src="/images/2018-09-13-job-hunting/boss-list.png" width="375px" />
+<img src="/images/2018-09-13-job-hunting/genius-list.png" width="375px" />
 
 新增组件有：
 + 1) `Dashboard`：上图所示的界面；
@@ -557,7 +557,7 @@ router.get('/list', (req, res) => {
 ### 5.1 前端
 
 个人信息页面如下图：<br>
-<img src="/images/2018-09-13-job-hunting/my.PNG" width="375px" /><br>
+<img src="/images/2018-09-13-job-hunting/my.png" width="375px" /><br>
 点击页面底部的退出登录按钮后，会 dispatch 一个异步 action ：`logout()`：<br>
 src/actions/actions-user.js：
 ```js
