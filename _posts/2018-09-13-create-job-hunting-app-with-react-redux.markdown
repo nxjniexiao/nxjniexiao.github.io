@@ -121,7 +121,7 @@ axios.get('/user/info').then((res) => {
 + 4) Logo: 网站logo。
 
 **Tips:**<br>
-+ 1) 组件`AuthRoute`主要用来检验用户是否有权限访问当前的url (`'localhost:3000/login'`和`'localhost:3000/register'`无需检验) 。<br>
++ 1) 组件`AuthRoute`主要用来检验用户是否有权限访问当前的url ('localhost:3000/login'和'localhost:3000/register'无需检验) 。<br>
 此外此组件还通过`axios.get('/user/info').then((res) => {})`获取用户信息，判断用户是否已登录(后端根据通过req.cookies获取的登陆状态，返回不同的json)。
 组件`AuthRoute`中为了能够访问 react-router 的 history/location 属性，从`react-router-dom`中引入了`withRouter`：
 ```jsx
@@ -1021,3 +1021,135 @@ router.post('/read-msg', (req, res) => {
     });
 });
 ```
+
+## 7. 消息页面
+
+消息页面中显示了给当前用户发送了消息的其他用户，未读消息和最近消息的优先级别最高。<br>
+<img src="/images/2018-09-13-job-hunting/message.png" width="375px" /><br>
+
+### 7.1 前端
+
+新建 Message 组件，组件接收 state 中的两个数组：
++ `state.chat.chatmsgs`：聊天信息数组；
++ `state.chaList.list`：所有可聊天的用户数组。
+
+从`state.chat.chatmsgs`中筛选出其他用户发来的消息，按用户进行分类：<br>
+组件中的 render() 函数:
+```jsx
+render() {
+    const msgList = this.props.chat.chatmsgs;
+    const userList = this.props.chatList.list;
+    return (
+        <div>
+            {(msgList && userList) ? this.sortMessage(msgList, userList) : ''}
+        </div>
+    );
+}
+```
+组件中的 sortMessage() 函数:
+```jsx
+sortMessage(msgList, userList){
+    if(msgList.length === 0 || userList.length === 0) {
+        return null;
+    }
+    const fromUserID = this.props.user._id;
+    // 筛选出别人发给自己的消息
+    const toMsgList = msgList.filter(list => list.fromUserID !== fromUserID);
+    // 按发送用户分类
+    const msg = {};// { id: [{消息1}，{消息2}] }
+    toMsgList.forEach(list => {
+        if(!msg[list.fromUserID]){
+            msg[list.fromUserID] = [];
+        }
+        msg[list.fromUserID].push(list);
+    });
+    // 根据消息是否全部已读分类
+    const msgUserList = Object.getOwnPropertyNames(msg);
+    const readMsgUserList = [];
+    const unreadMsgUserList = [];
+    msgUserList.forEach(user => {
+        const isAllRead = msg[user].every(msg => {
+            return msg.isRead;
+        });
+        if(isAllRead){
+            readMsgUserList.push(user);
+        } else {
+            unreadMsgUserList.push(user);
+        }
+    });
+    // 重新排序，新消息显示在上面
+    const compare = (preID, nextID) => {
+        return this.getLastMsg(msg[nextID]).createTime - this.getLastMsg(msg[preID]).createTime;
+    };
+    readMsgUserList.sort(compare);
+    unreadMsgUserList.sort(compare);
+    // 渲染
+    return (<div>
+        {this.renderMessage(unreadMsgUserList, msg, userList)}
+        {this.renderMessage(readMsgUserList, msg, userList)}
+    </div>)
+}
+```
+组件中的 renderMessage() 函数:
+```jsx
+renderMessage(msgList, msg, userList,) {
+    return msgList.map(id => {
+        return (
+            <List key={id}>
+                <Item
+                    arrow="horizontal"
+                    thumb={this.getUser(id, userList).avatar}
+                    extra={<div>
+                        {<Badge style={ {marginRight: '5px'} } text={this.countUnread(msg[id])}/>}
+                        {this.getTime(this.getLastMsg(msg[id]).createTime)}
+                    </div>}
+                    onClick={() => this.props.history.push(`/chat/${id}`)}
+                >
+                    {this.getUser(id, userList).username}
+                    <Brief>{this.getLastMsg(msg[id]).text}</Brief>
+                </Item>
+            </List>
+        );
+    });
+}
+```
+其他函数：
+```jsx
+getTime(createTime){
+    function fixedPre(num, pre){
+        return ('000000000' + num).slice(-pre);
+    }
+    const CreateDate = new Date(createTime);
+    const now = new Date();
+    if(now.getDay() !== CreateDate.getDay()){
+        return fixedPre(CreateDate.getFullYear(), 4) + '/'
+            + fixedPre((CreateDate.getMonth()+1), 2) + '/'
+            + fixedPre(CreateDate.getDate(), 2);
+    } else {
+        return fixedPre(CreateDate.getHours(), 2) + ':'
+            + fixedPre(CreateDate.getMinutes(), 2);
+    }
+}
+getLastMsg(msgList){
+    return msgList[msgList.length - 1];
+}
+countUnread(msgList) {
+   let count = 0;
+   msgList.forEach(msg => {
+       if(!msg.isRead){
+           count ++;
+       }
+   });
+   return count;
+}
+getUser(_id, userList) {
+    let res = null;
+    userList.forEach(list => {
+        if (_id === list._id){
+            res = list;
+        }
+    });
+    return res;
+}
+```
+其中，getTime() 函数中定义的 fixedPre() 函数用于给数字前补零。
