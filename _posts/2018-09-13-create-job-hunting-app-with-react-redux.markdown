@@ -703,3 +703,321 @@ class Login extends Component {/*省略...*/}
 ```
 + 3) 删除 `handleChange()`函数的定义和 `constructor()`中 state 的初始化`this.state={}`；
 + 4) `this.handleChange` 改成 `this.props.handleChange`，`this.state` 改成 `this.props.state`。
+
+## 6. 聊天界面
+
+在 Boss 列表或者牛人列表，点击用户会进入聊天页面。<br>
+<img src="/images/2018-09-13-job-hunting/chat.png" width="375px" /><br>
+
+### 6.1 Socket
+
+为了实现实时通讯，我们使用了`socket.io`和`socket.io-client`两个库，分别供后端和前端使用。<br>
+A 用户给服务器发送一条 data 数据，服务器收到后根据 data 中的 toUserID 属性，把消息发给指定的 B 用户。聊天流程如下：<br>
+用户A --> 服务器 --> 用户B
+
+#### 6.1.1 socket.io
+
+后端使用 `socket.io`库。
++ 1) 后端配合Express使用。
+```js
+/* 省略... */
+const app = express();
+// 配置socket.io (work with express)
+let server = require('http').createServer(app);
+const io = require('socket.io')(server);
+handleChat(io);// 自定义模块：用于实现实时通讯
+// 配置结束
+let _server = server.listen(3030, '192.168.8.103', () => {
+    const host = _server.address().address;
+    const port = _server.address().port;
+    console.log('http://%s:%s', host, port);
+});
+```
++ 2) `handleChat.js` 模块主要用于接收客户端 A 的消息，然后把消息存储在 mongodb 数据库中，最后把此消息发给客户端 B 。
+    ```js
+    // 自定义库
+    const getModel = require('./model');
+    const Chat = getModel('chat');
+
+    function handleChat(io){
+        const socketsOnline = {};
+        io.on('connection', function(socket){
+            // 监听上线
+            console.log('有用户连接...');
+            socket.on('online', function(userID){
+                socket.userID = userID;// 给socket增加一个"userID"属性
+                console.log(`用户${socket.userID}上线了。`);
+                if(!socketsOnline[userID]) {
+                    socketsOnline[userID] = socket;
+                }
+                console.log("在线用户：", Object.getOwnPropertyNames(socketsOnline));
+            });
+            // 监听下线
+            socket.on('disconnect', function() {
+                if(socketsOnline[socket.userID]) {
+                    delete socketsOnline[socket.userID];
+                    console.log(`用户${socket.userID}断开连接。`);
+                }
+                console.log("在线用户：", Object.getOwnPropertyNames(socketsOnline));
+            });
+            // 监听客户端A发来的消息
+            socket.on('send-msg', function(data){
+                // 把信息存储在mongodb数据库中
+                const instance = new Chat(data);
+                instance.save((err, product) => {
+                    if(err){
+                        console.log('存储消息失败');
+                    } else {
+                        // 给指定客户端B发送信息
+                        if(socketsOnline[data.toUserID]) {
+                            console.log('=== 发送消息 ===');
+                            const id = socketsOnline[data.toUserID].id;
+                            io.sockets.connected[id].emit('receive-msg', data);
+                        }
+                    }
+                });
+
+            });
+        });
+    }
+    module.exports = handleChat;
+    ```
+重点：
+   + 常量`socketsOnline`用来存储与服务器连接的 sockets ：
+   ```js
+   const socketsOnline = {};
+   ```
+   + 监听客户端的连接：
+   ```js
+   io.on('connection', function(socket){
+       /*socket为与客户端的socket连接*/
+   })
+   ```
+   + 监听 online 事件(**把当前已连接的 socket 添加至 socketsOnline 中**)：
+   ```js
+   socket.on('online', function(userID){
+       socket.userID = userID;// 给socket增加一个"userID"属性
+       // 省略...
+       socketsOnline[userID] = socket;
+   })
+   ```
+   + 接收客户端发来的消息(监听 send-msg 事件)：
+   ```js
+   socket.on('send-msg', function(data){})
+   ```
+   data的格式为：
+   ```js
+   let data =
+   {
+      fromUserID: "5ba32ad5c27da41d58bbcd27",
+      isRead: false,
+      relevantUsers: "5ba32a0844ef6524e4124ab3_5ba32ad5c27da41d58bbcd27",
+      text: "你好，我在找工作，能聊聊吗？",
+      toUserID: "5ba32a0844ef6524e4124ab3",
+   }
+   ```
+   + 监听客户端的断开连接(**把当前已连接的 socket 从 socketsOnline 中移除**)：
+   ```js
+   socket.on('disconnect', function(){
+       // 省略...
+       delete socketsOnline[socket.userID];
+   })
+   ```
+   + 给指定用户发送消息：
+   ```js
+   const id = socketsOnline[data.toUserID].id;
+   io.sockets.connected[id].emit('receive-msg', data);
+   ```
+
+#### 6.1.2 socket.io-client
+
+前端使用`socket.io-client`库。
++ 连接服务器：
+```js
+import io from 'socket.io-client';
+socket = io('ws://192.168.8.103:3030');// 连接服务器
+```
++ 向服务器发送消息
+```js
+// 发送信息事件
+const data =  {
+    fromUserID: "5ba32ad5c27da41d58bbcd27",
+    isRead: false,
+    relevantUsers: "5ba32a0844ef6524e4124ab3_5ba32ad5c27da41d58bbcd27",
+    text: "你好，我在找工作，能聊聊吗？",
+    toUserID: "5ba32a0844ef6524e4124ab3",
+};
+socket.emit('send-msg', data);
+// 上线事件
+const fromUserID = '5ba32ad5c27da41d58bbcd27';
+socket.emit('online', fromUserID);
+```
++ 接收服务器发来的消息
+```js
+socket.on('receive-msg', function(data){
+    dispatch(msgReceived(data));
+});
+```
+
+### 6.2 前端
+
+#### 6.2.1 Chat 组件
+
+新建 Chat 组件，然后在`src/index.js`中的 Switch 标签中添加 Route 元素:
+```html
+<Route path="/chat/:chatWith" component={Chat} />
+```
+注意 path 中的`:chatWith`，我们可以在 Chat 组件中通过 chatWith 获取 URL 中`/chat/`后面的字符串 (即接收信息的用户ID)。
+```jsx
+ReactDOM.render(
+    (<Provider store={store}>
+        <Router>
+            <div>
+                <AuthRoute/>
+                <Switch>
+                    <Route path="/boss-info" component={BossInfo}/>
+                    <Route path="/genius-info" component={GeniusInfo}/>
+                    <Route path="/login" component={Login} />
+                    <Route path="/register" component={Register} />
+                    <Route path="/chat/:chatWith" component={Chat} />
+                    <Route component={Dashboard} />
+                </Switch>
+            </div>
+        </Router>
+    </Provider>),
+    document.getElementById('root')
+);
+```
+给 UserList 组件中的 Card 标签添加 onClick 事件，实现点击用户后，跳转至聊天界面：
+```jsx
+<Card
+    key={index}
+    onClick={() => {this.props.history.push(`/chat/${item._id}`)}}
+>
+```
+其中`item._id`为被点击用户的 ID ，在 Chat 组件中，我们可以通过`chatWith`获取到此用户的 ID ：
+```jsx
+const toUserID = this.props.match.params.chatWith;// 接收消息的ID
+```
+
+#### 6.2.2 cookies中的_id
+
+我们刷新页面时，state 会初始化，某些组件会 dispatch 异步 action 取获数据，如`AuthRoute`组件中：
+```js
+axios.get('/user/info').then((res) => {
+    // 判断是否已登陆
+    if(res.status === 200 && res.data.code === 0) {
+        // 已登录：dispatch来获取后端传过来的信息
+        this.props.loadInfo(res.data.info);
+    } else {
+        // 未登录：跳转至登陆页面
+        // console.log(this.props);// {match: {…}, location: {…}, history: {…}, staticContext: undefined}
+        this.props.history.push('/login');// 跳转至登陆页面
+    }
+});
+```
+由于获取数据的过程是异步的，所以其他组件通过`this.props`获取 state 中的值时，可能仍为初始值。<br>
+而这些组件会根据这些值做一些重要的操作，如`Chat`组件会根据 `this.props.user_id` 连接服务器：
+```js
+const fromUserID = this.props.user._id;// 发送消息的ID
+this.props.receiveMsg(fromUserID);
+```
+actions/actions-chat.js 中`receiveMsg`的定义如下：
+```js
+export function receiveMsg(fromUserID) {
+    return dispatch => {
+        dispatch({type: CHAT_ONLINE});
+        socket = io('ws://192.168.8.103:3030');// 连接服务器
+        socket.emit('online', fromUserID);// 上线
+        socket.on('receive-msg', function(data){
+            dispatch(msgReceived(data));
+        });
+    };
+}
+```
+其中`socket.emit('online', fromUserID);`会把`fromUserID`发给后端服务器注册：<br>
+server/handleChat.js中：
+```js
+const socketsOnline = {};
+io.on('connection', function(socket){
+    socket.on('online', function(userID){
+        socket.userID = userID;// 给socket增加一个"userID"属性
+        if(!socketsOnline[userID]) {
+            socketsOnline[userID] = socket;
+        }
+    });
+})
+```
+为了防止注册时 this.props.user._id 为空值的情况，我们定义了函数 getCookie ，用于取出保存在本地的 cookies 中的 _id：<br>
+common/js/util.js中：
+```js
+export function getCookie(name){
+    const cookieName = encodeURIComponent(name) + "=";
+    let cookieValue = '';
+    let locStart = document.cookie.indexOf(cookieName);
+    if(locStart > -1){
+        let locEnd = document.cookie.indexOf(';', locStart);
+        if(locEnd === -1){
+            locEnd = document.cookie.length;// 最后一个键值对
+        }
+        cookieValue = decodeURIComponent(document.cookie.substring(locStart + cookieName.length, locEnd));
+        // 后端使用了cookie-paerser后，会有'j:'前缀: j:"5ba32ad5c27da41d58bbcd27"
+        cookieValue = fixedCookieValue(cookieValue);
+    }
+    return cookieValue;
+}
+function fixedCookieValue(cookieValue){
+    // 后端使用了cookie-paerser后，会有'j:'前缀: j:"5ba32ad5c27da41d58bbcd27"
+    let locStart = cookieValue.indexOf('j:"');
+    if(locStart > -1){
+        cookieValue = cookieValue.substring(3, cookieValue.length - 1);
+    }
+    return cookieValue;
+}
+```
+reducers/user.js中，定义初始化的 initState 时，使用 `_id: getCookie('_id')`替代`_id: ''`：
+```js
+import {getCookie} from '../common/js/util';
+const initState = {
+    redirectPath: '',
+    username: '',
+    type: '',
+    msg: '',
+    _id: getCookie('_id')
+};
+```
+
+### 6.3 后端
+
+除了 **6.1.1 socket.io** 中处理实时聊天的模块外，我们还需要在`server/user.js`中处理两个前端的请求：
++ 获取聊天信息：`axios.get('/user/msg-list')`；
++ 把消息设为已读：`axios.post('/user/read-msg',{fromUserID, toUserID})`;
+```js
+// 处理获取聊天信息请求：axios.get('/user/msg-list')
+router.get('/msg-list', (req, res) => {
+    const _id = req.cookies._id;
+    // 省略...
+    Chat.find({'$or': [{fromUserID: _id}, {toUserID: _id}]}, (err, doc) => {
+        if(err){
+            res.json({code: 1, msg: '后端错误！'});
+            return;
+        }
+        res.json({code: 0, chatmsgs: doc});
+    })
+    // 省略...
+});
+```
+```js
+// axios.post('/user/read-msg',{fromUserID, toUserID})
+router.post('/read-msg', (req, res) => {
+    const {fromUserID, toUserID} = req.body;
+    Chat.updateMany({fromUserID: toUserID, toUserID: fromUserID}, {$set: {isRead: true}}, (err, doc)=>{
+        // 筛选条件颠倒，是为了把对方发给自己的消息设为已读
+        if(err){
+            res.json({code:1, msg: '设置消息为已读失败'});
+            return;
+        }
+        res.json({code:0, msg: '设置消息为已读成功'});
+    });
+});
+```
