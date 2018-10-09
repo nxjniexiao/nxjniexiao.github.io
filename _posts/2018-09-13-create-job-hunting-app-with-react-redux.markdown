@@ -30,6 +30,10 @@ yarn add redux react-redux
 
 ## 2. 登陆及注册页面
 
+登录和注册页面如下：<br>
+<img src="/images/2018-09-13-job-hunting/login.png" width="375px" />
+<img src="/images/2018-09-13-job-hunting/register.png" width="375px" />
+
 为了实现登陆和注册，我们把工作分为：
 + 1) 前端：redux + react + react-router，端口号：3000；
 + 2) 后端：nodejs + express，端口号：3030；
@@ -292,6 +296,9 @@ mongodb 中不需要手动创建集合，insert 数据时，若不存在此集�
 + `db.COLLECTION_NAME.remove({"name": "nxj"})`：删除数据。
 
 ## 3. 完善信息页面
+
+完善信息页面如下：<br>
+<img src="/images/2018-09-13-job-hunting/complete-info.png" width="375px" />
 
 ### 3.1 前端
 
@@ -1153,3 +1160,11 @@ getUser(_id, userList) {
 }
 ```
 其中，getTime() 函数中定义的 fixedPre() 函数用于给数字前补零。
+
+## 8. 优化
+
+### 8.1 React 原理
+
+### 8.2 Redux 原理
+
+### 8.3 React + Redux 性能优化

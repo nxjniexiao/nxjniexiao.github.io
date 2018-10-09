@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "skeyll的安装步骤"
+title:  "jkeyll的安装步骤"
 date:   2018-08-17 17:54:12 +0800
 categories: learning-notes
-tags: Ruby Skeyll software-install
+tags: Ruby jkeyll software-install
 ---
 * content
 {:toc}
