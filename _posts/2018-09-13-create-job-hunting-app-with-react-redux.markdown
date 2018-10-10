@@ -1161,10 +1161,91 @@ getUser(_id, userList) {
 ```
 其中，getTime() 函数中定义的 fixedPre() 函数用于给数字前补零。
 
-## 8. 优化
+## 8. 打包编译
 
-### 8.1 React 原理
+### 8.1 yarn build
 
-### 8.2 Redux 原理
+运行`yarn build`后，项目所在目录下会新生成一个`build`文件夹:
+```
+build
+├── static  
+|   ├── css
+|   |   ├── main.79d10c89.css
+|   |   └── main.79d10c89.css.map
+|   └── js
+|       ├── main.cddeff23.js
+|       └── main.cddeff23.js.map
+├── asset-manifest.json
+├── index.html
+└── service-worker.js
+```
+其中`index.html`中会引入打包好的`css`文件和`js`文件:
+```html
+<link href="/static/css/main.79d10c89.css" rel="stylesheet">
+```
+```html
+<script type="text/javascript" src="/static/js/main.cddeff23.js"></script>
+```
 
-### 8.3 React + Redux 性能优化
+### 8.2 修改server/server.js
+
+在开发阶段，我们通过`localhost:3000`访问前端页面，通过`localhost:3030`访问服务端。<br>
+为了能够在打包编译后，通过`localhost:3030`也能访问前端页面，我们需要修改`server/server.js`文件：
+```js
+// 省略...
+// build完成后新增配置
+app.use(express.static(path.resolve('./build')));// 托管 build 目录下的文件
+app.use((req, res, next) => {
+    console.log(req.url);
+    const reg = /^\/user|\/static/;// 判断请求URL是否以 /user 或 /static 开头
+    if(reg.test(req.url)) {
+        return next();
+    }
+    return res.sendFile(path.resolve('./build/index.html'));// path.resolve() 会把一个路径或路径片段的序列解析为一个绝对路径。
+});
+// 省略...
+```
+重点：
++ 1) 托管 build 目录下的文件:
+  ```js
+  app.use(express.static(path.resolve('./build')));// 托管 build 目录下的文件
+  ```
+托管后，`index.html`中就能正确地获取静态文件了。比如：
+  ```html
+  <link href="/static/css/main.79d10c89.css" rel="stylesheet">
+  ```
+就能正确地获取`build/static/css/main.79d10c89.css`文件。
++ 2) 判断请求URL是否以 /user 或 /static 开头，如果不是，则返回`build/index.html`文件：
+```js
+const reg = /^\/user|\/static/;// 判断请求URL是否以 /user 或 /static 开头
+```
++ 3) `path.resolve()`会把一个路径或路径片段的序列解析为一个绝对路径。如果没有传入参数，则返回当前工作目录的绝对路径。
++ 4) `'./build'`表示当前目录下的`build`文件夹，其中当前目录为`job-hunting`文件夹(**见8.3**)。
+
+### 8.3 修改package.json
+
+`server.js`文件在`job-hunting/server`文件夹中，为了使`server.js`运行时，当前路径为`job-hunting`文件夹，在`package.json`中的`"scripts"`字段中新增`"server"`：
+```json
+  "scripts": {
+    "start": "node scripts/start.js",
+    "build": "node scripts/build.js",
+    "test": "node scripts/test.js --env=jsdom",
+    "server": "nodemon server/server"
+  }
+```
+
+### 8.4 访问打包后的应用
+
+在`job-hunting`目录下运行：
+```bash
+yarn server
+```
+然后再浏览器中访问`http://192.168.8.103:3030`。
+
+<!-- ## 9. 优化
+
+### 9.1 React 原理
+
+### 9.2 Redux 原理
+
+### 9.3 React + Redux 性能优化 -->
