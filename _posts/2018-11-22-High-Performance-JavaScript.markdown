@@ -55,7 +55,7 @@ function loadScript(url, callback) {
     };
   }
   script.src = url;
-  document.getElementsByTagName_r("head")[0].appendChild(script);
+  document.getElementsByTagName("head")[0].appendChild(script);
 }
 ```
 
@@ -151,23 +151,23 @@ handleError() 函数是 catch 子句中运行的唯一代码。此函数以适�
 ### 3.1 减少访问和修改 DOM 元素的次数
 
 + 1) 减少访问和修改 DOM 元素的次数
-```js
-function innerHTMLLoop() {
-  for (var count = 0; count < 15000; count++) {
-    document.getElementById('here').innerHTML += 'a';
+  ```js
+  function innerHTMLLoop() {
+    for (var count = 0; count < 15000; count++) {
+      document.getElementById('here').innerHTML += 'a';
+    }
   }
-}
-```
+  ```
 一个更有效率的版本将使用局部变量存储更新后的内容，在循环结束时一次性写入：
-```js
-function innerHTMLLoop2() {
-  var content = '';
-  for (var count = 0; count < 15000; count++) {
-    content += 'a';
+  ```js
+  function innerHTMLLoop2() {
+    var content = '';
+    for (var count = 0; count < 15000; count++) {
+      content += 'a';
+    }
+    document.getElementById('here').innerHTML += content;
   }
-  document.getElementById('here').innerHTML += content;
-}
-```
+  ```
 + 2) 访问集合元素时使用局部变量
 ```js
 var nodeName = document.getElementsByTagName('div')[0].nodeName;
@@ -206,24 +206,24 @@ var tagName = divs[0].tagName;
 + scrollTop, scrollLeft, scrollWidth, scrollHeight
 + 非IE: getComputedStyle(elm, null), IE: elm.currentStyle
 
-**减少重绘和重新排版次数的方法**：
+**最小化重绘和重排版**：
 
 + 1) 延迟访问布局信息，避免强制重排版:
-```js
-var computed,
-tmp = '',
-bodystyle = document.body.style;
-if (document.body.currentStyle) { // IE, Opera
-  computed = document.body.currentStyle;
-} else { // W3C
-  computed = document.defaultView.getComputedStyle(document.body, '');
-}
-bodystyle.color = 'red';
-tmp = computed.backgroundColor;
-bodystyle.color = 'white';
-tmp = computed.backgroundImage;
-bodystyle.color = 'green';
-tmp = computed.backgroundAttachment;
+  ```js
+  var computed,
+  tmp = '',
+  bodystyle = document.body.style;
+  if (document.body.currentStyle) { // IE, Opera
+    computed = document.body.currentStyle;
+  } else { // W3C
+    computed = document.defaultView.getComputedStyle(document.body, '');
+  }
+  bodystyle.color = 'red';
+  tmp = computed.backgroundColor;
+  bodystyle.color = 'white';
+  tmp = computed.backgroundImage;
+  bodystyle.color = 'green';
+  tmp = computed.backgroundAttachment;
 ```
 如果将查询 computed 风格的代码搬到末尾后：
 ```js
@@ -247,10 +247,133 @@ var el = document.getElementById('mydiv');
 el.style.cssText = 'border-left: 1px; border-right: 2px; padding: 5px;';
 ```
 + 3) 批量修改 DOM
-   1. 从文档流中摘除该元素
-   2. 对其应用多重改变
-   3. 将元素带回文档中
+   1. 从文档流中摘除该元素；
+   2. 对其应用多重改变；
+   3. 将元素带回文档中。<br><br>
 
-### 3.3 事件委托
+   有三种基本方法可以将 DOM 从文档中摘除：
+   1. 隐藏元素，进行修改，然后再显示它；
+   ```js
+    var ul = document.getElementById('mylist');
+    ul.style.display = 'none';// 隐藏元素
+    appendDataToElement(ul, data);// ul 元素下追加 li 元素
+    ul.style.display = 'block';// 显示元素
+   ```
+   2. 使用一个文档片断在已存 DOM 之外创建一个子树，然后将它拷贝到文档中；
+   ```js
+    var fragment = document.createDocumentFragment();// 创建一个新的空白的文档片段
+    appendDataToElement(fragment, data);// 将新元素添加至文档片段
+    document.getElementById('mylist').appendChild(fragment);// 把文档片段下的子元素插入 ul 元素中
+   ```
+   3. 将原始元素拷贝到一个脱离文档的节点中，修改副本，然后覆盖原始元素。
+   ```js
+    var old = document.getElementById('mylist');
+    var clone = old.cloneNode(true);// 创建副本
+    appendDataToElement(clone, data);// 修改副本
+    old.parentNode.replaceChild(clone, old);// 用副本覆盖老节点
+   ```
 
-事件委托利用了事件冒泡，只指定一个事件处理程序，就可以管理某一类型的所有事件。例如，我们把 ul 元素下所有 li 元素的点击事件委托给 ul 元素。
+### 3.3 缓冲布局信息
+
+例如，将一个元素从 100px 向右平移至 500px 处，每次移动 1px：
+  ```js
+  // 动画循环
+  myElement.style.left = 1 + myElement.offsetLeft + 'px';
+  if (myElement.offsetLeft >= 500) {
+    stopAnimation();
+  }
+  ```
+上面例子中，每次元素移动时，都要查询偏移量 `myElement.offsetLeft`，我们可以把此信息缓存起来，从而获得更好的性能：
+  ```js
+  var current = myElement.offsetLeft;// 缓冲布局信息
+  // 动画循环
+  current ++;
+  myElement.style.left = current + 'px';
+  if (current >= 500) {
+    stopAnimation();
+  }
+  ```
+
+### 3.4 将元素提出动画流
+
+显示和隐藏部分页面构成展开/折叠动画是一种常见的交互模式。它通常包括区域扩大的几何动画，将页面其他部分推向下方。<br>
+当动画进行时，将引发巨大的重排版动作，使用户感到动画卡顿。使用以下步骤可以避免对大部分页面进行重排版：
+1. 页面顶部可以"折叠/展开"的元素称作"动画元素"，用**绝对坐标**对它进行定位，当它的尺寸改变时，就不会推移页面中其他元素的位置，而只是覆盖其他元素。
+2. **展开动作只在"动画元素"上进行**。这时其他元素的坐标并没有改变，换句话说，其他元素并没有因为"动画元素"的扩大而随之下移，而是任由动画元素覆盖。
+3. "动画元素"的动画结束时，**将其他元素的位置下移到动画元素下方**，界面"跳"了一下。
+
+### 3.5 事件委托
+
+事件委托利用了事件冒泡，只指定一个事件处理程序，就可以管理某一类型的所有事件。例如，我们把 &lt;ul&gt; 元素下所有 &lt;li&gt; 元素的点击事件委托给 &lt;ul&gt; 元素。
+
+## 4. 算法和流程控制
+
+### 4.1 循环
+
+### 4.2 基于函数的迭代
+
+**归并排序**（英语：Merge sort，或mergesort），是创建在**归并操作**上的一种有效的排序算法，它既可以用递归实现，也可以用迭代实现。<br>
+其中归并操作`merge`如下：
+```js
+// 合并两个排好序的数组
+function merge(left, right) {
+  var res = [];
+  while (left.length && right.length) {
+    if (left[0] < right[0]) {
+      res.push(right.shift());// 移除数组中的第一项并返回该项
+    } else {
+      res.push(left.shift());// 移除数组中的第一项并返回该项
+    }
+  }
+  // 合并两个数组中剩下的项(left 或者 right)，然后返回数组
+  return res.concat(left).concat(right);
+}
+```
+使用递归实现 `mergeSort`：
+```js
+// 递归
+function mergeSort(items) {
+  len = items.length;
+  if (len === 1) {
+    // 递归终止条件
+    return items;
+  }
+  var middle = Math.floor(len / 2);
+  var left = items.slice(0, middle);
+  var right = items.slice(middle);
+  return merge(mergeSort(left), mergeSort(right));
+}
+var res = mergeSort([5, 2, 3, 1, 6, 4]);
+console.log(res);// [ 6, 5, 4, 3, 2, 1 ]
+```
+这个合并排序代码相当简单直接，但是 `mergeSort()` 函数被调用非常频繁。一个具有 n 个项的数组总共调用 `mergeSort()` 达 `2 * n - 1` 次。<br>
+程序陷入**栈溢出错误**并不一定要修改整个算法；它只是意味着递归不是最好的实现方法。合并排序算法还可以用迭代实现，如下：
+```js
+// 迭代
+function mergeSort(items) {
+  var len = items.length;
+  if (len === 1) {
+    return items;
+  }
+  // 创建一个临时数组，把 items 中的每一项放在数组中，方便调用merge
+  var temp = [];
+  for (var i = 0; i < len; i++) {
+    temp.push([items[i]]);// [1,2] => [[1],[2]]
+  }
+  // 迭代：第一项和第二项merge，第三项和第四项merge，以此类推
+  temp.push([]);// 防止数组长度为奇数时，最后剩一个单独项无法merge
+  for (var i = len; i > 1; i = i / 2) {
+    // 数组成对merge, i: 5/6 => 2.5/3 => 1.25/1.5 => 0.625/0.75(结束循环)
+    for (var j = 0, k = 0; k < i; j++ , k += 2) {
+      temp[j] = merge(temp[k], temp[k + 1]);
+    }
+    temp[j] = [];// 防止数组中有用项(靠前部分)的总数为奇数时，错误地使用了紧随有用项后的无用项
+  }
+  return temp[0];
+}
+```
+
+
+### 4.3 条件表达式
+
+### 4.4 递归模式
