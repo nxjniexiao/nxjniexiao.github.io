@@ -308,12 +308,19 @@ el.style.cssText = 'border-left: 1px; border-right: 2px; padding: 5px;';
 
 ## 4. 算法和流程控制
 
-### 4.1 循环
+### 4.1 改善循环性能
 
-### 4.2 基于函数的迭代
+for，while，do-while 循环的性能特性相似，除非你要迭代遍历一个属性未知的对象，否则不要使用 for-in 循环。<br>
 
-**归并排序**（英语：Merge sort，或mergesort），是创建在**归并操作**上的一种有效的排序算法，它既可以用递归实现，也可以用迭代实现。<br>
-其中归并操作`merge`如下：
+改善循环性能的最好办法是：
++ 减少每次迭代中的运算量，如用局部变量缓存局外变量等；
++ 减少循环迭代次数，如达夫设备(每次循环中最多可 8 次调用`process()`函数)。
+
+### 4.2 递归算法改迭代算法
+
+浏览器的调用栈尺寸限制了递归算法在 JavaScript 中的应用；栈溢出错误导致其他代码也不能正常执行。<br>
+
+**归并排序**（英语：Merge sort，或mergesort），是创建在**归并操作**上的一种有效的排序算法，它既可以用递归实现，也可以用迭代实现。其中归并操作`merge`如下：
 ```js
 // 合并两个排好序的数组
 function merge(left, right) {
@@ -347,6 +354,7 @@ var res = mergeSort([5, 2, 3, 1, 6, 4]);
 console.log(res);// [ 6, 5, 4, 3, 2, 1 ]
 ```
 这个合并排序代码相当简单直接，但是 `mergeSort()` 函数被调用非常频繁。一个具有 n 个项的数组总共调用 `mergeSort()` 达 `2 * n - 1` 次。<br>
+
 程序陷入**栈溢出错误**并不一定要修改整个算法；它只是意味着递归不是最好的实现方法。合并排序算法还可以用迭代实现，如下：
 ```js
 // 迭代
@@ -372,8 +380,58 @@ function mergeSort(items) {
   return temp[0];
 }
 ```
+### 4.3 递归中使用制表技术
 
+使用制表技术来重写 `factorial()` 函数，利用缓存保存并重用计算结果:
+```js
+function memFactorial(n) {
+  // 建立一个缓存对象
+  if (!memFactorial.cache) {
+    memFactorial.cache = {
+      '0': 1,
+      '1': 1
+    }
+  }
+  var cache = memFactorial.cache;
+  // 检查缓存中是否已经存在相应的计算结果
+  if (!cache.hasOwnProperty(n)) {
+    // 不存在：计算结果，然后存入缓存
+    cache[n] = n * memFactorial(n - 1);
+  }
+  return cache[n];
+}
+```
+制表过程因每种递归函数而略有不同，但总体上具有相同的模式。为了使一个函数的制表过程更加容易，你可以定义一个 `memoize()` 函数封装基本功能。例如：
+```js
+function factorial(n) {
+  if (n === 0) {
+    return 1;
+  }
+  return n * factorial(n - 1);
+}
+function memoize(fundamental, cache) {
+  cache = cache || {};
+  var shell = function (arg) {
+    if (!cache.hasOwnProperty(arg)) {
+      cache[arg] = fundamental(arg);
+    }
+    return cache[arg];
+  };
+  return shell;
+}
+var memfactorial = memoize(factorial, { "0": 1, "1": 1 });
+var fact6 = memfactorial(6);
+var fact5 = memfactorial(5);
+var fact4 = memfactorial(4);
+```
 
-### 4.3 条件表达式
+### 4.4 优化条件表达式
 
-### 4.4 递归模式
+1. 条件数量较大时，倾向于使用 switch 而不是 if-else。
+
+2. 优化 if-else 的目标总是最小化找到正确分支之前所判断条件体的数量。最简单的优化方法是**将最常见的条件体放在首位**。<br>
+
+3. 当有大量**离散值**需要测试时，if-else 和 switch 都比使用**查表法**要慢得多。<br>
+注意：当使用查表法时，必须完全消除所有条件判断。操作转换成一个数组项查询或者一个对象成员查询。使用查表法的一个主要优点是：由于没有条件判断，当候选值数量增加时，很少，甚至没有增加额外的性能开销。<br>
+
+4. **查表法**最常用于一个键和一个值形成逻辑映射的领域。**switch 表达式**更适合于每个键需要一个独特的动作，或者一系列动作的场合。
