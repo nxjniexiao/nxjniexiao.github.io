@@ -435,3 +435,174 @@ var fact4 = memfactorial(4);
 注意：当使用查表法时，必须完全消除所有条件判断。操作转换成一个数组项查询或者一个对象成员查询。使用查表法的一个主要优点是：由于没有条件判断，当候选值数量增加时，很少，甚至没有增加额外的性能开销。<br>
 
 4. **查表法**最常用于一个键和一个值形成逻辑映射的领域。**switch 表达式**更适合于每个键需要一个独特的动作，或者一系列动作的场合。
+
+## 5. 响应接口
+
+JavaScript 和用户界面更新在同一个进程内运行，同一时刻只有其中一个可以运行。这意味着当 JavaScript代码正在运行时，用户界面不能响应输入，反之亦然。有效地管理 UI 线程就是要确保 JavaScript 不能运行太长时间，以免影响用户体验。<br>
+
+JavaScript 运行时间不应该超过 100 毫秒。过长的运行时间导致 UI 更新出现可察觉的延迟，从而对整体用户体验产生负面影响。
+
+### 5.1 用定时器让出时间片
+
+定时器可用于安排代码推迟执行，它使得你可以将长运行脚本分解成一系列较小的任务。
+
++ 1) 将典型的循环模式分解成一系列任务
+  ```js
+  for (var i=0, len=items.length; i < len; i++){
+    process(items[i]);
+  }
+  ```
+分解后如下：
+  ```js
+  function processArray(items, process, callback) {
+    var todo = items.concat(); // 创建一个 items 副本
+    setTimeout(function () {
+      process(todo.shift());
+      if (todo.length > 0) {
+        setTimeout(arguments.callee, 25);
+      } else {
+        callback(items);
+      }
+    }, 25);
+  }
+  ```
+其中 `arguments.callee` 为拥有这个 `arguments` 对象的函数，在本例中即为匿名函数。<br>
+
++ 2) 我们可以将一个长运行任务分解成一系列子任务
+  ```js
+  function multistep(steps, args, callback) {
+    var tasks = steps.concat(); //创建一个 steps 数组的副本
+    setTimeout(function () {
+      // 执行下一个任务
+      var task = tasks.shift();
+      task.apply(null, args || []);
+      // 判断是否还有更多的任务
+      if (tasks.length > 0) {
+        setTimeout(arguments.callee, 25);
+      } else {
+        callback();
+      }
+    }, 25);
+  }
+  ```
+
+### 5.2 网页工人线程
+
+网页工人线程 API 使代码运行而不占用浏览器 UI 线程的时间。要创建网页工人线程，你必须传入这个 JavaScript 文件的 URL:
+```js
+var worker = new Worker("code.js");
+```
+网页代码可使用 `onmessage` 事件句柄接收信息，并通过 `postMessage()` 方法向工人线程传递数据:
+```js
+worker.onmessage = function(event){
+  alert(event.data);
+};
+worker.postMessage("Nicholas");
+```
+工人线程可使用 `onmessage` 事件句柄接收信息，并通过 `postMessage()` 方法将信息返回给页面:
+```js
+// code.js
+self.onmessage = function (event) {
+  self.postMessage("Hello, " + event.data + "!");
+};
+```
+
+注：网页工人线程适合于那些纯数据的，或者与浏览器 UI 没关系的长运行脚本：
++ 编/解码一个大字符串；
++ 复杂数学运算（包括图像或视频处理）
++ 给一个大数组排序
+
+## 6. Ajax 、异步 JavaScript 和 XML
+
+本章考察从服务器收发数据最快的技术，以及最有效的数据编码格式。
+
+### 6.1 请求和发送数据
+
+在现代高性能 JavaScript 中使用的三种请求技术是 XHR、动态脚本标签插入和多部分的 XHR:
+
++ 1) XMLHttpRequest (XHR)
+  ```js
+  var url = '/data.php';
+  var params = [
+    'id=934875',
+    'limit=20'
+  ];
+  var req = new XMLHttpRequest();
+  req.onreadystatechange = function () {
+    if (req.readyState === 4) {
+      var responseHeaders = req.getAllResponseHeaders(); // 获得请求头
+      var data = req.responseText; // 获取数据
+      // 处理数据
+    }
+  }
+  req.open('GET', url + '?' + params.join('&'), true);
+  req.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); // 设置请求头
+  req.send(null); // 发送请求
+  ```
++ 2) 动态脚本标签插入(可以跨域)<br>
+该技术克服了 XHR 的最大限制：它可以从不同域的服务器上获取数据。<br>
+  ```js
+  var scriptElement = document.createElement('script');
+  scriptElement.src = 'http://any-domain.com/javascript/lib.js';
+  document.getElementsByTagName('head')[0].appendChild(scriptElement);
+  ```
+  相比于 XHR ，其缺点如下：
+   + 不能通过请求发送信息头；
+   + 参数只能通过 GET 方法传递，不能用 POST；
+   + 不能设置请求的超时或重试；
+   + 必须等待所有数据返回之后才可以访问它们；
+   + 不能访问响应信息头或者像访问字符串那样访问整个响应报文；
+   + **数据必须在一个回调函数之中被组装起来**。<br>
+  注：最后一点非常重要。因为响应报文被用作脚本标签的源码，它必须是可执行的 JavaScript。你不能使用裸 XML，或者裸 JSON，任何数据，无论什么格式，必须在一个回调函数之组装起来。<br>
+  ```js
+  function jsonCallback(jsonString) {
+    var data = ('(' + jsonString + ')');
+    // 处理数据
+  }
+  ```
++ 3) 多部分的 XHR<br>
+多部分XHR（MXHR）允许你只用一个 HTTP 请求就可以从服务器端获取多个资源。它通过将资源（可以是 CSS 文件，HTML 片段，JavaScript 代码，或 base64 编码的图片）打包成一
+个由特定分隔符界定的大字符串，从服务器端发送到客户端。JavaScript 代码处理此长字符串，根据它的媒体类型和其他“信息头”解析出每个资源。
+
+当数据只需发送给服务器时，有两种广泛应用的技术：XHR 和灯标。
+
++ 1) XHR<br>
+虽然 XHR 主要用于从服务器获取数据，它也可以用来将数据发回。数据可以用 GET 或 POST 方式发回，以及任意数量的 HTTP 信息头。这给你很大灵活性。当你向服务器发回的数据量超过浏览器的最大 URL 长度时 XHR 特别有用。这种情况下，你可以用 POST 方式发回数据：
+  ```js
+  var url = '/data.php';
+  var params = [
+    'id=934875',
+    'limit=20'
+  ];
+  var req = new XMLHttpRequest();
+  req.onerror = function () {
+    // 出错
+  };
+  req.onreadystatechange = function () {
+    if (req.readyState == 4) {
+      // 成功
+    }
+  };
+  req.open('POST', url, true);
+  req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  req.setRequestHeader('Content-Length', params.length);
+  req.send(params.join('&'));
+  ```
+
++ 2) 灯标<br>
+此技术与动态脚本标签插入非常类似。JavaScript 用于创建一个新的 Image 对象，将 src 设置为服务器上一个脚本文件的 URL。此 URL 包含我们打算通过 GET 格式传回的键值对数据。注意并没有创建 img 元素或者将它们插入到 DOM 中。
+  ```js
+  var url = '/status_tracker.php';
+  var params = [
+    'step=2',
+    'time=1248027314'
+  ];
+  (new Image()).src = url + '?' + params.join('&');
+  ```
+
+
+### 6.2 数据格式
+
++ JSON 是轻量级的，解析迅速（作为本地代码而不是字符串），交互性与 XML 相当。
++ 字符分隔的自定义格式非常轻量，在大量数据集解析时速度最快，但需要编写额外的程序在服务器端构造格式，并在客户端解析。
++ 与其他格式相比，XML 极其冗长。每个离散的数据片断需要大量结构，所以有效数据的比例非常低。
