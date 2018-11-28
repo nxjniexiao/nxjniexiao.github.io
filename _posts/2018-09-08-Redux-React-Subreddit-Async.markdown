@@ -21,6 +21,9 @@ state的结构设计如下：<br>
 
 关于如何使用`create-react-app`快速构建单页面应用，以及如何设计`src`文件夹结构等，在博客[ Redux 搭配 React 完成迷你型任务管理应用 Todo List ](https://nxjniexiao.github.io/2018/09/04/Redux-React-Todo-List/)中有详细的描述，因此本文不再赘述。
 
+
+
+
 ## 2. 异步action
 
 在[ Redux 搭配 React 完成迷你型任务管理应用 Todo List ](https://nxjniexiao.github.io/2018/09/04/Redux-React-Todo-List/)例子中，我们的actions创建函数返回的是一个**action对象**，每当 dispatch action 时，state 会被立即更新。我们称之为**同步action**。<br>

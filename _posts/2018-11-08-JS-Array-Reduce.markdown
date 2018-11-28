@@ -36,6 +36,9 @@ anotherFactorial(4);// 出错
 ```
 `factorial`的值为`null`，所以`anotherFactorial`函数中调用`factorial`函数时，就会报错。
 
+
+
+
 ### 1.2 arguments.callee
 
 > arguments.callee 是一个指向正在执行的函数的指针，因此可以用它来实现对函数的递归调用。

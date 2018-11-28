@@ -41,6 +41,10 @@ Ajax 的核心是 `XMLHttpRequest` 对象(简称 XHR)。IE7+、Firefox、Opera�
   </body>
   <!-- 省略 -->
   ```
+
+
+
+  
 + 2) 后端用 Node.js 完成的服务器代码 `server.js`：
   ```js
   const http = require('http');

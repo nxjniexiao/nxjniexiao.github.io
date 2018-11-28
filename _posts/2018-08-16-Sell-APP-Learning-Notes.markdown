@@ -20,6 +20,9 @@ tags: Vue WEB前端 HTML CSS JS
 + 图标字体的使用；
 + 使用h5的localstorage接口存储在浏览器端，从而实现收藏商家的功能。
 
+
+
+
 ## 1. vue.cli的安装和使用
 + 1) 全局安装vue-cli
 ```bash

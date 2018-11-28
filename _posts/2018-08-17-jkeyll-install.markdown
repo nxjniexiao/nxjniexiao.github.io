@@ -33,6 +33,10 @@ jekyll new my-blog
 `jekyll s`  或  `jekyll serve`<br>
 命令行会提示服务地址为：`http://127.0.0.1:4000`
 + 3) 在浏览器地址中输入`http://127.0.0.1:4000`访问自己本地的博客。
+
+
+
+
 ## 3. 关联github远程仓库
 关联自己github账户中名为USERNAME.github.io远程仓库和本地的博客仓库。<br>
 若还未新建此远程仓库，可根据[pages.github.com](https://pages.github.com/)中的第一步创建。<br>

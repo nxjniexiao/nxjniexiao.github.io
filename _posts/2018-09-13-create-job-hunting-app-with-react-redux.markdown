@@ -34,6 +34,9 @@ yarn add redux react-redux
 <img src="/images/2018-09-13-job-hunting/login.png" width="375px" />
 <img src="/images/2018-09-13-job-hunting/register.png" width="375px" />
 
+
+
+
 为了实现登陆和注册，我们把工作分为：
 + 1) 前端：redux + react + react-router，端口号：3000；
 + 2) 后端：nodejs + express，端口号：3030；

@@ -33,6 +33,9 @@ tags: WEB前端 JS
 + 3) XHR 脚本注入(不能跨域)<br>
 首先创建一个XHR 对象，然后下载 JavaScript 文件，接着用一个动态 &lt;script&gt; 元素将 JavaScript 代码注入页面。
 
+
+
+
 推荐的向页面加载大量 JavaScript 的方法分为两个步骤：
 + 第一步，包含动态加载 JavaScript 所需的代码，代码量尽量小，可能只包含`loadScript()`函数；
 + 第二步，加载页面初始化所需的额外的 JavaScript 代码。

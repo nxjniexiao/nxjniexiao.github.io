@@ -20,6 +20,9 @@ tags: WEB前端 JS React Redux
 图书页面：
 <div><img src="/images/2018-11-08-React-Redux-Reuse/book.png" /></div>
 
+
+
+
 ### 1.1 路由、组件和 state 结构
 
 路由部分代码如下：

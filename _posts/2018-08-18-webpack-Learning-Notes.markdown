@@ -34,6 +34,9 @@ npm install webpack-cli --save-dev
   }
 ```
 
+
+
+
 ## 2. 使用webpack打包
 ### 2.1 打包多个js文件
 + 1) 在exercise webpack文件夹下新建名为‘01’的文件夹，并在其中新建index.html、app.js、01.js、02.js：<br>

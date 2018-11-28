@@ -48,6 +48,9 @@ yarn start
 + 2) Webpack只能处理`src`文件夹中的文件，所以JS和CSS文件要放在src中，或其子目录中；
 + 3) `public/index.html`只能引入`public`文件夹中的文件。
 
+
+
+
 ## 2. 准备工作
 
 ### 2.1 删除、修改文件

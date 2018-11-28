@@ -40,6 +40,10 @@ p.catch(function(reason) {
     // 当p(一个Promise对象)的状态由pending变成rejected时调用
 });
 ```
+
+
+
+
 ## 2. Promise构造函数
 ```js
 new Promise( function(resolve, reject) {...} /* executor */  );
