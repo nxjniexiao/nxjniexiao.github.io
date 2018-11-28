@@ -1,0 +1,150 @@
+---
+layout: post
+title:  "手动实现 JSONP"
+date:   2018-11-28 11:25:12 +0800
+categories: learning-notes
+tags: WEB前端 JS Node.js
+---
+* content
+{:toc}
+
+## 1. Ajax
+
+Ajax 技术能够像服务器请求额外的数据而无须卸载页面，会带来更好的用户体验。<br>
+
+Ajax 的核心是 `XMLHttpRequest` 对象(简称 XHR)。IE7+、Firefox、Opera、Chrome 和 Safari 都支持原生的 `XHR` 对象。<br>
+
+但是通过 `XHR` 实现 Ajax 通信的一个主要限制，来源于**跨域安全策略**。默认情况下，XHR 对象只能访问与包含它的页面位于同一个域中的资源。<br>
+
+比如下面的例子中，就无法实现在 html 文件中通过 XHR 向 `http://localhost:8080` 请求资源。
+
++ 1) html 文件：
+  ```html
+  <!-- 省略 -->
+  <body>
+    <script>
+      var xhr = new XMLHttpRequest();
+      xhr.onReadyStatechange = function () {
+        var readyState = xhr.readyState;
+        if (readyState === 4) {
+          // 4:已经接收到全部响应数据
+          var status = xhr.status;
+          if ((status >= 200 && status < 300) || status === 304) {
+            // 请求成功
+            console.log(xhr.responseText);
+          }
+        }
+      }
+      xhr.open('get', 'http://localhost:8080', true);
+      xhr.send(null);
+    </script>
+  </body>
+  <!-- 省略 -->
+  ```
++ 2) 后端用 Node.js 完成的服务器代码 `server.js`：
+  ```js
+  const http = require('http');
+  // 创建一个 HTTP 服务器
+  const srv = http.createServer((req, res) => {
+    const resArray = [{ name: 'nie1' }, { name: 'nie2' }];// 需要返回的数据
+    const resJson = JSON.stringify(resArray);// 对象转换为JSON
+    res.writeHead(200, { 'Content-Type': 'text-plain' });// 发送一个响应头给请求。
+    res.write(resJson);// 发送请求主体的一个数据块
+    res.end();// 结束发送请求
+  });
+  // 开启 HTTP 服务器监听连接
+  srv.listen(8080, '127.0.0.1', () => {
+    const address = srv.address().address;
+    const port = srv.address().port;
+    console.log('http://%s:%s', address, port);
+  })
+  ```
+
+运行 `node server.js` 启动服务器后，在 `vscode` 中用浏览器打开 html 文件，会收到提示：
+```
+Access to XMLHttpRequest at 'http://localhost:8080/' from origin 'null' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+```
+
+## 2. 跨域资源共享
+
+CORS(Cross-Origin Resource Sharing，跨域资源共享) 定义了在必须访问跨域资源时，浏览器与服务器应该如何沟通。其背后的基本思想，就是使用自定义的HTTP头部让浏览器与服务器进行沟通，从而决定请求或响应是应该成功，还是应该失败。<br>
+
+当我们发出破坏跨域安全策略的请求时，浏览器会自动添加`Origin`头部，所以我们只需要修改服务端代码，在`writeHeader`前添加代码设置头部`Access-Control-Allow-Origin`：
+```js
+res.setHeader('Access-Control-Allow-Origin', '*');// 跨域(*表示任何源信息，即表示此资源为公共资源)
+```
+这样我们就能在浏览器控制台中看到返回的 JSON 数据：`[{"name":"nie1"},{"name":"nie2"}]`。
+
+## 3. JSONP
+
+JSONP 是 JSON with padding (填充式 JSON 或参数式 JSON) 的简写，是应用 JSON 的一种新方法，在后来的 Web 服务中非常流行。<br>
+
+JSONP 看起来和 JSON 差不多，只不过是被包含在函数调用中的 JSON：
+```js
+callback([{ name: 'nie1' }, { name: 'nie2' }]);
+```
+JSONP 由两部分组成：回调函数和数据。
++ 1) 回调函数是当响应到来时应该在页面中调用的函数。回调函数一般是在请求中指定的，如：
+```js
+script.src = `http://localhost:8080/?callback=handleResponse`;
+```
++ 2) 数据就是传入回调函数中的 JSON 数据。
+
+JSONP 是通过动态 `<script>` 元素来实现的，因为 `<script>` 元素和 `<img>` 元素类似，都有能力不受限制地从其它域加载资源。<br>
+
++ 1) 先修改后端代码，根据 url 中是否存在 `callback` 参数，来判断返回 JSON 还是 JSONP。
+  ```js
+  const http = require('http');
+  const url = require('url');
+  // 创建一个 HTTP 服务器
+  const srv = http.createServer((req, res) => {
+    const resArray = [{ name: 'nie1' }, { name: 'nie2' }];// 需要返回的数据
+    const resJson = JSON.stringify(resArray);// 对象转换为JSON
+    // res.setHeader('Access-Control-Allow-Origin', '*');// 跨域(*表示任何源信息，即表示此资源为公共资源)
+    res.writeHead(200, { 'Content-Type': 'text-plain' });// 发送一个响应头给请求。
+    let query = url.parse(req.url, true).query;// 参数true: 返回的url是对象。
+    if (query && query.callback) {
+      // 有 callback 参数，返回 JSONP
+      res.write(query.callback + '(' + resJson + ')');// 发送请求主体的一个数据块
+    } else {
+      // 无 callback 参数，直接返回 JSON 字符串
+      res.write(resJson);// 发送请求主体的一个数据块
+    }
+    res.end();// 结束发送请求
+  });
+  // 开启 HTTP 服务器监听连接
+  srv.listen(8080, '127.0.0.1', () => {
+    const address = srv.address().address;
+    const port = srv.address().port;
+    console.log('http://%s:%s', address, port);
+  })
+  ```
+ 修改完成后，运行 `node server` 启动服务。然后在浏览器中访问此服务器：
+    + 输入`http://localhost:8080/?callback=handleResponse`:
+    ```js
+    handleResponse([{"name": "nie1"},{"name": "nie2"}])
+    ```
+    + 输入`http://localhost:8080`:
+    ```js
+    [{"name": "nie1"},{"name": "nie2"}]
+    ```
++ 2) 修改 html 文件
+  ```html
+  <!-- 省略 -->
+  <body>
+    <script>
+      function handleResponse(res) {
+        console.log(res);
+      }
+      const doc = document;
+      const script = doc.createElement('script');
+      script.src = 'http://localhost:8080/?callback=handleResponse';
+      doc.body.insertBefore(script, doc.body.firstChild);
+    </script>
+  </body>
+  <!-- 省略 -->
+  ```
+  修改完成后，在 vscode 中用浏览器打开此 HTML 文件，可以在控制台中看到输出的数组：
+  ```js
+  [{"name": "nie1"},{"name": "nie2"}]
+  ```
