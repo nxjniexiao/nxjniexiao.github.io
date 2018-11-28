@@ -606,3 +606,46 @@ self.onmessage = function (event) {
 + JSON 是轻量级的，解析迅速（作为本地代码而不是字符串），交互性与 XML 相当。
 + 字符分隔的自定义格式非常轻量，在大量数据集解析时速度最快，但需要编写额外的程序在服务器端构造格式，并在客户端解析。
 + 与其他格式相比，XML 极其冗长。每个离散的数据片断需要大量结构，所以有效数据的比例非常低。
+
+## 7. 编程实践
+
++ 通过避免使用 `eval()` 和 `Function()` 构造器避免二次评估。此外，给 `setTimeout()` 和 `setInterval()` 传递函数参数而不是字符串参数。
+
++ 创建新对象和数组时使用对象直接量和数组直接量。它们比非直接量形式创建和初始化更快。
+```js
+var obj = {name: 'nie'};
+var arr = [1, 2, 3];
+```
++ 避免重复进行相同工作。当需要检测浏览器时，使用延迟加载或条件预加载。
+```js
+// 延迟加载
+function addHandler(target, eventType, handler) {
+  // 覆盖函数 addHandler
+  if (target.addEventListener) { //DOM2 Events
+    addHandler = function (target, eventType, handler) {
+      target.addEventListener(eventType, handler, false);
+    };
+  } else { //IE
+    addHandler = function (target, eventType, handler) {
+      target.attachEvent("on" + eventType, handler);
+    };
+  }
+  // 调用新函数
+  addHandler(target, eventType, handler);
+}
+```
+```js
+// 条件预加载
+var addHandler = document.body.addEventListener ?
+  function (target, eventType, handler) {
+    target.addEventListener(eventType, handler, false);
+  } :
+  function (target, eventType, handler) {
+    target.attachEvent("on" + eventType, handler);
+  };
+```
+
++ 当执行数学运算时，考虑使用位操作，它直接在数字底层进行操作。
+
++ 原生方法总是比 JavaScript 写的东西要快。尽量使用原生方法。<br>
+如多使用 `Math` 对象的方法，多使用原生的 `querySelector()` 和 `querySelectorAll()` 方法。
