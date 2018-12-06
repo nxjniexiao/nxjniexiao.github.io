@@ -50,6 +50,9 @@ Range: bytes=131072-2752511
 Content-Range: bytes 131072-2752511/44546796
 ```
 
+
+
+
 ## 3. 代码
 
 封装一个处理 Range 请求的函数 `resRange()`，其中：
