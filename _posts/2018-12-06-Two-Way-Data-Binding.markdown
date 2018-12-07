@@ -89,3 +89,40 @@ console.log(obj.name);// nie
 obj.name = "nxj";
 console.log(obj.name);// nxj
 ```
+
+### 1.3 简单实现双向绑定
+
+下面的例子中，我们使用 `Object.defineProperty()` 定义访问器属性简单地实现了在 `<input>` 元素上进行数据双向绑定。<br>
+
+1. 我们给 `<input>` 元素添加一个监听键盘按键松开的事件处理函数：当监听到键盘按键松开时，把 `<input>` 元素中的值赋值给 `data.inputValue`。<br>
+
+2. 这将导致 `inputValue` 的 `Set` 函数被调用，在此函数中，我们把传入的新值赋值给 `<input>` 元素的`value`属性和 `<span>` 元素的`innerHTML`属性。
+
+```html
+<body>
+  <input id="input1" /> 
+  <div>输入框内容为：<span id="span1"></span></div>
+  <script>
+    var input = document.getElementById("input1");
+    var span = document.getElementById("span1");
+    var data = { _inputValue: "" };
+    Object.defineProperty(data, "inputValue", {
+      get: function() {
+        return this._inputValue;
+      },
+      set: function(newValue) {
+        this._inputValue = newValue;
+        input.value = newValue;// 修改 input 输入框的值
+        span.innerHTML = newValue;// 修改 span 中的值
+      }
+    });
+    input.onkeyup = function(event) {
+      // 监听 keyup 事件，给 data.inputValue 赋值，调用其 set 方法
+      data.inputValue = event.target.value;
+    };
+  </script>
+</body>
+```
+最终双向绑定的效果是：
+1. 我们在 `<input>` 元素中输入内容时，`data.inputValue` 的值也会随之变化，我们可以在控制台输入 `data.inputValue` 按回车查看其值；
+2. 我们在控制台输入 `data.inputValue = 'new Value'` ，改变 `inputValue` 的值后， `<input>` 元素和 `<span>` 元素的值也会发生变化。
