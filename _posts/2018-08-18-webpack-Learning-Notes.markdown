@@ -453,7 +453,7 @@ webpack 插件是一个具有 apply 方法的 JavaScript 对象。apply 属性�
 我们可以使用`html-webpack-plugin`插件，自动完成上述工作，并以指定的html文件为模板生成一个html文件。
 在这之前，我们先注销根目录下`index.html`中引入`main.js`文件的`script`标签。
 
-+ 1) 安装`webpack-dev-server`：
++ 1) 安装`html-webpack-plugin`：
 ```bash
 npm install --save-dev html-webpack-plugin
 ```

@@ -8,7 +8,7 @@ tags: WEB前端 JS
 * content
 {:toc}
 
-使用两种方法将有联系的**一维数组**转成**树形数组**。一维数组格式如下：
+最近在面试中碰到一道题：使用两种方法将有联系的**一维数组**转成**树形数组**。一维数组格式如下：
 ```js
 // 一维数组
 var arr = [
@@ -63,6 +63,7 @@ var res = [
   }
 ];
 ```
+以下内容是如何使用**递归**和**非递归**实现两类数组之间的转换。
 
 ## 1. 一维数组转树形数组
 
@@ -138,5 +139,71 @@ var arrayToTree = (function f(linearArr) {
   }
   parentComp.children.push(comp);
   return f(linearArr);
+});
+```
+
+## 2. 树形数组转一维数组
+
+### 2.1 非递归
+
+非递归思路：
+
+1. 指针 `index` 初始值为零 `0`；
+2. 循环结束条件为 `index` 所在位置没有值；
+3. 判断指针所在位置的对象是否有 `children` 属性：<br>
+如果有，则把 `children` 中的对象插入到指针位置的后面，然后删除属性：`delete comp.children;`；<br>
+4. `index ++`；
+
+```js
+function treeToArray(arr) {
+  index = 0;
+  while (index < arr.length) {
+    var comp = arr[index];
+    var children = comp.children;
+    if (children) {
+      // 把 splice() 方法的前两个参数提前插入 children 数组中
+      children.unshift(index + 1, 0);
+      // 第一个: index + 1: 要删除的第一项的位置
+      // 第二个: 要删除的项
+      // 剩余项: 需要插入的项
+      Array.prototype.splice.apply(arr, children); // children 作为参数传递
+      delete comp.children; // 删除 comp 对象中的 children 属性
+    }
+    index++;
+  }
+  return arr;
+}
+```
+
+### 2.2 递归
+
+递归思路：
+
+1. 使用命名函数表达式创建一个递归函数 `treeToArray`；
+2. 传入两个参数：树形数组和指针位置 `index` ；
+3. 递归结束条件为：`index` 大于等于树形数组的长度 `len`，满足条件则直接返回该树形数组；
+4. 判断指针所在位置的对象是否有 `children` 属性：<br>
+如果有，则把 `children` 中的对象插入到指针位置的后面，然后删除属性：`delete comp.children;`；<br>
+5. `return f(arr, ++index);`。
+
+```js
+var treeToArray = (function f(arr, index) {
+  index = index || 0;
+  var len = arr.length;
+  if (index >= len) {
+    return arr;
+  }
+  var comp = arr[index];
+  var children = comp.children;
+  if (children) {
+    // 把 splice() 方法的前两个参数提前插入 children 数组中
+    children.unshift(index + 1, 0);
+    // 第一个: index + 1: 要删除的第一项的位置
+    // 第二个: 要删除的项
+    // 剩余项: 需要插入的项
+    Array.prototype.splice.apply(arr, children);// children 作为参数传递
+    delete comp.children;// 删除 comp 对象中的 children 属性
+  }
+  return f(arr, ++index);
 });
 ```
