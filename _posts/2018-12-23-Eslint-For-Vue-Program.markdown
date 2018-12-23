@@ -113,3 +113,20 @@ module.exports = {
   ```
 
 最后安装依赖后，重启项目。
+
+## 3. Eslint 规则
+
+### 3.1 分号
+
++ `semi: ["error", "always"]`: 语句末尾使用分号；
++ `semi: ["error", "never"]`: 语句末尾禁止使用分号。
+
+### 3.2 单/双引号
+
++ `quotes: ["error", "double"]`: 双引号；
++ `quotes: ["error", "single"]`: 单引号。
+
+### 3.3 函数左圆括号前是否加空格
+
++ `'space-before-function-paren': ['error', 'always']`: 加空格；
++ `'space-before-function-paren': ['error', 'never']`: 不加空格。
