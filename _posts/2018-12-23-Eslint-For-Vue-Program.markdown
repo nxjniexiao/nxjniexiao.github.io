@@ -21,6 +21,9 @@ tags: WEB前端 Vue
 我们在使用 `vue-cli` 初始化项目时，可以选择使用 `Eslint` 来检查代码。但是对于之前没有使用 `Eslint` 的 `Vue` 项目，当我们想增加此模块来检查代码时，可以先用 `vue-cli` 新建一个项目，然后把相关的配置复制到以前的项目中。<br>
 注：我的 `vue-cli` 版本为 `2.9.6`。
 
+
+
+
 + 1) `vue init webpack project-name`: 新建项目，项目名称随便填一个;
 + 2) 把新项目中的 `.eslintrc.js` 拷贝到旧项目中；
   ```js
