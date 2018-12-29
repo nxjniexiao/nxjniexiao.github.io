@@ -42,6 +42,9 @@ tags: WEB前端 AngularJS-1.x
 + 注入器将创建根作用域(root scope)，该作用域将成为应用程序模型的上下文。
 + AngularJS 将从 ngApp 根元素开始“编译” DOM ，处理沿途发现的任何指令和绑定。
 
+
+
+
 ## 2. AngularJS 模板
 
 ### 2.1 ng-app
@@ -508,57 +511,57 @@ angular.module('core', ['core.phone']);
 
 + phone-list
    + `phone-list/phone-list.module.js`:
-   ```js
-   angular.module('phoneList', ['core.phone']);
-   ```
+     ```js
+     angular.module('phoneList', ['core.phone']);
+     ```
    + `phone-list/phone-list.component.js`:
-   ```js
-   // 注册组件 phoneList，以及与其相关的控制器和模板
-   angular.module('phoneList').component('phoneList', {
-     templateUrl: 'phone-list/phone-list.template.html',
-     controller: [
-       'Phone',
-       function(Phone) {
-         this.orderProp = 'age';
-         this.phones = Phone.query();
-         // var self = this;
-         // $http.get('phones/phones.json').then(function(res) {
-         //   self.phones = res.data;
-         // });
-       }
-     ]
-   });
-   ```
+     ```js
+     // 注册组件 phoneList，以及与其相关的控制器和模板
+     angular.module('phoneList').component('phoneList', {
+       templateUrl: 'phone-list/phone-list.template.html',
+       controller: [
+         'Phone',
+         function(Phone) {
+           this.orderProp = 'age';
+           this.phones = Phone.query();
+           // var self = this;
+           // $http.get('phones/phones.json').then(function(res) {
+           //   self.phones = res.data;
+           // });
+         }
+       ]
+     });
+     ```
 + phone-detail
    + `phone-detail/phone-detail.module.js`:
-   ```js
-   angular.module('phoneDetail', ['ngRoute', 'core.phone']);
-   ```
+     ```js
+     angular.module('phoneDetail', ['ngRoute', 'core.phone']);
+     ```
    + `phone-detail/phone-detail.component.js`:
-   ```js
-   angular.module('phoneDetail').component('phoneDetail', {
-   templateUrl: 'phone-detail/phone-detail.template.html',
-   controller: [
-     '$routeParams',
-     'Phone',
-     function PhoneDetailController($routeParams, Phone) {
-       this.phoneId = $routeParams.phoneId;
-       var self = this;
-       // 设置 mainImageUrl 的方法
-       this.setImageUrl = function(url) {
-         self.mainImageUrl = url;
-       };
-       this.phone = Phone.get({ phoneId: this.phoneId }, function(res) {
-         self.setImageUrl(res.images[0]);
-       });
-       // $http.get('phones/' + this.phoneId + '.json').then(function(res) {
-       //   self.phone = res.data;
-       //   self.setImageUrl(self.phone.images[0]);// 设置 mianImageUrl 为 images[0]
-       // });
-       }
-     ]
-   });
-   ```
+     ```js
+     angular.module('phoneDetail').component('phoneDetail', {
+     templateUrl: 'phone-detail/phone-detail.template.html',
+     controller: [
+       '$routeParams',
+       'Phone',
+       function PhoneDetailController($routeParams, Phone) {
+         this.phoneId = $routeParams.phoneId;
+         var self = this;
+         // 设置 mainImageUrl 的方法
+         this.setImageUrl = function(url) {
+           self.mainImageUrl = url;
+         };
+         this.phone = Phone.get({ phoneId: this.phoneId }, function(res) {
+           self.setImageUrl(res.images[0]);
+         });
+         // $http.get('phones/' + this.phoneId + '.json').then(function(res) {
+         //   self.phone = res.data;
+         //   self.setImageUrl(self.phone.images[0]);// 设置 mianImageUrl 为 images[0]
+         // });
+         }
+       ]
+     });
+     ```
 
 **注:** 
 + 在 phoneList 组件中，我们直接使用了 Phone.query()，没有传入参数和回调函数:
@@ -616,7 +619,7 @@ angular.module('core', ['core.phone']);
   /* 元素进场、离场和移动式的过渡效果 */
   .phone-list-item.ng-enter,
   .phone-list-item.ng-leave,
-  .phone-list-item.ng-move{
+  .phone-list-item.ng-move {
     transition: 0.5s linear all;
   }
 
