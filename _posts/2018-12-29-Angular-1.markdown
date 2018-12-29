@@ -1,0 +1,827 @@
+---
+layout: post
+title: "AngularJS 1.x 学习笔记"
+date: 2018-12-29 21:03:12 +0800
+categories: learning-notes
+tags: WEB前端 AngularJS-1.x
+---
+* content
+{:toc}
+
+最近在学习 AngularJS 1.x，跟着[ 官网教程 ](https://docs.angularjs.org/tutorial)敲了一遍代码。
+
+## 1. 引导
+
+### 1.1 ng-app 属性
+
+```html
+<html ng-app>
+```
+该指令用于告诉 AngularJS 哪个 HTML 元素是我们应用程序的根元素。
+
+### 1.2 引入 angular
+
+```html
+<script src="lib/angular/angular.js"></script>
+```
+此代码将下载注册回调函数的 angular.js 脚本，HTML 页面全部下载完成后，浏览器将执行注册的回调函数。函数执行时，AngularJS 将查找 ngApp 指令。如果 AngularJS 找到该指令，它将把应用程序的根 DOM 引导至带有 ngApp 指令的元素。
+
+### 1.3 数据绑定
+
+```html
+<p>Nothing here { {'yet' + '!'} }</p>
+```
+
+### 1.4 手动引导
+
+使用该 ngApp 指令自动引导 AngularJS 应用程序非常简单，适用于大多数情况。在高级情况下，例如使用脚本加载器时，您可以使用命令/手动方式来引导应用程序。<br>
+
+在引导阶段发生了三件重要的事情：
+
++ 创建将被用于依赖注入的注入器(injector)。
++ 注入器将创建根作用域(root scope)，该作用域将成为应用程序模型的上下文。
++ AngularJS 将从 ngApp 根元素开始“编译” DOM ，处理沿途发现的任何指令和绑定。
+
+## 2. AngularJS 模板
+
+### 2.1 ng-app
+
+```html
+<html lang="en" ng-app="phonecatApp">
+<!-- 省略 -->
+</html>
+```
+`ng-app="phonecatApp"`: 指定 `AngularJS` 模型为 `phonecatApp`。
+
+### 2.2 Controller 控制器
+
+```html
+<body ng-controller="PhoneListController">
+  <ul>
+    <li ng-repeat="phone in phones">
+      <span>{ {phone.name} }</span>
+      <p>{ {phone.snippet} }</p>
+    </li>
+  </ul>
+</body>
+```
+把 **控制器（controller）** `PhoneListController` 附加到 `body` 元素上。这意味着：
++ `PhoneListController` 负责 `body` 元素下（包括）元素的 `DOM` 子树。
++ `li` 元素中的 `phones` 为 `PhoneListController` 中定义的 `phones`。
+
+### 2.3 模型和控制器(Model and Controller)
+
+新建一个模型 `phonecatApp`，并通过模型的 `controller()` 方法注册了一个名为 `PhoneListController` 的控制器。<br>
+
+`PhoneListController` 函数中传入 `$scope`，然后把数据绑定到了 `$scope`。此 `scope` 为应用定义时所创建的根域(root scope)的子域<br>
+
+`app/app.js` 文件（记得在 index.html 中引入）：
+```js
+// 定义 phonecatApp 模块
+var phonecatApp = angular.module('phonecatApp', []);
+
+// 定义 phonecatApp 模块中包含的控制器
+phonecatApp.controller('PhoneListController', PhoneListController);
+function PhoneListController($scope) {
+  $scope.phones = [
+    {
+      name: 'Nexus S',
+      snippet: 'Fast just got faster with Nexus S.'
+    },
+    {
+      name: 'Motorola XOOM™ with Wi-Fi',
+      snippet: 'The Next, Next Generation tablet.'
+    },
+    {
+      name: 'MOTOROLA XOOM™',
+      snippet: 'The Next, Next Generation tablet.'
+    }
+  ];
+}
+```
+
+### 2.4 域(Scope)
+
+AngularJS 中域的概念至关重要。域可以看作是允许模板、模型和控制器一起工作的粘合剂。<br>
+
+**注:** AngularJS 中的域通过原型继承自其父域，一直到应用程序的根域(root scope)。因此，直接在域上分配值可以轻松地跨页面的不同部分共享数据并创建交互式应用程序。虽然这种方法适用于原型和较小的应用程序，但它很快导致紧密耦合，并且难以推断我们数据模型的变化。
+
+## 3. 组件
+
+### 3.1 创建组件
+
+我们可以使用 `AngularJS` 模块的 `.component()` 方法创建组件。此方法必须传入组件的名称和组件定义对象。定义对象中包含 `template` 、 `templateUrl` 和 `controller` 等。
+
+```js
+// 注册组件 phoneList，以及与其相关的控制器和模板
+angular.module('phonecatApp').component('phoneList', {
+  templateUrl: 'phone-list/phone-list.template.html',
+  controller: function PhoneListController() {
+    this.phones = [
+      {
+        name: 'Nexus S',
+        snippet: 'Fast just got faster with Nexus S.'
+      },
+      {
+        name: 'Motorola XOOM™ with Wi-Fi',
+        snippet: 'The Next, Next Generation tablet.'
+      },
+      {
+        name: 'MOTOROLA XOOM™',
+        snippet: 'The Next, Next Generation tablet.'
+      }
+    ];
+  }
+});
+```
+**注：** 和 3.2 不同，`controller` 构造函数中没用传入 `$scope`，而是在函数中使用了 `this`，指向控制器(controller)的实例。
+
+### 3.2 模板
+
+`phone-list/phone-list.template.html`:
+```html
+<ul>
+  <li ng-repeat="phone in $ctrl.phones">
+    <p>{ {phone.name} }</p>
+    <p>{ {phone.snippet} }</p>
+  </li>
+</ul>
+```
+**注:** 默认情况下，`$ctrl` 为控制器(controller)的实例。
+
+### 3.3 引入和使用组件
+
+在 `index.hmtl` 中引入并使用组件：
+```html
+<head>
+  <!-- 省略 -->
+  <script src="phone-list/phone-list.component.js"></script>
+</head>
+<body>
+  <phone-list></phone-list>
+</body>
+```
+
+## 4. 组件复用
+
+上述 `phoneList` 组件是在 `phonecatApp` 模块上注册的：
+```js
+angular.
+  module('phonecatApp').
+  component('phoneList', ...);
+```
+这样这个组件就没办法在其他项目中使用了。
+
+### 4.1 声明组件的模块
+
+每个功能/部分都应声明自己的模块，所有相关实体都应在该模块上注册。<br>
+`phone-list/phone-list.module.js`:
+```js
+// 声明组件 phoneList 的模块 phoneList
+angular.module('phoneList', []);
+```
+
+### 4.2 修改组件
+
+`phone-list/phone-list.component.js`:
+```js
+angular.
+  module('phoneList').
+  component('phoneList', ...);
+```
+
+### 4.3 修改主模块
+
+把模块 `phoneList` 作为依赖传入主模块 `phonecatApp` 的定义中，使得 `phoneList` 上注册的实体能够在 `phonecatApp` 上使用。<br>
+`app.js`:
+```js
+// 定义 phonecatApp 模块
+var phonecatApp = angular.module('phonecatApp', ['phoneList']);
+```
+
+### 4.4 引入组件模块
+
+```html
+<script src="phone-list/phone-list.module.js"></script>
+<script src="phone-list/phone-list.component.js"></script>
+```
+**注意两者的顺序。**
+
+## 5. Filter
+
+仅修改 `phone-list/phone-list.template.html`:
+```html
+<div class="container-fluid">
+  <div class="row">
+    <!-- 左侧搜索 -->
+    <div class="col-md-2">
+      Search: <input ng-model="$ctrl.query" />
+    </div>
+    <!-- 右侧内容区域 -->
+    <div class="col-md-10">
+      <ul class="phones">
+        <li ng-repeat="phone in $ctrl.phones | filter:$ctrl.query">
+          <p>{ {phone.name} }</p>
+          <p>{ {phone.snippet} }</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+```
+注：
++ `ng-model`: 数据双向绑定，当页面加载时，AngularJS 将输入框的值绑定到指定的数据模型变量，并使两者保持同步。
++ `filter:$ctrl.query`: AngularJS 过滤函数，过滤器函数使用 `$ctrl.query` 创建一个新数组，该数组仅包含与查询匹配的项。
+
+## 6. orderBy
+
+```html
+<div class="container-fluid">
+  <div class="row">
+    <!-- 左侧搜索 -->
+    <div class="col-md-2">
+      <p>Search: <input ng-model="$ctrl.query" /></p>
+      <p>
+        <select ng-model="$ctrl.orderProp">
+          <option value="name">SortByName</option>
+          <option value="age">SortByAge</option>
+        </select>
+      </p>
+    </div>
+    <!-- 右侧内容区域 -->
+    <div class="col-md-10">
+      <ul class="phones">
+        <li ng-repeat="phone in $ctrl.phones | filter:$ctrl.query | orderBy:$ctrl.orderProp">
+          <p>{ {phone.name} }</p>
+          <p>{ {phone.snippet} }</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+```
+注: 
++ `orderBy`: 过滤器，它接受一个输入数组，复制它并重新排序然后返回该副本。
+
+## 7. XHR 和依赖注入
+
+我们将在控制器中使用 AngularJS 的 `$http` 服务向我们的 Web 服务器发出 HTTP 请求以获取文件中的数据。<br>
+
+要在AngularJS中使用服务，只需将所需依赖项的名称声明为控制器构造函数的参数，如下所示：
+```js
+function PhoneListController($http) {...}
+```
+由于 AngularJS 是通过**参数名称**去推断控制器的构造器函数的，在压缩 js 代码后会出问题。因此我们需要保留这些参数名称，下面有两种方法：
+1. `PhoneListController.$inject = ['$http'];` 和<br>
+  `controller: function PhoneListController($http) {...}`。
+2. `controller: ['$http', function PhoneListController($http) {...}]`。
+
+我们将使用第 2 种方法。
+
+修改`phone-list/phone-list.component.js`:
+```js
+// 注册组件 phoneList，以及与其相关的控制器和模板
+angular.module('phoneList').component('phoneList', {
+  templateUrl: 'phone-list/phone-list.template.html',
+  controller: [
+    '$http',
+    function($http) {
+      this.orderProp = 'age';
+      var self = this;
+      $http.get('phones/phones.json').then(function(res) {
+        self.phones = res.data;
+      });
+    }
+  ]
+});
+```
+
+## 8. 模板链接和图片
+
+```html
+<!-- 右侧内容区域 -->
+<div class="col-md-10">
+  <ul class="phones">
+    <li
+      ng-repeat="phone in $ctrl.phones | filter:$ctrl.query orderBy:$ctrl.orderProp"
+      class="thumbnail"
+    >
+      <a href="#!/phones/{ {phone.id} }" class="thumb">
+        <img ng-src="{ {phone.imageUrl} }" alt="{ {phone.name} }" />
+      </a>
+      <a href="#!/phones/{ {phone.id} }">{ {phone.name} }</a>
+      <p>{ {phone.snippet} }</p>
+    </li>
+  </ul>
+</div>
+```
+注：
+1. `ng-src`: 不同于 `ng-model`，绑定数据需要 `{ { } }`。
+2. `href="#!/phones/{ {phone.id} }"`: 部分绑定。
+
+## 9. angular-route
+
+### 9.1 route 配置
+
+正如您所注意到的，依赖注入（DI）是 AngularJS 的核心，因此了解它的工作原理对您来说很重要。
+
+当应用程序引导时，AngularJS 会创建一个注入器，用于查找和注入应用程序所需的所有服务。注入器本身并不知道 `$http` 或 `$route` 服务有什么作用。实际上，除非配置了适当的模块定义，否则注入器甚至不知道这些服务的存在。
+
+注入器只执行以下步骤：
+
++ 加载您在应用程序中指定的模块定义。
++ 注册这些模块定义中定义的所有 Provider。
++ 当被要求这样做时，懒惰地将服务及其依赖项（通过其 Provider）实例化为可注入函数的参数。
+
+AngularJS 中的应用程序路由是通过 `$routeProvider` 声明的，`$routeProvider` 是 `$route` 服务的提供者。此服务可以轻松地将控制器，视图模板和当前 URL 位置连接到浏览器中。<br>
+
+**注:** `Provider`只能注入 `config` 函数。因此你不能在运行时把 `$routeProvider` 注入到 `PhoneListController` 中。<br>
+`app.config.js`:
+```js
+// 模块的.config（）方法使我们可以访问可用的配置提供程序
+angular.module('phonecatApp').config([
+  '$routeProvider',
+  function config($routeProvider) {
+    $routeProvider
+      .when('/phones', { template: '<phone-list></phone-list>' })
+      .when('/phones/:phoneId', { template: '<phone-detail></phone-detail>' })
+      .otherwise('/phones');
+  }
+]);
+```
+
+### 9.2 app.js 改为 app.component.js
+
+添加 `ngRoute` 作为 `phonecatApp` 模块的依赖项。<br>
+`app.component.js`:
+```js
+// 定义 phonecatApp 模块
+angular.module('phonecatApp', ['ngRoute', 'phoneList', 'phoneDetail']);
+```
+### 9.3 phoneDetail 组件
+
+添加 `ngRoute` 作为 `phoneDetail` 模块的依赖项。<br>
+**注:** 不加也行，但是官方建议，为保证模块化编程，不要依赖其父模块 `phonecatApp` 中的依赖项。<br>
+`phone-detail/phone-detail.module.js`:
+```js
+angular.module('phoneDetail', ['ngRoute']);
+```
+新建 phoneDetail 组件：<br>
+`phone-detail/phone-detail.component.js`:
+```js
+angular.module('phoneDetail').component('phoneDetail', {
+  template: 'TBD: Detail view for <span>{ {$ctrl.phoneId} }</span>',
+  controller: [
+    '$routeParams',
+    function PhoneDetailController($routeParams) {
+      this.phoneId = $routeParams.phoneId;
+    }
+  ]
+});
+```
+
+## 10. 自定义过滤器
+
+### 10.1 新建 core 模块
+
+由于此过滤器是通用的（即它不是特定于任何视图或组件），我们将新建一个 core 模块并在其中注册它。<br>
+
+`core/core.module.js`:
+```js
+angular.module('core', []);
+```
+
+### 10.2 新建 filter
+
+在 core 模块中注册 checkout 过滤器:<br>
+`core/checkout/checkout.filter.js`:
+```js
+angular.module('core').filter('checkmark', function() {
+  return function(input) {
+    return input ? '\u2713' : '\u2718';
+  };
+});
+```
+
+### 10.3 修改 phonecatApp 模块
+
+把 core 模块添加至 phonecatApp 根组件的依赖中:
+```js
+// 定义 phonecatApp 模块
+angular.module('phonecatApp', ['ngRoute', 'phoneList', 'phoneDetail', 'core']);
+```
+
+### 10.4 使用过滤器
+
+使用 checkmark 过滤器:
+```html
+<dd>{ {$ctrl.phone.connectivity.gps | checkmark} }</dd>
+```
+
+## 11. 事件处理
+
+### 11.1 修改 phoneDetail 组件
+
+`phone-detail.component.js` 中新增 `setImageUrl` 方法:
+```js
+angular.module('phoneDetail').component('phoneDetail', {
+  templateUrl: 'phone-detail/phone-detail.template.html',
+  controller: [
+    '$routeParams',
+    '$http',
+    function PhoneDetailController($routeParams, $http) {
+      this.phoneId = $routeParams.phoneId;
+      var self = this;
+      // 设置 mainImageUrl 的方法
+      this.setImageUrl = function(url) {
+        self.mainImageUrl = url;
+      };
+      $http.get('phones/' + this.phoneId + '.json').then(function(res) {
+        self.phone = res.data;
+        self.setImageUrl(self.phone.images[0]);// 设置 mianImageUrl 为 images[0]
+      });
+    }
+  ]
+});
+```
+
+### 11.2 修改 phoneDetail 组件的模板
+
+修改 `phone-detail.template.html`:
+```html
+<!-- 把 img 标签的 src 属性绑定至 $ctrl.mainImageUrl -->
+<img ng-src="{ {$ctrl.mainImageUrl} }" class="phone" />
+<!-- 省略 -->
+<!-- 新增点击事件，调用 $ctrl.setImageUrl 方法 -->
+<ul class="phone-thumbs">
+  <li ng-repeat="img in $ctrl.phone.images">
+    <img ng-src="{ {img} }" ng-click="$ctrl.setImageUrl(img)" />
+  </li>
+</ul>
+<!-- 省略 -->
+```
+
+## 12. angular-resource
+
+首先安装依赖库 `angular-resource 1.7.x`。
+
+### 12.1 新建 core.phone 模块和服务
+
+在 core 模块下新建 core.phone 模块来提供请求数据的服务。<br>
+`core/phone/phone.module.js`:
+```js
+angular.module('core.phone', ['ngResource']);
+```
+
+使用模块的 factory 函数创建一个自定义服务 Phone。factory 函数类似于控制器的构造函数，因为它们都可以声明依赖项通过函数参数注入。该 Phone 服务声明了对 $resource 服务的依赖性(由模块 ngResource 提供)。<br>
+`core/phone/phone.service.js`:
+```js
+angular.module('core.phone').factory('Phone', [
+  '$resource',
+  function($resource) {
+    return $resource(
+      'phones/:phoneId.json',
+      {},
+      {
+        query: {
+          method: 'GET',
+          params: { phoneId: 'phones' },
+          isArray: true
+        }
+      }
+    );
+  }
+]);
+```
+只需几行，$resource 服务就可以很容易地创建一个 REST 风格的客户端代码。然后我们就可以在的应用程序中使用此客户端替代较低级别的 $http 服务。
+
+### 12.2 把 core.phone 作为依赖添加至 core 模块
+
+`core/core.module.js`:
+```js
+angular.module('core', ['core.phone']);
+```
+
+### 12.3 组件控制器
+
+把组件控制器( PhoneListController 和 PhoneDetailController )中的 $http 服务换为 Phone 服务。<br>
+
++ phone-list
+   + `phone-list/phone-list.module.js`:
+   ```js
+   angular.module('phoneList', ['core.phone']);
+   ```
+   + `phone-list/phone-list.component.js`:
+   ```js
+   // 注册组件 phoneList，以及与其相关的控制器和模板
+   angular.module('phoneList').component('phoneList', {
+     templateUrl: 'phone-list/phone-list.template.html',
+     controller: [
+       'Phone',
+       function(Phone) {
+         this.orderProp = 'age';
+         this.phones = Phone.query();
+         // var self = this;
+         // $http.get('phones/phones.json').then(function(res) {
+         //   self.phones = res.data;
+         // });
+       }
+     ]
+   });
+   ```
++ phone-detail
+   + `phone-detail/phone-detail.module.js`:
+   ```js
+   angular.module('phoneDetail', ['ngRoute', 'core.phone']);
+   ```
+   + `phone-detail/phone-detail.component.js`:
+   ```js
+   angular.module('phoneDetail').component('phoneDetail', {
+   templateUrl: 'phone-detail/phone-detail.template.html',
+   controller: [
+     '$routeParams',
+     'Phone',
+     function PhoneDetailController($routeParams, Phone) {
+       this.phoneId = $routeParams.phoneId;
+       var self = this;
+       // 设置 mainImageUrl 的方法
+       this.setImageUrl = function(url) {
+         self.mainImageUrl = url;
+       };
+       this.phone = Phone.get({ phoneId: this.phoneId }, function(res) {
+         self.setImageUrl(res.images[0]);
+       });
+       // $http.get('phones/' + this.phoneId + '.json').then(function(res) {
+       //   self.phone = res.data;
+       //   self.setImageUrl(self.phone.images[0]);// 设置 mianImageUrl 为 images[0]
+       // });
+       }
+     ]
+   });
+   ```
+
+**注:** 
++ 在 phoneList 组件中，我们直接使用了 Phone.query()，没有传入参数和回调函数:
+  ```js
+  this.phones = Phone.query();
+  ```
+  当收到 XHR 响应后，响应数据 res.data 会自动赋值给 this.phones。
++ 在 phoneDetail 组件中，我们使用了 Phone.get() 方法，传入了参数和回调函数:
+  ```js
+  this.phone = Phone.get(
+    { phoneId: this.phoneId },
+    function(res) {
+      self.setImageUrl(res.images[0]);
+    }
+  );
+  ```
+
+## 13. 动画
+
+添加依赖模块：`"angular-animate": "1.7.x"` 和 `"jquery": "3.3.x"`。
+
+### 13.1 使用 ngAnimate
+
++ phonecatApp 模块中新增依赖 ngAnimate:<br>
+  `app.module.js`:
+  ```js
+  angular.module('phonecatApp', ['ngRoute', 'phoneList', 'phoneDetail', 'core', 'ngAnimate']);
+  ```
++ phoneList 模板中给每个手机 li 元素新增 `class="phone-list-item"`:<br>
+  `phone-list/phone-list.template.html`:
+  ```html
+  <ul class="phones">
+    <li
+      ng-repeat="phone in $ctrl.phones | filter:$ctrl.query | orderBy:$ctrl.orderProp"
+      class="thumbnail phone-list-item"
+    >
+      <!-- 省略 -->
+    </li>
+  </ul>
+  ```
++ 新增动画 css<br>
+  当元素被添加、被移除或者位置发生变化时，会自动应用相关动画钩子。<br>
+  `app.animation.css`:
+  ```css
+  /*
+  .ng-enter: 元素进场
+  .ng-leave: 元素离场
+  .ng-move: 元素移动
+
+  .ng-enter-active: 元素进场结束
+  .ng-leave-active: 元素离场结束
+  .ng-move-active: 元素移动结束
+  */
+
+  /* 元素进场、离场和移动式的过渡效果 */
+  .phone-list-item.ng-enter,
+  .phone-list-item.ng-leave,
+  .phone-list-item.ng-move{
+    transition: 0.5s linear all;
+  }
+
+  /* 元素进场和移动时 */
+  .phone-list-item.ng-enter,
+  .phone-list-item.ng-move {
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  /* 元素进场和移动结束后 */
+  .phone-list-item.ng-enter.ng-enter-active,
+  .phone-list-item.ng-move.ng-move-active {
+    height: 120px; /* 需要一个高度值 */
+    opacity: 1;
+  }
+
+  /* 元素离场时 */
+  .phone-list-item.ng-leave {
+    opacity: 1;
+    overflow: hidden;
+  }
+
+  /* 元素离场后 */
+  .phone-list-item.ng-leave.ng-leave-active {
+    height: 0;
+    opacity: 0;
+    padding-bottom: 0;
+    padding-top: 0;
+  }
+  ```
++ `index.html` 中引入新增文件和库:
+  ```html
+  <link rel="stylesheet" href="app.animation.css">
+  <!-- 引入jquery.js， 放在angular.js之前导入 -->
+  <script src="lib/jquery/dist/jquery.js" ></script>
+  <script src="lib/angular-animate/angular-animate.js"></script>
+  ```
+  **注:** jquery.js 库放在 angular.js 库之前导入。
+
+### 13.2 关键帧动画
+
++ `index.html` 中，把 ng-view 元素包裹在 div 元素中：
+  ```html
+  <body>
+    <div class="view-container">
+      <div ng-view class="view-frame"></div>
+    </div>
+  </body>
+  ```
++ `app.animation.css` 中新增页面切换动画:
+  ```css
+  /* 页面切换动画 */
+  .view-container {
+    /* 相对定位 */
+    position: relative;
+  }
+
+  .view-frame.ng-enter,
+  .view-frame.ng-leave {
+    /* 绝对定位，页面切换时，不会出现旧页面慢慢消失，新页面突然向上移动 */
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    background: white;
+  }
+
+  .view-frame.ng-enter {
+    animation: 1s fade-in;
+    z-index: 100;
+  }
+
+  .view-frame.ng-leave {
+    animation: 1s fade-out;
+    z-index: 99;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0 }
+    to { opacity: 1 }
+  }
+
+  @keyframes fade-out {
+    from { opacity: 1 }
+    to { opacity: 0 }
+  }
+  ```
+  **注:** 
+  + ng-view 元素使用了绝对定位，其父级元素使用了相对定位，并设置相应的 z-index 属性，这样做能够防止旧页面慢慢消失，新页面突然向上移动的情况。
+  + 对于旧浏览器，可能需要给 keyframes 和 animation 添加前缀。
+
+### 13.3 使用 ngClass 和 JS 完成动画
+
++ 修改 `phone-detail/phone-detail.template.html`:
+  ```html
+  <!--<img ng-src="{ {$ctrl.mainImageUrl} }" class="phone" />-->
+  <div class="phone-images">
+    <img
+      ng-repeat="img in $ctrl.phone.images"
+      ng-src="{ {img} }"
+      ng-class="{selected: image === $ctrl.mainImageUrl}"
+      class="phone"
+    />
+  </div>
+  ```
+  注意其中的 ng-class 属性，只有满足 `image === $ctrl.mainImageUrl` 的 image 标签才会有 selected 类。当 selected 类被添加至一个元素上时，selected-add 和 selected-add-active 类在通知 AngularJS 执行动画前被添加至该元素上；当 selected 类被移除时，selected-remove 和 selected-remove-active 类将添加至该元素，从而引发另一个动画。
++ `app.css` 中新增样式:
+  ```css
+  .phone {
+    background-color: white;
+    display: none;
+    float: left;
+    height: 400px;
+    margin-bottom: 2em;
+    margin-right: 3em;
+    padding: 2em;
+    width: 400px;
+  }
+
+  .phone:first-child {
+    display: block;
+  }
+
+  .phone-images {
+    background-color: white;
+    float: left;
+    height: 450px;
+    overflow: hidden;
+    position: relative;
+    width: 450px;
+  }
+  ```
++ 使用模块方法 .animation() 创建基于 js 的动画:<br>
+  `app.animation.js`:
+  ```js
+  angular
+  .module('phonecatApp')
+  .animation('.phone', function phoneAnimationFactory() {
+    return {
+      addClass: animateIn,
+      removeClass: animateOut
+    };
+    // animateIn
+    function animateIn(element, className, done) {
+      if (className !== 'selected') {
+        return;
+      }
+      element
+        .css({
+          display: 'block',
+          position: 'absolute',
+          top: 500,
+          left: 0
+        })
+        .animate(
+          {
+            top: 0
+          },
+          done
+        );
+      return function animateInEnd(wasCanceled) {
+        if (wasCanceled) {
+          element.stop();
+        }
+      };
+    }
+    // animateOut
+    function animateOut(element, className, done) {
+      if (className !== 'selected') {
+        return;
+      }
+      element
+        .css({
+          position: 'absolute',
+          top: 0,
+          left: 0
+        })
+        .animate(
+          {
+            top: -500
+          },
+          done
+        );
+      return function animateOutEnd(wasCanceled) {
+        if (wasCanceled) {
+          element.stop();// 停止当前动画
+        }
+      };
+    }
+  });
+  ```
+  注:
+   + 通过 CSS 选择器(`.phone`)指定目标元素;
+   + 通过动画工厂函数(`phoneAnimationFactory()`)创建动画;
+   + 工厂函数返回一个对象，key 为事件，value 为回调函数;
+   + ngAnimate 能够识别 DOM 动作，如 addClass/removeClass/setClass，enter/move/leave 和 animate，然后在合适的时机调用相关回调函数;
+   + 当 selected 类被添加至元素时，调用函数 animateIn()，第一个参数为元素 element，最后一个参数为回调函数 done()，用于告诉 AngularJS 动画已结束;
+   + 当 selected 类从元素上移除时，调用函数 animateOut();
+   + jQuery 的 animate() 能更简单地实现动画效果，不用也行。
+   + 动画通过 jQuery 的 css() 和 animate() 方法来完成，旧元素从 top=0 移动至 top=-500, 新元素从 top=500 移动至 top=0;
+   + 动画完成后，调用 done 函数，通知 AngularJS 动画已结束;
+   + 动画回调函数都返回了一个函数，这个函数是可选的，在动画结束时，或者动画被取消时(比如此元素的动画被另一个动画取代)调用。
++ 在 `index.html` 中引入 `app.animation.js`
+  ```html
+  <script src="app.animation.js"></script>
+  ```
