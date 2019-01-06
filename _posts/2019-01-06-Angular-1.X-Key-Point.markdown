@@ -1,0 +1,308 @@
+---
+layout: post
+title: "Angular 1.x 要点"
+date: 2019-01-06 14:50:12 +0800
+categories: learning-notes
+tags: AngularJS-1.x
+---
+* content
+{:toc}
+
+
+## 1. 指令(Directive)
+
+指令是 DOM 元素上的标记（例如属性，元素名称，注释或CSS类），它告诉 AngularJS 的 HTML 编译器（$compile）将指定的行为附加到该 DOM 元素上（例如，通过事件监听器），或者甚至可以转换 DOM 元素及其子元素。
+
+### 1.1 指令类型
+
+`$compile` 可以匹配以下四种类型的指令:
++ `<my-dir></my-dir>`: 元素名称(E)，`restrict: E`
++ `<span my-dir="exp"></span>`: 属性(A)，`restrict: A`
++ `<span class="my-dir: exp;"></span>`: 类名(C)，`restrict: C`
++ `<!-- directive: my-dir exp -->`: 注释(M)，`restrict: M`
+
+注: 默认是 `restrict: EA`。
+
+### 1.2 创建指令API
+
+我们可以使用 `directive(name, directiveFactory)` 创建指令，其中: 
++ `name`: 字符串(指令名)或对象(键: 名；值: factories)
++ `directiveFactory`: 可注入的指令工厂函数
+
+此工厂函数应该返回一个具有不同选项的对象，以告诉 `$compile` 指令在匹配时应该如何表现。<br>
+
+工厂函数只被调用一次，即当编译器(compile)第一次匹配指令时。 我们可以在工厂函数中执行任何初始化工作。 工厂函数通过 `$injector.invoke` 被调用，使其像控制器一样可注入。
+
+
+
+
+### 1.3 模板扩展指令
+
+假设有一个在代码中多次出现代表客户的信息模板。当我们需要修改其信息时，必须在此信息出现的所有地方修改它。此时我们可以使用指令简化模板。<br>
+
+html:
+```html
+<body ng-app="myApp">
+  <div ng-controller="MyController">
+    <!-- 模板A -->
+    <div my-customer-a></div>
+    <my-customer-a></my-customer-a>
+    <!-- 模板B -->
+    <div my-customer-b></div>
+    <my-customer-b></my-customer-b>
+  </div>
+</body>
+```
+js:
+```js
+(function(angular) {
+  angular
+    .module("templateModule", [])
+    .controller("MyController", [
+      "$scope",
+      function($scope) {
+        $scope.customerA = {
+          name: "name A",
+          address: "address A"
+        };
+        $scope.customerB = {
+          name: "name B",
+          address: "address B"
+        };
+      }
+    ])
+    .directive("myCustomerA", function() {
+      return {
+        template:
+          "<div>Name: { {customerA.name} } <br> Address: { {customerA.address} }</div>"
+      };
+    })
+    .directive("myCustomerB", function() {
+      return {
+        template:
+          "<div>Name: { {customerB.name} } <br> Address: { {customerB.address} }</div>"
+      };
+    });
+})(window.angular);
+```
+在 `$compile` 编译并链接元素
++ `<div my-customer-a></ div>` 或
++ `<my-customer-a></my-customer-a>`
+
+时，它将尝试把指令 `myCustomerA` 匹配到元素的子节点上。
+
+### 1.4 孤立指令的域(Scope)
+
+1.3 中的指令有个弊端：我们得为不同的顾客创建不同的指令。<br>
+
+我们希望能够做的是将指令内的域与外部域分开，然后将外部域映射到指令的内部域。我们可以通过创建我们称之为孤立域(isolate scope)的方法来实现。
+为此，我们可以使用指令的 `scope` 选项：<br>
+
+html:
+```html
+<body ng-app="myApp">
+  <div ng-controller="MyController">
+    <!-- 通用模板 -->
+    <my-customer customer-info="customerA"></my-customer>
+    <my-customer customer-info="customerB"></my-customer>
+  </div>
+</body>
+```
+js:
+```js
+(function(angular) {
+  angular.module('isolateModule', []).controller('MyController', [
+    '$scope',
+    function($scope) {
+      $scope.customerA = {
+        name: 'name A',
+        address: 'address A'
+      };
+      $scope.customerB = {
+        name: 'name B',
+        address: 'address B'
+      };
+    }
+  ]).directive('myCustomer', function() {
+    return {
+      // 类型 E: element names
+      restrict: 'E',
+      // 指定隔离域中的属性;
+      scope: {
+        // = 为双向绑定;把指令内部属性 customerInfo 绑定至外部的 customer-info
+        // 可简写为 customerInfo: '='
+        customerInfo: '=customerInfo'
+      },
+      templateUrl: '01-template.html'// 可以使用 customerInfo
+    }
+  });
+})(window.angular);
+```
+模板 html:
+```html
+<div>
+  Name: { {customerInfo.name} }
+</div>
+<div>
+  Address: { {customerInfo.address} }
+</div>
+```
+注: 
++ 1) `scope` 选项是一个对象，它包含了孤立域绑定的属性;
++ 2) `customerInfo: '=customerInfo'` 告诉 `$compile` 把指令内部属性 `customerInfo` 绑定至外部的 `customer-info`<br>
+可简写为: `customerInfo: '='`;
++ 3) 孤立域无法访问外部域中的属性;
++ 4) 三种绑定方式:
+   + `customerInfo: '<'`: 单向绑定，但 customerInfo 为对象/数组时，修改其值也会影响其父域;
+   + `customerInfo: '='`: 双向绑定;
+   + `customerInfo: '@'`: 多用于传入字符串，特别是不变的字符串;
+   + `customerInfo:` `'<?'`、`'=?'` 或 `'@?'`: `?` 表示此绑定的属性为可选。
+
+### 1.5 操纵DOM的指令
+
+想要修改 DOM 的指令通常使用 `link` 选项来注册 DOM 监听器以及更新 DOM。<br>
+
+`link` 采用具有以下签名的函数:
+```js
+function link(scope, element, attrs, controller, transcludeFn) { ... }
+```
+其中：
++ `scope`: 是一个 AngularJS 域对象。
++ `element`: 是此指令匹配的 jqLit​​e 包装元素。
++ `attrs`: 是一个哈希对象，具有标准化属性名称及其对应属性值的键值对。
++ `controller`: 是指令所需的控制器实例或其自己的控制器（如果有的话）。确切的值取决于指令的 `require` 属性。
++ `transcludeFn`: 是一个预先绑定到正确的转换域的转换链接函数。
+
+设置一个定时器，每1s更新一次时间。在 `<input />` 中修改时间格式(默认为`'yyyy-MM-dd hh:mm:ss a'`)，显示的时间格式也将做对应修改。<br>
+html:
+```html
+<body ng-app="myApp">
+  <div ng-controller="MyController">
+    <div>
+      日期格式:
+      <input type="text" ng-model="format" /> <br />
+    </div>
+    <div>
+      当前时间:
+      <span my-timer="format"></span>
+    </div>
+  </div>
+</body>
+```
+js:
+```js
+(function(angular) {
+  angular
+    .module('timeDirective', [])
+    .controller('MyController', [
+      '$scope',
+      function($scope) {
+        $scope.format = 'yyyy-MM-dd hh:mm:ss a';
+      }
+    ])
+    .directive('myTimer', [
+      '$interval',
+      'dateFilter',
+      function($interval, dateFilter) {
+        var timer;// 定时器
+        var fmt;// 格式化参数
+        function link(scope, element, attrs) {
+          // 把当前时间更新至 DOM 中
+          function updateTime() {
+            element.text(dateFilter(new Date(), fmt));
+          }
+          // 监听 attrs.myTimer(先执行此函数，然后开启定时器)
+          scope.$watch(attrs.myTimer, function(value) {
+            fmt = value;
+            updateTime();
+          });
+          // 开启定时器
+          timer = $interval(updateTime, 1000);
+          // 监听 DOM 销毁事件
+          element.on('$distory', function() {
+            $interval.cancel(timer);
+          });
+        }
+        // link 用于注册 DOM 监听(listener)和更新 DOM
+        return {
+          link
+        };
+      }
+    ]);
+})(window.angular);
+```
+注:
++ 和 `module.controller` API 一样，`module.directive` 中的函数参数(`$interval`和`dateFilter`)是依赖注入;
++ 当使用 AngularJS 的编译器编译的 DOM 节点被销毁时，它会发出 `$destroy`事件。<br>
+  `element.on('$distory', function() {})` 监听 DOM 销毁事件。类似地，当 AngularJS 域被销毁时，它会向监听域广播 `$destroy` 事件。
++ 注册到域和元素的监听器在销毁时会被自动清理，但如果我们在服务上注册了监听器，或者在未删除的 DOM 节点上注册了监听器，则必须自行清理，否则会有内存泄漏的风险。
++ 指令应该自行清理。我们可以在指令被移除时使用以下两种方式来运行清理函数:
+   + `element.on('$destroy', ...)`
+   + `scope.$on('$destroy', ...)`
+
+### 1.6 包含其他元素的指令
+
+html:
+```html
+<body ng-app="myApp">
+  <div ng-controller="MyController">
+    <div ng-hide="!isMessageHidden">{{message}}</div>
+    <!-- 注: hideMyDialog(message) 中的 message 不能省略，它将被用于通过 in 操作符号查找 message 的值 -->
+    <my-dialog ng-hide="isMessageHidden" on-close="hideMyDialog(message)">name from out scope: {{ name }}</my-dialog>
+  </div>
+</body>
+```
+js:
+```js
+(function(angular) {
+  angular
+    .module('elementDirective', [])
+    .controller('MyController', [
+      '$scope',
+      '$timeout',
+      function($scope, $timeout) {
+        $scope.name = 'nxj';
+        $scope.msg = '';
+        $scope.isMessageHidden = false;
+        // 隐藏 <my-dialog>
+        $scope.hideMyDialog = function(message) {
+          $scope.message = message;
+          $scope.isMessageHidden = true;
+          // 2秒后恢复
+          $timeout(function() {
+            $scope.message = '';
+            $scope.isMessageHidden = false;
+          }, 2000);
+        }
+      }
+    ])
+    .directive('myDialog', [
+      function() {
+        return {
+          district: 'E',
+          // 创建包含任意内容的指令(HTML 标签中使用 ng-transclude，任意内容将会插入到此标签内)
+          transclude: true,
+          scope: {
+            // =: 绑定指令内部属性;
+            // &: 绑定指令内部回调函数;把指令内部的 click 绑定至外部的 on-click
+            close: '&onClose'
+          },
+          link: function(scope) {
+            scope.name = 'nie(within directive)';
+          },
+          templateUrl: '03-my-dialog.html'
+        };
+      }
+    ]);
+})(window.angular);
+```
+模板html:
+```html
+<div class="alert">
+  <!-- 注：通过传递包含键值对的对象，把隔离域中的值传递出来 -->
+  <a class="close" href ng-click="close({message: 'reset in 2 seconds ...'})">X</a>
+  <div ng-transclude></div>
+  <div>name in directive: {{name}}</div>
+</div>
+
+```

@@ -56,8 +56,27 @@ tags: WEB前端 AngularJS-1.x
 ```
 `ng-app="phonecatApp"`: 指定 `AngularJS` 模型为 `phonecatApp`。
 
-### 2.2 Controller 控制器
+### 2.2 控制器(Controller)
 
+在 AngularJS 中，Controller 由 JavaScript 构造函数定义，该函数用于扩充 AngularJS Scope。<br>
+```js
+controller(name, constructor);
+```
+注: 在有依赖注释时，`constructor` 为数组，依赖注释放在数组前面，构造函数放在数组的末尾，如:<br>
+```js
+angular.module('phonecatApp').controller("PhoneListController", [
+  "$scope",
+  function($scope) {
+    $scope.phones = [/* 省略 */];
+  }
+])
+```
+控制器(controller)可以以不同方式附加到 DOM 上。对于每种方式，AngularJS 将使用指定的 Controller 构造函数实例化一个新的 Controller 对象：
++ ngController 指令，会新建一个子域，并在构造函数中以 $scope 传入
++ 路由定义中的路由控制器
++ 常规指令或组件指令中的控制器
+
+下面使用的是第一种方法:
 ```html
 <body ng-controller="PhoneListController">
   <ul>
@@ -76,7 +95,7 @@ tags: WEB前端 AngularJS-1.x
 
 新建一个模型 `phonecatApp`，并通过模型的 `controller()` 方法注册了一个名为 `PhoneListController` 的控制器。<br>
 
-`PhoneListController` 函数中传入 `$scope`，然后把数据绑定到了 `$scope`。此 `scope` 为应用定义时所创建的根域(root scope)的子域<br>
+`PhoneListController` 函数中传入 `$scope`，然后把数据绑定至 `$scope`。此 `scope` 为应用定义时所创建的根域(root scope)的子域<br>
 
 `app/app.js` 文件（记得在 index.html 中引入）：
 ```js
@@ -109,11 +128,23 @@ AngularJS 中域的概念至关重要。域可以看作是允许模板、模型�
 
 **注:** AngularJS 中的域通过原型继承自其父域，一直到应用程序的根域(root scope)。因此，直接在域上分配值可以轻松地跨页面的不同部分共享数据并创建交互式应用程序。虽然这种方法适用于原型和较小的应用程序，但它很快导致紧密耦合，并且难以推断我们数据模型的变化。
 
-## 3. 组件
+## 3. 组件(Component)
+
+在 AngularJS 中，组件(Component) 是一种特殊的指令(directive)，它使用更简单的配置，适用于基于组件的应用程序结构。<br>
+
+组件的优势:
++ 比一般的指令更容易配置
++ 针对基于组件的架构进行了优化
++ 编写组件指令将使其更容易升级到 Angular
+
+什么时候不要使用组件：
++ 当你需要在编译和预链接函数中执行操作的指令时，因为组件不可用
++ 当你需要高级指令定义选项时，如优先级，终端，多元素等
++ 当你想要一个由属性或 CSS类 而不是元素触发的指令时
 
 ### 3.1 创建组件
 
-我们可以使用 `AngularJS` 模块的 `.component()` 方法创建组件。此方法必须传入组件的名称和组件定义对象。定义对象中包含 `template` 、 `templateUrl` 和 `controller` 等。
+我们可以使用 `AngularJS` 模块的 `.component(name, options)` 方法创建组件。此方法必须传入组件的名称和组件定义对象。定义对象中包含 `template` 、 `templateUrl` 和 `controller` 等。
 
 ```js
 // 注册组件 phoneList，以及与其相关的控制器和模板
@@ -137,7 +168,22 @@ angular.module('phonecatApp').component('phoneList', {
   }
 });
 ```
-**注：** 和 3.2 不同，`controller` 构造函数中没用传入 `$scope`，而是在函数中使用了 `this`，指向控制器(controller)的实例。
+**注：** 
++ 1) 组件不同于指令，他总是具有孤立域(isolate scope)，并仅限于元素(`restrict: 'E'`);
++ 2) 因此，和 3.2 不同，`controller` 构造函数中没用传入 `$scope`，而是在函数中使用了 `this`。
++ 3) 第二个对象参数中有 `bindings` 属性，用于定义 DOM 属性和组件属性之间的绑定。
+   + `bindings: {hero: '<'}`: 单向绑定，但 hero 为对象/数组时，修改其值也会影响其父 scope
+   + `bindings: {fieldValue: '='}`: 双向绑定
+   + `bindings: {fieldType: '@?'}`: `@` 多用于传入字符串，特别是不变的字符串，`?` 表示此绑定的属性为可选。
++ 4) 第二个对象参数中有 `require` 属性，可以为字符串，数组，或对象，用于实现组件间通信。<br>
+```js
+require: {myTabs: '^myTabs'}
+```
+上述属性的含义是，把 `myTabs` 的 `controller` 作为第4个参数传入自己 `controller`。
+   + 无符号表示搜寻自身
+   + `^` 表示搜寻自身及其祖先(parents)
+   + `^^` 表示搜寻其祖先(parents)
+   + `?`、`?^` 和 `?^^` 搜寻不到时不会报错，传 `null` 给第4个参数
 
 ### 3.2 模板
 
@@ -150,7 +196,7 @@ angular.module('phonecatApp').component('phoneList', {
   </li>
 </ul>
 ```
-**注:** 默认情况下，`$ctrl` 为控制器(controller)的实例。
+**注:** 组件的 `controllerAs` 属性默认为 `$ctrl` ，用于引用组件的域(scope)中的控制器(controller)。
 
 ### 3.3 引入和使用组件
 
