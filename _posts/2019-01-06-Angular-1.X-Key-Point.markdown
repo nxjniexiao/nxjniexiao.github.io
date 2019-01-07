@@ -304,5 +304,109 @@ js:
   <div ng-transclude></div>
   <div>name in directive: {{name}}</div>
 </div>
+```
 
+### 1.7 能够通讯的指令
+
+有时，我们需要一个由指令组合构建的组件。<br>
+
+想象一下，我们希望拥有一个带有选项卡的容器，其中容器的内容对应于当前激活的选项卡。<br>
+
+html:
+```html
+<body ng-app="myApp">
+  <my-tabs>
+    <my-plane title="tab 1">
+      <p>Content of tab 1</p>
+      <div ng-click="i=i+1">
+        <a href="">点击 {{i || 0}}</a>
+      </div>
+    </my-plane>
+    <my-plane title="tab 2">
+      <p>Content of tab 2</p>
+      <div ng-click="i=i+1">
+        <a href="">点击 {{i || 0}}</a>
+      </div>
+    </my-plane>
+  </my-tabs>
+</body>
+```
+js:
+```js
+(function(angular) {
+  angular.module('tabsAndPlanes', []);
+  angular
+    .module('tabsAndPlanes')
+    .directive('myTabs', function() {
+      return {
+        templateUrl: '04-my-tabs-template.html',
+        restrict: 'E',
+        transclude: true,
+        controller: ['$scope', MyTabsController]
+      };
+      function MyTabsController($scope) {
+        var planes = ($scope.planes = []);
+        // this 和 $scope 的区别:
+        // 1. this 为 MyTabsController
+        // 2. $scope 为控制器控制的域(scope)
+        this.addPlane = function(plane) {
+          if (planes.length === 0) {
+            plane.selected = true;
+          }
+          $scope.planes.push(plane);
+        };
+        $scope.selectPlane = function(plane) {
+          planes.forEach(plane => (plane.selected = false));
+          plane.selected = true;
+        };
+      }
+    })
+    .directive('myPlane', function() {
+      return {
+        templateUrl: '04-my-plane-template.html',
+        restrict: 'E',
+        transclude: true,
+        scope: {
+          title: '@'
+        },
+        require: '^^myTabs',
+        link
+      };
+      // 模板被克隆后执行 link
+      function link(scope, element, attrs, myTabsCtrl) {
+        myTabsCtrl.addPlane(scope);
+      }
+    });
+})(window.angular);
+```
+注：
++ 1) `controller: ['$scope', MyTabsController]`: 在 `myTabs` 指令中使用此属性时，将会和 `ngController` 一样，把此控制器绑定至指令的模板;
++ 2) `require: '^^myTabs'`: 在 `myPlane` 指令中使用此属性时，如果 `$compile` 找不到指定的控制器 `myTabs`，将报错;<br>
+其中 `^^` 前缀的含义如下：
+   + 无符号表示搜寻自身
+   + `^` 表示搜寻自身及其祖先(parents)
+   + `^^` 表示搜寻其祖先(parents)
+   + `?`、`?^` 和 `?^^` 搜寻不到时不会报错，传 `null` 给第4个参数
++ 3) `function link(scope, element, attrs, myTabsCtrl)`: `myTabs` 指令的控制器作为第4个参数传入;
++ 4) `MyTabsController` 构造函数中 `this` 和 `$scope` 的区别:
+   + `this` 为 `MyTabsController`，`this.addPlane` 能暴露 `addPlane()` 方法 ，以供其他指令使用;
+   + `$scope` 为控制器控制的域(scope);
++ 5) `link` 和 `controller` 的区别:
+   + `controller` 可以暴露 API 供其他指令使用;
+   + `link` 函数可以通过使用 `require` 与控制器交互。
+tabs 模板 html:
+```html
+<ul>
+  <li ng-repeat="plane in planes" ng-click="selectPlane(plane)">
+    <a href="">{{plane.title}}</a>
+  </li>
+</ul>
+<div ng-transclude></div>
+```
+plane 模板 html:
+```html
+<div ng-show="selected">
+  <h4>{{title}}</h4>
+  <div ng-transclude></div>
+</div>
 ```
