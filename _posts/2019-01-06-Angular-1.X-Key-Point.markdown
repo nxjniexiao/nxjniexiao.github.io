@@ -246,11 +246,11 @@ js:
 
 html:
 ```html
-<body ng-app="myApp">
+<body ng-app="myApp"
   <div ng-controller="MyController">
-    <div ng-hide="!isMessageHidden">{{message}}</div>
+    <div ng-hide="!isMessageHidden">{ {message} }</div>
     <!-- 注: hideMyDialog(message) 中的 message 不能省略，它将被用于通过 in 操作符号查找 message 的值 -->
-    <my-dialog ng-hide="isMessageHidden" on-close="hideMyDialog(message)">name from out scope: {{ name }}</my-dialog>
+    <my-dialog ng-hide="isMessageHidden" on-close="hideMyDialog(message)">name from out scope: { { name } }</my-dialog>
   </div>
 </body>
 ```
@@ -307,13 +307,11 @@ js:
   <div>name in directive: {{name}}</div>
 </div>
 ```
-<<<<<<< HEAD
 注:
-+ 1) html 中的 `<my-dialog></my-dialog>` 标签内的 `name from out scope: {{ name }}`为我们需要传入的模板，<br>
-其中 `{{name}}` 为外部域中的 `name`，不是孤立域中的 `name`;
++ 1) html 中的 `<my-dialog></my-dialog>` 标签内的 `name from out scope: { { name } }`为我们需要传入的模板，<br>
+其中 `{ {name} }` 为外部域中的 `name`，不是孤立域中的 `name`;
 + 2) js 中的 `directive` 内的 `transclude: true` 表示创建包含任意内容的指令;
 + 3) 模板 html 中的 `<div ng-transclude></div>` 表示把传入的模板放入此元素内;
-=======
 
 ### 1.7 能够通讯的指令
 
@@ -328,13 +326,13 @@ html:
     <my-plane title="tab 1">
       <p>Content of tab 1</p>
       <div ng-click="i=i+1">
-        <a href="">点击 {{i || 0}}</a>
+        <a href="">点击 { {i || 0} }</a>
       </div>
     </my-plane>
     <my-plane title="tab 2">
       <p>Content of tab 2</p>
       <div ng-click="i=i+1">
-        <a href="">点击 {{i || 0}}</a>
+        <a href="">点击 { {i || 0} }</a>
       </div>
     </my-plane>
   </my-tabs>
@@ -403,20 +401,21 @@ js:
 + 5) `link` 和 `controller` 的区别:
    + `controller` 可以暴露 API 供其他指令使用;
    + `link` 函数可以通过使用 `require` 与控制器交互。
+
 tabs 模板 html:
 ```html
 <ul>
   <li ng-repeat="plane in planes" ng-click="selectPlane(plane)">
-    <a href="">{{plane.title}}</a>
+    <a href="">{ {plane.title} }</a>
   </li>
 </ul>
 <div ng-transclude></div>
 ```
+
 plane 模板 html:
 ```html
 <div ng-show="selected">
-  <h4>{{title}}</h4>
+  <h4>{ {title} }</h4>
   <div ng-transclude></div>
 </div>
 ```
->>>>>>> 5897bb0fdaad958b85d285b40c3141763e6b4714
