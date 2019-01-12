@@ -242,6 +242,8 @@ js:
 
 ### 1.6 包含其他元素的指令
 
+我们已经知道可以通过 `scope` 选项把字符串、数值、对象等传入指令内。当我们需要传入整个元素模板时，我们可以使用 `transclude` 选项。
+
 html:
 ```html
 <body ng-app="myApp">
@@ -296,7 +298,7 @@ js:
     ]);
 })(window.angular);
 ```
-模板html:
+模板 html:
 ```html
 <div class="alert">
   <!-- 注：通过传递包含键值对的对象，把隔离域中的值传递出来 -->
@@ -304,5 +306,9 @@ js:
   <div ng-transclude></div>
   <div>name in directive: {{name}}</div>
 </div>
-
 ```
+注:
++ 1) html 中的 `<my-dialog></my-dialog>` 标签内的 `name from out scope: {{ name }}`为我们需要传入的模板，<br>
+其中 `{{name}}` 为外部域中的 `name`，不是孤立域中的 `name`;
++ 2) js 中的 `directive` 内的 `transclude: true` 表示创建包含任意内容的指令;
++ 3) 模板 html 中的 `<div ng-transclude></div>` 表示把传入的模板放入此元素内;
