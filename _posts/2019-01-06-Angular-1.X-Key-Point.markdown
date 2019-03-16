@@ -304,7 +304,7 @@ js:
   <!-- 注：通过传递包含键值对的对象，把隔离域中的值传递出来 -->
   <a class="close" href ng-click="close({message: 'reset in 2 seconds ...'})">X</a>
   <div ng-transclude></div>
-  <div>name in directive: {{name}}</div>
+  <div>name in directive: { {name} }</div>
 </div>
 ```
 注:
@@ -419,3 +419,52 @@ plane 模板 html:
   <div ng-transclude></div>
 </div>
 ```
+
+## 2. 控制器(Controller)
+
+在 AngularJS 中，Controller 由 JavaScript 构造函数定义，该函数用于扩充 AngularJS Scope。<br>
+
+控制器(controller)可以以不同方式附加到 DOM 上。对于每种方式，AngularJS 将使用指定的 Controller 构造函数实例化一个新的 Controller 对象：
++ ngController 指令，会新建一个子域，并在构造函数中以 $scope 传入
++ 路由定义中的路由控制器
++ 常规指令或组件指令中的控制器
+
+控制器的 API 如下:
+```js
+controller(name, constructor);
+```
+注: 在有依赖注释时，`constructor` 为数组，依赖注释放在数组前面，构造函数放在数组的末尾，如:<br>
+```js
+angular.module('phonecatApp').controller("PhoneListController", [
+  "$scope",
+  function($scope) {
+    $scope.phones = [/* 省略 */];
+  }
+])
+```
+
+控制器应该做的事情:
++ 1) 设置 $scope 对象的初始状态;
++ 2) 向 $scope 对象添加行为。
+
+控制器不应该做的事情:
++ 1) 操纵 DOM - 控制器应仅包含业务逻辑。将任何表示逻辑放入控制器会显着影响其可测试性。AngularJS 在大多数情况下使用数据绑定，少数情况下使用指令来封装 DOM 操作。
++ 2) 格式输入 - 改为使用 AngularJS 表单控件。
++ 3) 过滤器输出 - 改为使用 AngularJS 过滤器。
++ 4) 跨控制器共享代码或状态 - 改为使用 AngularJS 服务。
++ 5) 管理其他组件的生命周期（例如，创建服务实例）。
+
+一般来说，控制器不应该尝试做太多。它应该只包含单个视图所需的业务逻辑。<br>
+
+保持控制器苗条的最常用方法是将不属于控制器的工作封装到服务中，然后通过依赖注入在控制器中使用这些服务。
+
+## 3. 域(Scope)
+
+### 3.1 域特性
+
++ 1) Scope 提供 API (`scope.$watch()`) 来观察模型的变化;
++ 2) Scope 提供 API (`scope.$apply()`) 来实现在 AngularJS 框架之外更新数据时，也能让视图发生相应变化;
++ 3) Scopes 可以嵌套以限制对应用程序组件属性的访问，同时提供对共享模型属性的访问。嵌套的 scopes 为:
+   + 子域(child scope): 继承了其父域的属性;
+   + 孤立域(isolate scope): 不继承其父域的属性;
++ 4) Scopes 提供了评估表达式的上下文(context)。例如，在针对定义 `username` 属性的特定域进行评估之前，表达式 `{ {username} }` 是没有意义的。
