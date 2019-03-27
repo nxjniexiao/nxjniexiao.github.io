@@ -207,3 +207,109 @@ var treeToArray = (function f(arr, index) {
   return f(arr, ++index);
 });
 ```
+## 3. 一维数组转树形数组(根据 id 和 pid)
+
+一维数组格式如下：
+```js
+// 一维数组
+var arr = [
+  { id: 0, pid: null, name: '总公司' },
+  { id: 1, pid: 0, name: '分公司1' },
+  { id: 2, pid: 0, name: '分公司2' },
+  { id: 11, pid: 1, name: '分公司1-1' },
+  { id: 12, pid: 1, name: '分公司1-2' },
+  { id: 21, pid: 2, name: '分公司2-1' },
+  { id: 22, pid: 2, name: '分公司2-2' },
+  { id: 111, pid: 11, name: '分公司1-1-1' },
+  { id: 112, pid: 11, name: '分公司1-1-2' },
+  { id: 121, pid: 12, name: '分公司1-2-1' },
+  { id: 122, pid: 12, name: '分公司1-2-2' }
+];
+```
+
+### 3.1 递归
+
+思路：
++ 1) 根据传入的 parentId，循环数组 array，找出 pid 为 parentId 的对象；
++ 2) 把此对象放入数组 res 中；
++ 3) 循环 res 数组，递归调用自身，找出 res 中每个对象的 children 数组；
++ 4) 返回数组。
+
+```js
+function arrayToTreeRecursion(array, parentId) {
+  var arrayCopy = array.slice(); // 浅拷贝
+  var res = [];
+  for (var i = array.length - 1; i >= 0; i--) {
+    var item = array[i];
+    if (item.pid == parentId) {
+      arrayCopy.splice(i, 1);
+      res.unshift(item);
+    }
+  }
+  for (var j = 0, max = res.length; j < max; j++) {
+    var item = res[j];
+    item.children = arrayToTreeRecursion(arrayCopy, item.id);
+  }
+  return res;
+}
+```
+
+### 3.2 循环
+
+思路：
++ 1) 先找出根节点，并放入数组 res 中;
++ 2) 定义两个"指针":
+   + currLevel：树形数组中的当前层的所有元素；
+   + nextLevel：树形数组中的下一层的所有元素；
++ 3) 循环 currLevel ，从 array 中找出下一层的所有元素，放入 nextLevel 中；
++ 4) 遍历 array 的循环结束后，更新 array：`array = arrayCopy.slice();`(重要)；
++ 5) 遍历 currLevel 的循环结束后，把 nextLevel 的值赋给 currLevel，然后重置 nextLevel；
++ 6) 循环继续的条件为，currLevel 和 array 的长度都不为 0 。
+
+```js
+function arrayToTreeLoop(array, parentId) {
+  var arrayCopy = (array = array.slice());
+  var currLevel = [];
+  var nextLevel = [];
+  var res = []; // 返回的结果
+  var item, currItem;
+  var i, j, len;
+  // 查找根节点
+  for (i = array.length - 1; i >= 0; i--) {
+    item = array[i];
+    if (item.pid == parentId) {
+      currLevel.unshift(item);
+      arrayCopy.splice(i, 1);
+    }
+  }
+  if (currLevel.length <= 0) {
+    throw new Error('未找到根节点');
+  }
+  array = arrayCopy.slice(); // 复制(浅拷贝)
+  res = currLevel;
+  do {
+    // 循环当前层 currLevel，从 arrayCopy 中找出下一层 nextLevel
+    for (i = 0, len = currLevel.length; i < len; i++) {
+      currItem = currLevel[i];
+      if (!currItem.children) {
+        currItem.children = [];
+      }
+      for (j = array.length - 1; j >= 0; j--) {
+        item = array[j];
+        if (item.pid === currItem.id) {
+          arrayCopy.splice(j, 1);
+          currItem.children.unshift(item);
+          nextLevel.unshift(item);
+        }
+      }
+      if (currItem.children.length === 0) {
+        delete currItem.children;
+      }
+      array = arrayCopy.slice(); // 更新 array (浅拷贝)：重要
+    }
+    currLevel = nextLevel;
+    nextLevel = []; // 重置 nextLevel
+  } while (array.length && currLevel.length);
+  return res;
+}
+```
