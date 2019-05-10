@@ -458,13 +458,151 @@ angular.module('phonecatApp').controller("PhoneListController", [
 
 保持控制器苗条的最常用方法是将不属于控制器的工作封装到服务中，然后通过依赖注入在控制器中使用这些服务。
 
-## 3. 域(Scope)
+## 3. 作用域(Scope)
 
-### 3.1 域特性
+### 3.1 作用域特性
 
-+ 1) Scope 提供 API (`scope.$watch()`) 来观察模型的变化;
-+ 2) Scope 提供 API (`scope.$apply()`) 来实现在 AngularJS 框架之外更新数据时，也能让视图发生相应变化;
-+ 3) Scopes 可以嵌套以限制对应用程序组件属性的访问，同时提供对共享模型属性的访问。嵌套的 scopes 为:
-   + 子域(child scope): 继承了其父域的属性;
-   + 孤立域(isolate scope): 不继承其父域的属性;
-+ 4) Scopes 提供了评估表达式的上下文(context)。例如，在针对定义 `username` 属性的特定域进行评估之前，表达式 `{ {username} }` 是没有意义的。
++ 1) 作用域(scope)提供 API (`scope.$watch()`) 来观察模型的变化;
++ 2) 作用域提供 API (`scope.$apply()`) 来实现在 AngularJS 框架之外更新数据时，也能让视图发生相应变化;
++ 3) 作用域可以嵌套以限制对应用程序组件属性的访问，同时提供对共享模型属性的访问。嵌套的作用域为:
+   + 子作用域(child scope): 继承了其父作用域的属性;
+   + 孤立作用域(isolate scope): 不继承其父作用域的属性;
++ 4) 作用域提供了评估表达式的上下文(context)。例如，在针对定义 `username` 属性的特定作用域进行评估之前，表达式 `{ {username} }` 是没有意义的。
+
+### 3.2 作用域作为数据模型
+
+Scope 是应用程序控制器(controller)和视图(view)之间的粘合剂。在模板链接(link)阶段，指令(directive)在域(scope)上设置 $watch 表达式。
+$watch 将允许指令监听到属性的变化，这使得该指令能够将更新后的值呈献给 DOM。
+
+控制器(controller)和指令(directive)都引用了 scope ，但没有相互引用。这种安排将控制器与指令以及 DOM 隔离开来。
+这是一个重要的特点，因为它使控制器视图不可知，这极大地改善了应用程序的测试难度。
+
+### 3.3 作用域层次结构
+
+每个 AngularJS 应用程序只有一个根作用域(root scope)，但可以有任意数量的子作用域(child scopes)。
+
+因为指令可以创建新的子作用域，应用程序可以有多个作用域。创建新作用域时，它们将作为其父作用域的子作用域。这会创建一个树形结构，与它们所附着的 DOM 平行。
+
+### 3.4 DOM 中检索作用域
+
+作用域作为 $scope 数据属性附加至 DOM ，且可以检索以进行调试。（不太可能需要在应用程序内部以这种方式检索范围。）
+根作用域附加的 DOM 由 ng-app 指令的位置定义。
+
+如何在调试器中查看作用域：
+1. 右键单击浏览器中感兴趣的元素，然后选择“检查元素”；
+2. 在控制台执行(console)中检索关联的作用域： `angular.element($0).scope()`。
+
+注：调试器允许我们将控制台中当前选定的元素作为 $0 变量进行访问。
+
+### 3.5 作用域生命周期
+
+浏览器接收事件的的正常流程如下：
+1. 执行相应的 JavaScript 回调函数；
+2. 一旦回调函数完成，浏览器将重新呈现 DOM 并返回以等待更多事件。
+
+当浏览器调用 JavaScript 时，代码在 AngularJS 执行上下文之外执行，这意味着 AngularJS 不知道模型的修改。
+为了正确处理模型修改，执行必须使用 $apply 方法进入 AngularJS 执行上下文。只有在 $apply 方法内执行的模型修改才能被 AngularJS 正确计算。
+例如，如果指令监听如 ng-click 的 DOM 事件，它必须在 $apply 方法内计算表达式。
+
+在评估表达式之后，该 $apply 方法执行一次 $digest 。在 $digest 阶段，作用域检查所有 $watch 表达式并将它们与之前的值进行比较。这种脏值检查是异步完成的。
+这意味着诸如 `$scope.username="angular"` 的赋值不会立即产生一个 $watch 通知，而是被延迟到  $digest 阶段。
+这种延迟是可取的，因为它将多个模型更新合并为一个 $watch 通知，并保证在 $watch 通知期间没有其他的 $watch 正在运行。
+如果一个 $watch 更改了模型的值，则会强制执行额外一次 $digest 循环。
+
+1. 创建：根作用域由 $injector 在应用引导过程中创建。在模板链接(link)期间，某些指令会创建新的子作用域。
+
+2. 注册监听 ：在模板链接期间，指令在作用域上注册监听(watches)。这些监听用于将模型中的值传播到 DOM 。
+
+3. 模型突变：在 $apply() 内进行的模型更改才会被正确处理。AngularJS API 会隐式执行此操作，因此在控制器中执行同步工作或使用 $http、$timeout 或 $interval 服务进行异步工作时不需要额外调用 $apply() 。
+
+4. 监听突变：在 $apply 结束时，AngularJS 对根作用域执行 $digest 循环，然后传播给所有子作用域。在 $digest 循环期间，会检查所有被监听的表达式或函数，检测到突变时，执行相应的监听函数。
+
+5. 作用域销毁：当不再需要子作用域时，其创建者有责任通过 $destroy() API 来销毁它们。销毁后， $digest 的调用将不会传播到该子作用域，并允许垃圾收集器回收子作用域模型使用的内存。
+
+### 3.6 作用域和指令(Scopes and Directives)
+
+在编译阶段，编译器将指令与 DOM 模板匹配。指令通常分为两类：
+
++ 观察指令，例如双大括号表达式 { {expression} } ，使用 $watch() 方法注册监听器。只要表达式发生更改，就需要通知此类指令，以便更新视图。
++ 监听器指令，例如 ng-click ，向 DOM 注册监听器。当 DOM 监听器触发时，该指令执行关联的表达式并使用 $apply() 方法更新视图。
+
+当收到外部事件（例如用户操作，计时器或 XHR ）时，必须通过 $apply() 方法将关联的表达式应用于作用域，以便正确更新所有监听器。
+
+### 3.7 作用域和控制器(Scopes and Controllers)
+
+在以下情况下，作用域和控制器相互作用：
++ 控制器使用作用域(scope)将控制器方法暴露给模板（请参阅 ng-controller）。
++ 控制器定义可以改变模型(model)的方法（行为）（作用域上的属性）。
++ 控制器可以在模型上注册监听器。这些监听在控制器行为执行后立即执行。
+
+### 3.8 与浏览器事件循环集成
+
+下图描述了AngularJS如何与浏览器的事件循环交互。
+
+<div><img src="/images/2019-01-06-Angular-1.X-Key-Point/concepts-runtime.png"/></div>
+
+1. 浏览器的事件循环等待事件到达。事件是用户交互、计时器事件或网络事件（来自服务器的响应）。
+2. 事件的回调函数被执行。这会进入 JavaScript 上下文。回调函数可以修改 DOM 结构。
+3. 一旦回调函数执行完毕，浏览器就会离开 JavaScript 上下文并根据 DOM 更改重新渲染视图。
+
+AngularJS 通过提供自己的事件处理循环来修改正常的 JavaScript 流。这将 JavaScript 拆分为经典执行上下文和 AngularJS 执行上下文。
+只有在 AngularJS 执行上下文中应用的操作才能受益于 AngularJS 数据绑定、异常处理、属性监听等。
+我们还可以使用 $apply() 从 JavaScript 进入 AngularJS 执行上下文。请记住，在大多数地方（控制器，服务），通过处理事件的指令已为我们调用了 $apply 。
+仅在实现自定义事件回调或使用第三方库回调时才需要显式调用 $apply 。
+
+1. 通过调用 `scope.$apply(stimulusFn)` 进入 AngularJS 执行上下文，其中 stimulusFn 是我们希望在 AngularJS 执行上下文中执行的工作。
+2. AngularJS 执行 stimulusFn() ，通常会修改应用程序状态。
+3. AngularJS 进入 $digest 循环。循环由两个较小的循环组成，它们处理 $evalAsync 队列和 $watch 列表。$digest 循环不断迭代直到模型稳定，这意味着 $evalAsync 队列为空，且 $watch 李彪没有检测到任何变化。
+4. $evalAsync 队列用于调度需要在当前堆栈帧之外但在浏览器的视图渲染之前发生的工作。这通常使用 setTimeout(0) 来完成，但是 setTimeout(0) 方法会导致运行缓慢，并且可能导致视图闪烁，因为浏览器在每个事件之后渲染视图。
+5. $watch 列表是一组表达式，它自上次迭代后可能已经发生了改变。如果检测到更改，则调用 $watch 函数，该函数通常使用新值更新 DOM 。
+6. 一旦 AngularJS $digest 循环结束，执行就会离开 AngularJS 和 JavaScript 上下文。接下来是浏览器重新渲染 DOM 以反映任何更改。
+
+## 4. $provide
+
+$provide 服务有许多通过 $injector 来注册组件的方法。其中许多方法也暴露给了 angular.Module。
+
++ `provider(name, provider)` - 使用 $injector 注册一个 service provider 。注册后通过 name + 'Provider' 使用。
++ `constant(name, obj)` - 注册可由 providers 和 services 访问的值/对象。
++ `value(name, obj)` - 注册只能由 services 访问的值/对象，而不是 providers 。
++ `factory(name, fn)` - 注册一个包装在 service provider 对象中的服务工厂函数，其 $get 属性将包含给定的工厂函数。
++ `service(name, Fn)` - 注册一个包装在 service provider 对象中的构造函数，该 $get 属性将使用给定的构造函数实例化一个新对象。
++ `decorator(name, decorFn)` - 注册一个装饰器函数，它将能够修改或替换另一个服务的实现。
+
+注：
+1. service: 单例对象，由 service factory 创建；
+2. service factory: 函数，由 service provider 创建；
+3. service provider: 构造函数，必须包含指向 service factory 函数的 $get 属性；
+4. 当我们请求一个服务(service)时，$injector 负责查找正确的 service provider，实例化它
+   并调用其 $get 函数(指向 service factory 函数)来获取服务(service)的实例。
+5. 通常，服务(services)没有配置选项，也不需要向 service provider 添加方法。
+   service provider 只不过是具有 $get 属性的构造函数。
+   对于这些情况，$provide 服务具有其他辅助方法来注册服务(service)而不需要指定一个提供者(provider)。
+
+## 5. $injector
+
+$injector 用于检索由provider、实例化类型、调用方法和加载模块定义的对象实例。
+```js
+var $injector = angular.injector();
+```
+
+### 5.1 注入函数注释
+
+JavaScript 没有注释，而依赖注入需要注释。以下是使用注入参数注释函数的所有有效方法，并且是等效的。
+
+```js
+// inferred (only works if code not minified/obfuscated)
+$injector.invoke(function(serviceA){});
+
+// annotated
+function explicit(serviceA) {};
+explicit.$inject = ['serviceA'];
+$injector.invoke(explicit);
+
+// inline
+$injector.invoke(['serviceA', function(serviceA){}]);
+```
+
+1. 推断(inferred)：在 JavaScript 中调用函数的 `toString()` 方法返回函数定义。然后可以解析定义并提取函数参数。
+   当注射器处于严格模式时，不允许这种发现注释的方法。
+2. 注解(annotated)：通过在函数上添加 $inject 属性，可以指定注入参数。
+3. 内联(inline)：作为注入名称数组，数组中的最后一项是要调用的函数。
