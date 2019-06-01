@@ -6,8 +6,8 @@
 # 'jekyll serve'. If you change this file, please restart the server process.
 
 # Site settings
-title: Nie Xiaojun
-brief-intro: Front-end Web Engineer
+title: 聂骁骏
+brief-intro: 前端工程师
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://nxjniexiao.github.io" # the base hostname & protocol for your site
 # This will require each of these plugins automatically.
