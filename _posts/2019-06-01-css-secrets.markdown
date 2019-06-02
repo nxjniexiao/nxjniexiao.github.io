@@ -1,0 +1,379 @@
+---
+layout: post
+title: "《CSS揭秘》学习笔记"
+date: 2019-06-01 22:45:12 +0800
+categories: learning-notes CSS
+tags: css
+customCss: ["/css/custom-css/2019-06-01-css-secrets.css"]
+---
+
+* content
+{:toc}
+
+## 1. 概述
+
+此篇博客是学习《CSS 揭秘》一书的学习笔记。
+
+## 2. 背景与边框
+
+### 2.1 半透明边框
+
+假设我们想给一个容器设置一道半透明白色边框，父元素的颜色会透过其边框。 HTML 如下：
+
+```html
+<div class="box-100">
+  <div class="box-100 translucence-border"></div>
+</div>
+```
+
+CSS 代码如下：
+
+```css
+.box-100 {
+  width: 100px;
+  height: 100px;
+}
+.translucence-border {
+  border: 10px solid hsla(0, 0%, 100%, 0.5);
+  background: #ff7875;
+}
+```
+
+实际效果如下，子元素的红色背景(#ff7875)延伸到了边框下面，所以父元素的白色背景被遮住了。
+
+<div class="margin-btm-14 box-100 hover-fade outline">
+  <div class="box-100 translucence-border-before"></div>
+</div>
+
+CSS3 中的 `background-clip` 属性可以解决上述问题。此属性设置了元素的背景（背景图片或颜色）是否延伸到边框下面。
+
+```css
+.translucence-border {
+  border: 10px solid hsla(0, 0%, 100%, 0.5);
+  background: #ff7875;
+  background-clip: padding-box;
+}
+```
+
+`background-clip` 有如下几个值：
+
+- `border-box`: 默认值，背景延伸至边框外沿（但是在边框下层）。
+- `padding-box`: 背景延伸至内边距（padding）外沿。不会绘制到边框处。
+- `content-box`: 背景被裁剪至内容区（content box）外沿。
+
+修改后的效果如下，我们现在能够看到父元素的背景色了。
+
+<div class="margin-btm-14 box-100 hover-fade outline">
+  <div class="box-100 translucence-border-after"></div>
+</div>
+
+### 2.2 多重边框
+
+**box-shadow 方案**
+
+我们可以通过 `box-show` 来实现多重边框，而不需要使用额外的元素。<br>
+
+它支持逗号语法，使我们可以创建任意数量的投影。
+
+<div class="margin-btm-14 box-100 multi-border-1 hover-fade"></div>
+
+HTML:
+
+```html
+<div class="box-100 multi-border"></div>
+```
+
+CSS:
+
+```css
+.multi-border {
+  margin: 30px;
+  background: #ff7875;
+  /* x偏移量 | y偏移量 | 阴影模糊半径 | 阴影扩散半径 | 阴影颜色 */
+  box-shadow: 0 0 0 10px #69c0ff, 0 0 0 20px #ffc069, 0 0 0 30px #95de64;
+}
+```
+
+**outline 方案**
+
+当我们只需要两层边框时，使用 outline (描边) 更方便。
+
+<div class="margin-btm-14 box-100 multi-border-2 hover-fade"></div>
+
+CSS:
+
+```css
+.multi-border {
+  margin: 10px;
+  background: #ff7875;
+  border: 10px solid #69c0ff;
+  /* 宽度 | 样式 | 颜色 */
+  outline: 10px solid #ffc069;
+}
+```
+
+### 2.3 灵活的背景定位
+
+CSS 2.1 中，我们只能指定背景图片距离左上角的偏移量，或者干脆完全靠齐到其他三个角。<br>
+
+CSS 3 中，我们可以灵活地定位背景图片了。
+
+**background-position 扩展语法方案**
+
+有如下 div 元素，内边距 10px ，现在我们想把此元素的背景图片定位到距右下角 10px 处。<br>
+HTML:
+```html
+<div class="box-100 padding-10 bg-position">css 3</div>
+```
+CSS:
+```css
+.bg-position {
+  background: url("/svg/css3.svg") no-repeat right bottom #ff7875;
+  background-position: right 10px bottom 10px;
+}
+```
+其中，前一个 `background` 中的 `right bottom` 为回退方案，对于不支持 CSS3 的浏览器，背景将定位至右下角处。<br>
+效果如下：
+<div class="margin-btm-14 box-100 padding-10 bg-position-1 hover-fade">css 3</div>
+
+**background-origin 方案**
+
+ `background-origin` 规定了 `background` 的原点。<br>
+
+ 其可用的属性如下：
+ + `border-box`: 背景图片的摆放以 border 区域为参考;
+ + `padding-box`: 背景图片的摆放以 padding 区域为参考;
+ + `content-box`: 背景图片的摆放以 content 区域为参考;
+
+CSS:
+```css
+.bg-position {
+  background: url("/svg/css3.svg") no-repeat right bottom #ff7875;
+  background-origin: content-box;
+}
+```
+
+效果如下：
+<div class="margin-btm-14 box-100 padding-10 bg-position-2 hover-fade">css 3</div>
+
+**calc() 方案**
+
+我们仍然以左上角偏移的思路来考虑，`calc(100% - 10px)` 的水平向左偏移等价于 `10px` 的水平向右偏移。
+
+CSS:
+```css
+.bg-position {
+  background: url("/svg/css3.svg") no-repeat right bottom #ff7875;
+  background-position: calc(100% - 10px) calc(100% - 10px);
+}
+```
+
+效果如下：
+<div class="margin-btm-14 box-100 padding-10 bg-position-3 hover-fade">css 3</div>
+
+### 2.4 边框内圆角
+
+我们先用两个元素实现边框内圆角。<br>
+HTML:
+```html
+<div class="outer">
+  <div class="inner">边框内圆角</div>
+</div>
+```
+CSS:
+```css
+.outer {
+  padding: 5px;
+}
+.inner {
+  padding: 5px;
+  border-radius: 5px;
+}
+```
+效果如下：
+<div class="margin-btm-14 box-100 outer-2-4 bg-blue-4 hover-fade">
+  <div class="auto-box inner-2-4 bg-red-4">边框内圆角</div>
+</div>
+
+我们再用一个元素实现边框内圆角。<br>
+HTML:
+```html
+<div class="inner-rounding">边框内圆角</div>
+```
+CSS:
+```css
+.inner-rounding {
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 0 0 0 5px #69c0ff;
+  outline: 5px solid #69c0ff;
+}
+```
+重点： `outline` 不会跟着元素的圆角走，而 `box-shadow` 会。
+
+效果如下：
+<div class="margin-btm-14 box-100 inner-rounding bg-red-4 hover-fade">边框内圆角</div>
+
+### 2.5 条纹背景
+
+**水平条纹**
+
+使用 `linear-gradient()` 线性渐变生成如下几个条纹：
+
+HTML:
+```html
+<div class="box-500-100 flex-around">
+  <div class="box-100 stripe-1">stripe-1</div>
+  <div class="box-100 stripe-2">stripe-2</div>
+  <div class="box-100 stripe-3">stripe-3</div>
+  <div class="box-100 stripe-4">stripe-4</div>
+  <div class="box-100 stripe-5">stripe-5</div>
+</div> 
+```
+CSS:
+```css
+.stripe-1 {
+  background: linear-gradient(#ff7875, #69c0ff);
+}
+.stripe-2 {
+  background: linear-gradient(#ff7875 40%, #69c0ff 60%);
+}
+.stripe-3 {
+  background: linear-gradient(#ff7875 50%, #69c0ff 50%);
+}
+.stripe-4 {
+  background: linear-gradient(#ff7875 50%, #69c0ff 50%);
+  background-size: 100% 20px;
+}
+.stripe-5 {
+  background: linear-gradient(#ff7875 50%, #69c0ff 0);
+  background-size: 100% 20px;
+}
+```
+效果如下：
+<div class="box-600-100 flex-around hover-fade outline">
+  <div class="box-100 stripe-1">stripe-1</div>
+  <div class="box-100 stripe-2">stripe-2</div>
+  <div class="box-100 stripe-3">stripe-3</div>
+  <div class="box-100 stripe-4">stripe-4</div>
+  <div class="box-100 stripe-5">stripe-5</div>
+</div> 
+
++ stripe-1: 从红色渐变至蓝色；
++ stripe-2: 在 40% - 60% 区域内从红色渐变至蓝色；
++ stripe-3: 无渐变效果，红蓝各占一半；
++ stripe-4: 配合 background-size 来调整尺寸；
++ stripe-5: 当第二个色标的位置为 0 时，会自动取前一个色标位置的值。
+
+**垂直条纹**
+
+HTML:
+```html
+<div class="box-100 vertical-stripe">垂直条纹</div>
+```
+我们只需要在开头加上一个额外的参数来指定渐变的方法，默认为 `to bottom` ，此处我们的方向为 `to right` ，或者使用 `90deg`。
+CSS:
+```css
+.vertical-stripe {
+  background: linear-gradient(to right, /* 或 90deg */
+              #ff7875 50%, #69c0ff 0);
+  background-size: 20px 100%;
+}
+```
+效果如下：
+<div class="margin-btm-14 box-100 vertical-stripe hover-fade">垂直条纹</div>
+
+**斜条纹**
+
+斜条纹我们使用了 `repeating-linear-gradient()` ，它与 `linear-gradient()` 类似，有一点不同：它是无限循环的，直到填满整个背景。
+
+HTML:
+```html
+<div>
+  <div class="diagonal-stripe-1">斜条纹1</div>
+  <div class="diagonal-stripe-2">斜条纹2</div>
+</div>
+```
+CSS:
+```css
+.diagonal-stripe-1 {
+  background: repeating-linear-gradient(45deg, #ff7875, #69c0ff 20px);
+}
+.diagonal-stripe-2 {
+  background: repeating-linear-gradient(
+    45deg,
+    #ff7875,
+    #ff7875 10px,
+    #69c0ff 0,
+    #69c0ff 20px
+  );
+}
+```
+
+效果如下：
+<div class="box-300-100 flex-around outline hover-fade">
+  <div class="box-100 diagonal-stripe-1">斜条纹1</div>
+  <div class="box-100 diagonal-stripe-2">斜条纹2</div>
+</div>
+
+### 2.6 复杂的背景图案
+
+**网格**
+
+HTML:
+```html
+<div class="box-110 grid"></div>
+```
+CSS:
+```css
+.grid {
+  background: #fff;
+  background-image: linear-gradient(rgba(200, 0, 0, 0.5) 50%, transparent 0),
+    linear-gradient(90deg, rgba(200, 0, 0, 0.5) 50%, transparent 0);
+  background-size: 20px 20px;
+}
+```
+效果如下：
+<div class="margin-btm-14 box-110 grid hover-fade"></div>
+
+**波点**
+
+HTML:
+```html
+<div class="box-100 polka"></div>
+```
+CSS:
+```css
+.polka {
+  background: #fff;
+  background-image: radial-gradient(#ff7875 30%, transparent 0),
+                    radial-gradient(#ff7875 30%, transparent 0);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+```
+效果如下：
+<div class="margin-btm-14 box-100 polka hover-fade"></div>
+
+**棋盘**
+
+HTML:
+```html
+<div class="box-100 checkerboard"></div>
+```
+CSS:
+```css
+.checkerboard {
+  background: #eee;
+  background-image: linear-gradient(45deg, 
+                      rgba(0, 0, 0, .25) 25%, transparent 0, 
+                      transparent 75%, rgba(0, 0, 0, .25) 0),
+                    linear-gradient(45deg, 
+                      rgba(0, 0, 0, .25) 25%, transparent 0, 
+                      transparent 75%, rgba(0, 0, 0, .25) 0);
+  background-position: 0 0, 10px 10px;
+  background-size: 20px 20px
+}
+```
+效果如下：
+<div class="margin-btm-14 box-100 checkerboard hover-fade"></div>
