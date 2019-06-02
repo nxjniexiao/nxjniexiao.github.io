@@ -251,7 +251,7 @@ CSS:
 }
 ```
 效果如下：
-<div class="box-600-100 flex-around hover-fade outline">
+<div class="container flex-auto hover-fade">
   <div class="box-100 stripe-1">stripe-1</div>
   <div class="box-100 stripe-2">stripe-2</div>
   <div class="box-100 stripe-3">stripe-3</div>
@@ -311,7 +311,7 @@ CSS:
 ```
 
 效果如下：
-<div class="box-300-100 flex-around outline hover-fade">
+<div class="container flex-auto hover-fade">
   <div class="box-100 diagonal-stripe-1">斜条纹1</div>
   <div class="box-100 diagonal-stripe-2">斜条纹2</div>
 </div>
