@@ -39,6 +39,9 @@ CSS 代码如下：
 }
 ```
 
+
+
+
 实际效果如下，子元素的红色背景(#ff7875)延伸到了边框下面，所以父元素的白色背景被遮住了。
 
 <div class="margin-btm-14 box-100 hover-fade outline">
@@ -377,3 +380,51 @@ CSS:
 ```
 效果如下：
 <div class="margin-btm-14 box-100 checkerboard hover-fade"></div>
+
+### 2.7 伪随机背景
+
+利用多层 background-image 生成随机背景：
++ 通过 background 设置一层底色；
++ 通过 background-image 设置三个条纹；
++ 通过 background-size 设置不同的尺寸使条纹错开。
+
+HTML:
+```html
+<div class="container height-100 random-stripes"></div>
+```
+CSS:
+```css
+.random-stripes {
+  background: #ff7875;
+  background-image: linear-gradient(90deg, #69c0ff 10px, transparent 0),
+                    linear-gradient(90deg, #ffc069 20px, transparent 0),
+                    linear-gradient(90deg, #95de64 20px, transparent 0);
+  background-size: 80px 100%, 60px 100%, 40px 100%;
+}
+```
+
+效果如下：
+<div class="container height-100 margin-btm-14 random-stripes"><div class="border-2-7"></div></div>
+
+我们可以发现，图案每隔 240px 就会重复一次。见图中的虚线方框。<br>
+
+240px 就是所有 background-size 的**最小公倍数**。<br>
+
+为了最大化最小公倍数，我们把这些数字改成**质数**，并且这些质数之间**互质**。<br>
+
+修改后的 CSS 如下：
+```css
+.cicada-stripes {
+  background: #ff7875;
+  background-image: linear-gradient(90deg, #69c0ff 11px, transparent 0),
+                    linear-gradient(90deg, #ffc069 23px, transparent 0),
+                    linear-gradient(90deg, #95de64 41px, transparent 0);
+  background-size: 41px 100%, 61px 100%, 83px 100%;
+}
+```
+现在这三个 background-size 的最小公倍数为 `41 X 61 X 83 = 207583px`。这个数值远大于常规屏幕的分辨率。<br>
+
+这个技巧被称为"**蝉原则**"。
+
+效果如下：
+<div class="container height-100 margin-btm-14 cicada-stripes"></div>
