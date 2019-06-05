@@ -476,9 +476,11 @@ CSS:
 + 白色背景的 `background-clip` 的值为 `padding-box` ，图片背景则为 `border-box` ；
 + 最后设置 `border-origin` 的值为 `border-box` (默认值为 `padding-box` )，否则就会出现左图背景图片有拼接的情况。
 
+**注：**产生拼接的原因是图片显示的尺寸不仅取决于 padding box 的尺寸，而且被放置在了 padding box 的原点(左上角)。我们看到的实际上就是背景图片以平铺的方式蔓延到了border box 区域的效果。因此需要指定 `border-origin` 的值为 `border-box` 。
+
 <div class="container flex-auto">
   <div class="continuous-image-borders">仅使用一个 HTML 元素实现连续的图像边框(背景图片有拼接情况)</div>
-  <div class="continuous-image-borders right">仅使用一个 HTML 元素实现连续的图像边框</div>
+  <div class="continuous-image-borders correct">仅使用一个 HTML 元素实现连续的图像边框</div>
 </div>
 
 HTML:
