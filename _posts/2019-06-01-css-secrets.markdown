@@ -428,3 +428,75 @@ CSS:
 
 效果如下：
 <div class="container height-100 margin-btm-14 cicada-stripes"></div>
+
+### 2.8 连续的图像边框
+
+有时我们想把图案或图片应用为边框，而不是背景。
+
+**两个 HTML 元素**
+
+最简单的办法是使用两个 HTML 元素，父元素的背景设为指定的图片(左图)，子元素用来放内容，效果如下(右图)：
+
+<div class="container flex-auto">
+  <div class="outer-2-8">
+  </div>
+  <div class="outer-2-8">
+    <div class="inner-2-8">使用两个 HTML 元素实现连续的图像边框</div>
+  </div>
+</div>
+
+HTML:
+```html
+<div class="outer">
+  <div class="inner">使用两个 HTML 元素实现连续的图像边框</div>
+</div>
+```
+
+CSS:
+```css
+.outer {
+  width: 200px;
+  height: 132px;
+  padding: 10px;
+  background: url('/images/2019-06-01-css-secrets/book.jpg');
+  background-size: cover;
+}
+.inner {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+}
+```
+
+**一个 HTML 元素**
+
+使用一个 HTML 元素的思路如下：
++ 给元素设置一个透明的 `border` ；
++ 设置两层背景，一层是白色背景(白色背景写在前面)，下面一层是图片；
++ 白色背景的 `background-clip` 的值为 `padding-box` ，图片背景则为 `border-box` ；
++ 最后设置 `border-origin` 的值为 `border-box` (默认值为 `padding-box` )，否则就会出现左图背景图片有拼接的情况。
+
+<div class="container flex-auto">
+  <div class="continuous-image-borders">仅使用一个 HTML 元素实现连续的图像边框(背景图片有拼接情况)</div>
+  <div class="continuous-image-borders right">仅使用一个 HTML 元素实现连续的图像边框</div>
+</div>
+
+HTML:
+```html
+<div class="continuous-image-borders">仅使用一个 HTML 元素实现连续的图像边框</div>
+```
+
+CSS:
+```css
+.continuous-image-borders {
+  width: 200px;
+  height: 132px;
+  padding: 10px;
+  border: 10px solid transparent;
+  background: linear-gradient(#fff, #fff),
+              url('/images/2019-06-01-css-secrets/book.jpg');
+  background-clip: padding-box, border-box;
+  background-size: cover;
+  background-origin: border-box;
+}
+```
