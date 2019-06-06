@@ -502,3 +502,44 @@ CSS:
   background-origin: border-box;
 }
 ```
+
+为减少代码量，我们可以把背景属性整合到 background 这个简写属性中：
+```css
+.continuous-image-borders {
+  width: 200px;
+  height: 132px;
+  padding: 10px;
+  border: 10px solid transparent;
+  background: linear-gradient(#fff, #fff) padding-box,
+              url('/images/2019-06-01-css-secrets/book.jpg') border-box 0 0 / cover;
+}
+```
+**注：**
+1. `background` 属性被指定多个背景层时，使用逗号分隔每个背景层。
+2. `background-size` 只能仅接着 `background-position` ，并以 `/` 分割，如 `0 0 / cover` 。
+3. `<box>` 最多可以出现两次；出现两次时，前一个设置 `background-origin` ，后一个设置 `background-clip` ；出现一次时，同时设置这两个值。 
+4. `background-color` 只能被包含在最后一层。
+
+最终出现与前面一样的效果：
+<div class="continuous-image-borders-opt margin-btm-14">仅使用一个 HTML 元素实现连续的图像边框（减少代码量）</div>
+
+我们可以使用这个技巧实现老式信封样式的边框：
+<div class="vintage-envelope margin-btm-14">老式信封样式边框</div>
+
+CSS 如下:
+```css
+.vintage-envelope {
+  width: 200px;
+  height: 132px;
+  padding: 1em;
+  border: 1em solid transparent;
+  background: linear-gradient(#fff, #fff) padding-box,
+              repeating-linear-gradient(-45deg, 
+              red 0, red 12.5%, 
+              transparent 0, transparent 25%,
+              #58a 0, #58a 37.5%,
+              transparent 0, transparent 50%
+              ) 0 / 4em 4em;
+}
+```
+**注：**`0 / 4em 4em` 等价于 `0 center / 4em 4em` ，因为对于 `background-position` 属性，如果只指定了一个值，另外一个值将为 `center`
