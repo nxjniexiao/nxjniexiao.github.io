@@ -542,4 +542,41 @@ CSS 如下:
               ) 0 / 4em 4em;
 }
 ```
-**注：**`0 / 4em 4em` 等价于 `0 center / 4em 4em` ，因为对于 `background-position` 属性，如果只指定了一个值，另外一个值将为 `center`
+**注：**
+1. `0 / 4em 4em` 等价于 `0 center / 4em 4em` ，因为对于 `background-position` 属性，如果只指定了一个值，另外一个值将为 `center` 。
+2. `repeating-linear-gradient` 中的颜色宽度为：
+   + 0 - 12.5%: 红色；
+   + 12.5% - 25%: 透明；
+   + 25% - 37.5%: 蓝色；
+   + 37.5% - 50% : 透明；
+3. 然后剩下的 50% 区域会自动重复，这样他才能与其他 `4em X 4em` 方形背景以**相同的颜色**拼接起来。
+
+我们还可以使用这个技巧实现蚂蚁行军边框，此效果在图像编辑软件中很常见：
+<div class="marching-ants margin-btm-14">蚂蚁行军边框</div>
+
+CSS 如下：
+```css
+@keyframes ants {
+  to { background-position: 100%; }
+}
+.marching-ants {
+  width: 200px;
+  height: 132px;
+  padding: 1em;
+  border: 1px solid transparent;
+  background: linear-gradient(#fff, #fff) padding-box,
+              repeating-linear-gradient(-45deg, 
+              #fff 0, #fff 12.5%, 
+              transparent 0, transparent 25%,
+              #000 0, #000 37.5%,
+              transparent 0, transparent 50%
+              ) 0 / .6em .6em;
+  animation: ants 12s linear infinite;
+}
+```
+
+要点如下：
+1. 边框宽度减少至 `1px` ，**此时斜向条纹转变成了虚线边框**；
+2. 把 `background-size` 改为一个合适的值，如 `.6em .6em`；
+3. 定义动画 `ants` ，改变其 `background-position` 的值；
+4. 通过 `animation` 使用动画，此时黑白虚线框就会动起来了。
