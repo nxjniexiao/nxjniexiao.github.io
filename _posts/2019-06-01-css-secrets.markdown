@@ -580,3 +580,86 @@ CSS 如下：
 2. 把 `background-size` 改为一个合适的值，如 `.6em .6em`；
 3. 定义动画 `ants` ，改变其 `background-position` 的值；
 4. 通过 `animation` 使用动画，此时黑白虚线框就会动起来了。
+
+## 3. 形状
+
+### 3.1 自适应椭圆
+
+**完整椭圆**
+
+我们知道，给一个正方形盒子设置 `border-radius: 50%;` 时，我们会得到一个圆形：
+<div class="box-1_3-1 adaptive-ellipse"></div>
+HTML:
+```html
+<div class="box adaptive-ellipse"></div>
+```
+CSS:
+```css
+.box {
+  width: 100px;
+  height: 100px;
+  background-color: #ff7875;
+}
+.adaptive-ellipse {
+  border-radius: 50%;
+}
+```
+当我们改变盒子的宽高，使其变为矩形时，我们会得到一个椭圆：
+<div class="box-2_3-1 adaptive-ellipse"></div>
+CSS:
+```css
+.box {
+  width: 150px;
+  height: 100px;
+  background-color: #ff7875;
+}
+```
+
+实际上，`border-radius: 50%;` 是 `border-radius: 50% / 50%;` 的简写，前后两个值分别指定了水平和垂直半径。
+
+**半椭圆**
+
+`border-radius` 是下面四个属性的简写：
++ `border-top-left-radius`: 左上角半径
++ `border-top-right-radius`: 右上角半径
++ `border-bottom-right-radius`: 右下角半径
++ `border-bottom-left-radius`: 左下角半径
+
+当我们想得到一个垂直的半椭圆时，我们可以设置:
++ 左上角/右上角半径为 `50% 100%`
++ 左下角/右下角半径为 `0 0`
+
+CSS 如下：
+```css
+.adaptive-half-ellipse-ver {
+  border-top-left-radius: 50% 100%;
+  border-top-right-radius: 50% 100%;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+```
+效果如下：
+<div class="box-2_3-1 adaptive-half-ellipse-ver margin-btm-14"></div>
+
+真正简洁的方法还是使用 `border-radius` 简写属性，然后使用 `/` 分隔水平和垂直半径：
+```css
+.adaptive-half-ellipse-ver {
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+```
+当我们给左下角/右下角的垂直半径设置为 `0` 时，其水平半径由 `0` 改为为 `50%` 时，并不会影响左下角/右下角的直角，因此我们可以进一步简化属性：
+
+```css
+.adaptive-half-ellipse-ver {
+  border-radius: 50% / 100% 100% 0 0;
+}
+```
+同理，如下代码会得到水平的半椭圆：<br>
+CSS:
+```css
+.adaptive-half-ellipse-hor {
+  border-radius: 0 100% 100% 0 / 50%;
+}
+```
+效果如下：
+<div class="box-2_3-1 adaptive-half-ellipse-hor margin-btm-14"></div>
