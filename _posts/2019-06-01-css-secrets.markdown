@@ -74,7 +74,7 @@ CSS3 中的 `background-clip` 属性可以解决上述问题。此属性设置�
 
 **box-shadow 方案**
 
-我们可以通过 `box-show` 来实现多重边框，而不需要使用额外的元素。<br>
+我们可以通过 `box-shadow` 来实现多重边框，而不需要使用额外的元素。<br>
 
 它支持逗号语法，使我们可以创建任意数量的投影。
 
@@ -663,3 +663,16 @@ CSS:
 ```
 效果如下：
 <div class="box-2_3-1 adaptive-half-ellipse-hor margin-btm-14"></div>
+
+**四分之一椭圆**
+
+根据前面的思路，当把左上角的半径设 `100%` ，其余三个角的半径设为 `0` 时，我们就会得到四分之一椭圆：
+
+<div class="box-2_3-1 adaptive-quarter-ellipse margin-btm-14"></div>
+
+CSS：
+```css
+.adaptive-quarter-ellipse {
+  border-radius: 100% 0 0 0;
+}
+```
