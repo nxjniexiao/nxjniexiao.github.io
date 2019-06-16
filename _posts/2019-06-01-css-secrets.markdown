@@ -676,3 +676,70 @@ CSS：
   border-radius: 100% 0 0 0;
 }
 ```
+
+### 3.2 平行四边形
+
+我们可以通过 `skew()` 变形属性来生成一个平行四边形：
+
+<div class="box-3-2 parallelogram-1 margin-btm-14">parallelogram</div>
+
+CSS:
+```css
+.parallelogram {
+  transform: skewX(-30deg);
+}
+```
+
+我们生成了一个平行四边形，但是内容也跟着一起变形了。怎样让内容保持不变呢？
+
+**两个元素方案**
+
+<div class="box-3-2 parallelogram-1 margin-btm-14">
+  <div class="parallelogram-2">parallelogram</div>
+</div>
+
+内层的内容元素使用一次反向的 `skew()` ，从而抵消外层容器的变形效果。<br>
+
+HTML:
+```html
+<div class="parallelogram-1">
+  <div class="parallelogram-2">parallelogram</div>
+</div>
+```
+
+CSS:
+```css
+.parallelogram-1 {
+  transform: skewX(-30deg);
+}
+.parallelogram-2 {
+  transform: skewX(30deg);
+}
+```
+
+**伪元素方案**
+
+此方案的重点是把所有的样式应用到为元素上，然后在对为元素进行变形
+
+<div class="box-3-2 parallelogram margin-btm-14">parallelogram</div>
+
+CSS:
+```css
+.parallelogram {
+  position: relative;
+  z-index: 0; /* 修复和页面样式冲突的bug */
+}
+.parallelogram::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: #ff7875;
+  transform: skew(-30deg);
+  z-index: -1;
+}
+```
+注：
++ 为了使伪元素自动继承宿主元素的尺寸，
+   + 我们设置了宿主元素的 `position: relative;` ，
+   + 然后给伪元素设置 `position: absolute;` ，并设置 `top/right/bottom/left` 为 `0`;
++ 由于伪元素会覆盖在宿主元素之上，所以我们设置伪元素 `z-index: -1;`
