@@ -723,6 +723,11 @@ CSS:
 
 <div class="box-3-2 parallelogram margin-btm-14">parallelogram</div>
 
+HTML:
+```html
+<div class="parallelogram">parallelogram</div>
+```
+
 CSS:
 ```css
 .parallelogram {
@@ -743,3 +748,83 @@ CSS:
    + 我们设置了宿主元素的 `position: relative;` ，
    + 然后给伪元素设置 `position: absolute;` ，并设置 `top/right/bottom/left` 为 `0`;
 + 由于伪元素会覆盖在宿主元素之上，所以我们设置伪元素 `z-index: -1;`
+
+### 3.3 菱形
+
+在视觉设计中，把图片裁切为菱形是一种常见的设计手法。
+
+**两个元素方案**
+
+<div class="box-3-3-1 rhombus">
+  <img src="/images/2019-06-01-css-secrets/cat.jpg" />
+</div>
+
+HTML:
+```html
+<div class="rhombus">
+  <img src="/images/2019-06-01-css-secrets/cat.jpg" />
+</div>
+```
+
+CSS:
+```css
+.rhombus {
+  transform: rotate(45deg);
+  overflow: hidden;
+}
+
+.rhombus img {
+  width: 100%;
+  transform: rotate(-45deg);
+}
+```
+
+可以看到，图片被裁剪成了八角形。因此我们应该放大图片，使其充满其父元素。
+
+<div class="box-3-3-1 rhombus">
+  <img class="scale" src="/images/2019-06-01-css-secrets/cat.jpg" />
+</div>
+
+CSS:
+```css
+.rhombus img {
+  width: 100%;
+  transform: rotate(-45deg) scale(1.42);
+}
+```
+注：
+1. 我们保留了图片宽度为 `100%` 这个值，当浏览器不支持 `transform` 时，仍然可以得到一个合理的布局，因此没有使用 `width: 142%;`。
+2. `scale()` 缩放的参考点默认为图片中心点，除非我们人为指定 `transform-origin` 的值；通过 `width` 属性放大图片时，参考点为左上角。
+
+**裁剪路径方案**
+
+`clip-path`: 可以创建一个只有元素的部分区域可以显示的剪切区域。区域内的部分显示，区域外的隐藏。<br>
+
+剪切区域是被引用内嵌的 `URL` 定义的路径或者外部 `svg` 的路径，或者是一个形状例如 `circle()`。<br>
+
+`clip-path` 属性代替了现在已经弃用的 `clip` 属性。
+
+<img class="box-3-3-2" src="/images/2019-06-01-css-secrets/cat-1.jpg" />
+
+HTML
+```html
+<img class="box-3-3-2" src="/images/2019-06-01-css-secrets/cat-1.jpg" />
+```
+
+CSS:
+```css
+.box-3-3-2 {
+  width: 300px;
+  height: 200px;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  transition: clip-path 1s;
+}
+.box-3-3-2:hover {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+```
+注：
+1. `polygon()` 用于生成一个多边形，其接受至少三对坐标值，使用逗号分隔。
+2. `clip-path` 可以参与动画，上述代码实现了鼠标悬停时图片平滑地显示其完整形状。
+3. safari 浏览器不支持该属性。
+4. `clip-path` 可以适应非正方形的图片。
