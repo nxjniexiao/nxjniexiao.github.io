@@ -796,7 +796,7 @@ CSS:
 1. 我们保留了图片宽度为 `100%` 这个值，当浏览器不支持 `transform` 时，仍然可以得到一个合理的布局，因此没有使用 `width: 142%;`。
 2. `scale()` 缩放的参考点默认为图片中心点，除非我们人为指定 `transform-origin` 的值；通过 `width` 属性放大图片时，参考点为左上角。
 
-**裁剪路径方案**
+**裁剪路径方案**(不完全支持)
 
 `clip-path`: 可以创建一个只有元素的部分区域可以显示的剪切区域。区域内的部分显示，区域外的隐藏。<br>
 
@@ -826,5 +826,111 @@ CSS:
 注：
 1. `polygon()` 用于生成一个多边形，其接受至少三对坐标值，使用逗号分隔。
 2. `clip-path` 可以参与动画，上述代码实现了鼠标悬停时图片平滑地显示其完整形状。
-3. safari 浏览器不支持该属性。
+3. **safari 浏览器不支持该属性**。
 4. `clip-path` 可以适应非正方形的图片。
+
+### 3.4 切角效果
+
+切角效果在网页设计中非常流行。<br>
+
+**一个切角**
+
+我们首先用无所不能的 CSS 渐变实现一个切角。
+
+<div class="box-100 single-clip-corner"></div>
+
+HTML:
+```html
+<div class="single-clip-corner"></div>
+```
+
+CSS:
+```css
+.single-clip-corner {
+  background: #ff7875;
+  background: linear-gradient(-45deg, transparent 15px, #ff7875 0);
+}
+```
+注：`background: #ff7875;` 作为回退属性，在不支持 CSS 渐变的浏览器中，我们仍能看到简单的实色背景。<br>
+
+**两个切角**
+
+根据前面的思路，当我们想用两层渐变去实现底部的两个切角时，CSS 如下：
+
+```css
+.btm-clip-corner {
+  background: #ff7875;
+  background: linear-gradient(-45deg, transparent 15px, #ff7875 0),
+              linear-gradient(45deg, transparent 15px, #69c0ff 0);
+}
+```
+
+实际效果如下：
+
+<div class="box-100 btm-clip-corner margin-btm-14"></div>
+
+这样是行不通的，两层渐变背景默认会填满整个元素，且会相互覆盖。<br>
+
+我们可以通过如下几步，把两层背景分别放在左侧和右侧：
+
+1. `background-repeat` 设为 `no-repeat`；
+2. `background-size` 设为 `50% 100%`；
+3. `backgound-position` 分别设为 `right` 和 `left`。
+
+CSS:
+```css
+.btm-clip-corner {
+  background: #ff7875;
+  background: linear-gradient(-45deg, transparent 15px, #ff7875 0) right,
+              linear-gradient(45deg, transparent 15px, #69c0ff 0) left;
+  background-size: 50% 100%;
+  background-repeat: no-repeat;
+}
+```
+
+效果如下：
+<div class="box-100 btm-clip-corner-2 margin-btm-14"></div>
+
+**四个切角**
+
+同理，实现四个切角的 CSS 如下：
+
+```css
+.four-clip-corner {
+  background: #ff7875;
+  background: linear-gradient(135deg, transparent 15px, #ff7875 0) left top,
+              linear-gradient(-135deg, transparent 15px, #69c0ff 0) right top,
+              linear-gradient(-45deg, transparent 15px, #ff7875 0) right bottom,
+              linear-gradient(45deg, transparent 15px, #69c0ff 0) left bottom;
+  background-size: 50% 50%;
+  background-repeat: no-repeat;
+}
+```
+
+效果如下：
+<div class="box-100 four-clip-corner margin-btm-14"></div>
+此效果也可以使用 `clip-path` 属性实现。
+
+**弧形切角**
+
+<div class="box-100 scoop-corners margin-btm-14"></div>
+
+CSS:
+```css
+.scoop-corners {
+  background: #ff7875;
+  background: radial-gradient(circle at top left, transparent 15px, #ff7875 0) left top,
+              radial-gradient(circle at top right, transparent 15px, #69c0ff 0) right top,
+              radial-gradient(circle at bottom right, transparent 15px, #ff7875 0) right bottom,
+              radial-gradient(circle at bottom left, transparent 15px, #69c0ff 0) left bottom;
+  background-size: 50% 50%;
+  background-repeat: no-repeat;
+}
+```
+
+
+
+
+### 3.5 梯形标签页
+
+
