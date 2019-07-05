@@ -13,6 +13,8 @@ tags: jekyll
 
 此篇博客记录了[ Jekyll 官方文档](https://jekyllrb.com/docs/)中的一些要点。
 
+<span style="color: red;">注意</span>：此博文中为了防止示例代码被 jekyll 识别，使用 `{ {` 和 `} }` 代替标准的双大括号，使用 `{-%` 和 `%-}` 代替标准的大括号加百分号 。
+
 ## 2. 目录结构
 
 一个基本的 `Jekyll` 项目通常看起来像这样：
@@ -42,17 +44,20 @@ tags: jekyll
 └── index.html # can also be an 'index.md' with valid front matter
 ```
 
+
+
+
 详情如下：
 
 1. `_config.yml`: 配置文件。
 2. `_drafts`: 草稿，文件名可以没有日期。
 3. `_includes`: 可被 `layouts` 和 `posts` 重用的片段，如:<br>
 ```
-{% include file.ext %}
+{-% include file.ext %-}
 ``` 
 4. `_layouts`: 布局，其中的 Liquid 标签  `{ { content } }` 用于将内容注入网页。
 5. `_posts`: 博文，文件名格式为 `YEAR-MONTH-DAY-title.MARKUP` 。
-6. `_data`: 数据，支持 `.yml`/`.yaml`/`.json`/`.csv`/`.tsv` ，可通过 `site.date` 访问。
+6. `_data`: 数据，支持 `.yml`、`.yaml`、`.json`、`.csv`、`.tsv` ，可通过 `site.date` 访问。
 7. `_sass`: 存放可导入 `main.scss` 的 `scss` 文件( `main.scss` 最终会被转换为 `main.css`)。
 8. `_site`: 存放生成的网页文件。
 9. `index.html`/`index.md`: 主页。
@@ -60,7 +65,7 @@ tags: jekyll
 
 ## 3. Posts
 
-`_post` 文件夹用于存放我们博客，支持 `Markdown` 和 `HTML` 。
+`_post` 文件夹用于存放我们博文，支持 `Markdown` 和 `HTML` 。
 
 ### 3.1 文件名格式
 
@@ -74,7 +79,7 @@ tags: jekyll
 
 每篇博客文件中的开头为 `YAML`(一种语言) 前页，用于设置布局(layout)和元数据(meta data)。此博文的 `YAML` 前页如下：<br>
 
-```YAML
+```yaml
 ---
 layout: post
 title: "Jekyll 要点"
@@ -98,13 +103,13 @@ tags: jkeyll
 
 在其他页面创建博文索引很简单，如下：
 
-```HTML
+```html
 <ul>
-  {% for post in site.posts %}
+  {-% for post in site.posts %-}
     <li>
       <a href="{ { post.url } }">{ { post.title } }</a>
     </li>
-  {% endfor %}
+  {-% endfor %-}
 </ul>
 ```
 注：
@@ -117,15 +122,15 @@ tags: jkeyll
 
 们可以通过 `site.categories` 访问所有的分类：
 
-```HTML
-{% for category in site.categories %}
+```html
+{-% for category in site.categories %-}
   <h3>{ { category[0] } }</h3>
   <ul>
-    {% for post in category[1] %}
+    {-% for post in category[1] %-}
       <li><a href="{ { post.url } }">{ { post.title } }</a></li>
-    {% endfor %}
+    {-% endfor %-}
   </ul>
-{% endfor %}
+{-% endfor %-}
 ```
 注: `category` 为数组，第一项为分类名称，第二项为该类别中的博文数组。
 
@@ -133,14 +138,14 @@ tags: jkeyll
 
 我们可以通过 `post.excerpt` 访问文章的摘要，默认为博文第一段。
 
-```HTML
+```html
 <ul>
-  {% for post in site.posts %}
+  {-% for post in site.posts %-}
     <li>
       <a href="{ { post.url } }">{ { post.title } }</a>
       { { post.excerpt } }
     </li>
-  {% endfor %}
+  {-% endfor %-}
 </ul>
 ```
 
@@ -152,9 +157,9 @@ tags: jkeyll
 
 ## 4. YAML 前页
 
-YAML 前页必须放在文件的首部，并且位于一对三横线(`---`)中间。<br>
+YAML 前页必须放在文件的首部，并且位于一对三横线(`---`)之间。<br>
 
-```YAML
+```yaml
 ---
 layout: post
 title: "《CSS揭秘》学习笔记"
@@ -180,18 +185,18 @@ customCss: ["/css/custom-css/2019-06-01-css-secrets.css"]
 
 自定义的变量也能在 `Liquid` 中使用，例如定义 `customCss` 变量来保存博文需要的自定义 `css` 文件：
 
-```YAML
+```yaml
 customCss: ["/css/custom-css/2019-06-01-css-secrets.css"]
 ```
 
 然后在 `head.html` 中通过 `page.customCSS` 来访问此数组。
 
-```HTML
+```html
 <head>
-  {% if page.customCss %}
-    {% for css in page.customCss %}
+  {-% if page.customCss %-}
+    {-% for css in page.customCss %-}
     <link rel="stylesheet" href="{ { css } }">
-    {% endfor %}
-  {% endif %}
+    {-% endfor %-}
+  {-% endif %-}
 </head>
 ```
