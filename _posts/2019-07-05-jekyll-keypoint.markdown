@@ -3,7 +3,7 @@ layout: post
 title: "Jekyll 要点"
 date: 2019-07-05 14:26:00 +0800
 categories: learning-notes
-tags: jkeyll
+tags: jekyll
 ---
 
 * content
@@ -46,7 +46,10 @@ tags: jkeyll
 
 1. `_config.yml`: 配置文件。
 2. `_drafts`: 草稿，文件名可以没有日期。
-3. `_includes`: 可被 `layouts` 和 `posts` 重用的片段，如 `{% include file.ext %}` 。
+3. `_includes`: 可被 `layouts` 和 `posts` 重用的片段，如:<br>
+```
+{% include file.ext %}
+``` 
 4. `_layouts`: 布局，其中的 Liquid 标签  `{ { content } }` 用于将内容注入网页。
 5. `_posts`: 博文，文件名格式为 `YEAR-MONTH-DAY-title.MARKUP` 。
 6. `_data`: 数据，支持 `.yml`/`.yaml`/`.json`/`.csv`/`.tsv` ，可通过 `site.date` 访问。
@@ -119,7 +122,7 @@ tags: jkeyll
   <h3>{ { category[0] } }</h3>
   <ul>
     {% for post in category[1] %}
-      <li><a href="{{ post.url }}">{ { post.title } }</a></li>
+      <li><a href="{ { post.url } }">{ { post.title } }</a></li>
     {% endfor %}
   </ul>
 {% endfor %}
