@@ -11,7 +11,7 @@ tags: jekyll
 
 ## 1. 概述
 
-此篇博客记录了[ Jekyll 官方文档](https://jekyllrb.com/docs/)中的一些要点。
+此篇博客记录了[ Jekyll 官方文档 ](https://jekyllrb.com/docs/)中的一些要点。
 
 <span style="color: red;">注意</span>：此博文中为了防止示例代码被 jekyll 识别，使用 `{ {` 和 `} }` 代替标准的双大括号，使用 `{-%` 和 `%-}` 代替标准的大括号加百分号 。
 
@@ -200,3 +200,67 @@ customCss: ["/css/custom-css/2019-06-01-css-secrets.css"]
   {-% endif %-}
 </head>
 ```
+
+## 5. Liquid
+
+Jekyll 使用 Liquid 模板语言来处理模板。通常在 Liquid 中，
++ 使用两个花括号输出内容，例如 `{ { variable } }` ，
++ 使用大括号百分号将它们包围来执行逻辑语句，例如 `{-% if statement %-}` 。
+
+## 6. 变量
+
+### 6.1 全局变量
+
++ `site`: 网站信息和 `_config.yml` 中的配置信息。
++ `page`: Page 特殊信息和前页(front matter)设置。
++ `layout`: Layout 特殊信息和前页(front matter)设置。
++ `content`: 在 `layout` 文件中使用，表示将要呈现的内容。
++ `paginator`: 设置 `paginate` 后，此变量可用。
+
+### 6.2 Site 变量
+
++ `site.time`: 当前时间(运行 `jekyll` 命令时)。
++ `site.pages`: 所有页面列表。
++ `site.posts`: 所有帖子的反向时间顺序列表。
++ `site.related_posts`: 如果正在处理的页面是 `Post` ，则其中包含最多十个相关 `Posts` 的列表。
++ `site.static_files`: 所有静态文件的列表。
++ `site.html_pages`: `site.pages` 的一个子集，列出了以 `.html` 结尾的页面。
++ `site.html_files`: `site.static_files` 的一个子集，列出了以 `.html` 结尾的文件。
++ `site.collections`: 收藏列表(包括 `Post`)。
++ `site.data`: 根据 `YAML` 文件从位于 `_data` 目录中加载的数据的列表。
++ `site.documents`: 每个收藏中所有文档的列表。。
++ `site.categories.CATEGORY`: 指定类别 `CATEGORY` 中所有 `Posts` 的列表。
++ `site.tags.TAG`: 指定标签 `TAG` 中所有 `Posts` 的列表。
++ `site.url`: 根据 `_config.yml` 中定义的网站的 `url` 地址，开发环境下为 `http://localhost:4000`。
++ `site.[CONFIGURATION_DATA]`: 通过命令行或  `_config.yml` 中定义的所有变量。
+
+### 6.3 Page 变量
+
++ `page.content`: 内容。
++ `page.title`: 标题，如 `{{page.title}}`。
++ `page.excerpt`: 摘要。
++ `page.url`: 没有域名的 url 地址，如 `{{page.url}}`。
++ `page.date`: 日期，如 `{{page.date}}`。
++ `page.id`: id，如 `{{page.id}}`。
++ `page.categories`: 分类列表，如 `{{page.categories}}`。
++ `page.collection`: 此文档所属的集合的标签，如 `{{page.collection}}`。
++ `page.tags`: 标签列表，如 `{{page.tags}}`。
++ `page.dir`: 源目录与帖子或页面文件之间的路径。
++ `page.name`: 帖子或页面的文件名。
++ `page.path`: 原始帖子或页面的路径。
++ `page.next`: 下一篇。
++ `page.previous`: 上一篇。
+
+### 6.4 Paginator 变量
+
++ `paginator.page`: 当前页的页码。
++ `paginator.per_page`: 每页的帖子数量。
++ `paginator.posts`: 可用于当前页面的帖子。
++ `paginator.total_posts`: posts 总数。
++ `paginator.total_pages`: pages 总数。
++ `paginator.previous_page`: 上一页的页码，不存在则为 `nil`。
++ `paginator.previous_page_path`: 上一页的路径，不存在则为 `nil`。
++ `paginator.next_page`: 下一页的页码，不存在则为 `nil`。
++ `paginator.next_page_path`: 下一页的路径，不存在则为 `nil`。
+
+
