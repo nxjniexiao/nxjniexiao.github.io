@@ -6,8 +6,8 @@ categories: 设计模式
 tags: js
 ---
 
-- content
-  {:toc}
+* content
+{:toc}
 
 ## 1. 定义
 
@@ -140,8 +140,7 @@ var createLocalMeeting = function(meeting) {
   // 创建本地会议的逻辑...
 };
 ```
-2. 创建Umeeting会议:
-
+2. 创建Umeeting会议:<br>
 ```js
 var createUmeeting = function(meeting) {
   if (meeting.type !== 3) {
@@ -150,8 +149,7 @@ var createUmeeting = function(meeting) {
   // 创建Umeeting会议的逻辑...
 };
 ```
-3. 创建视频会议:
-
+3. 创建视频会议:<br>
 ```js
 var createVideoMeeting = function(meeting) {
   if (meeting.type !== 0 || meeting.isMixed) {
@@ -160,8 +158,7 @@ var createVideoMeeting = function(meeting) {
   // 创建视频会议的逻辑...
 };
 ```
-4. 创建混合会议:
-
+4. 创建混合会议:<br>
 ```js
 var createMixedMeeting = function(meeting) {
   if (meeting.type !== 0 || meeting.isMixed) {
