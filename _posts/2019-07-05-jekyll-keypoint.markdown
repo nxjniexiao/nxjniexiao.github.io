@@ -9,11 +9,13 @@ tags: jekyll
 * content
 {:toc}
 
+{% raw %}
+
 ## 1. 概述
 
 此篇博客记录了[ Jekyll 官方文档 ](https://jekyllrb.com/docs/)中的一些要点。
 
-<span style="color: red;">注意</span>：此博文中为了防止示例代码被 jekyll 识别，使用 `{ {` 和 `} }` 代替标准的双大括号，使用 `{-%` 和 `%-}` 代替标准的大括号加百分号 。
+<span style="color: red;">注意</span>：此博文中为了防止示例代码被 jekyll 识别，使用了 Liquid 中的 Raw 标签。
 
 ## 2. 目录结构
 
@@ -43,19 +45,21 @@ tags: jekyll
 ├── .jekyll-metadata
 └── index.html # can also be an 'index.md' with valid front matter
 ```
+{% endraw %}
 
 
 
 
+{% raw %}
 详情如下：
 
 1. `_config.yml`: 配置文件。
 2. `_drafts`: 草稿，文件名可以没有日期。
 3. `_includes`: 可被 `layouts` 和 `posts` 重用的片段，如:<br>
 ```
-{-% include file.ext %-}
+{% include file.ext %}
 ``` 
-4. `_layouts`: 布局，其中的 Liquid 标签  `{ { content } }` 用于将内容注入网页。
+4. `_layouts`: 布局，其中的 Liquid 标签  `{{ content }}` 用于将内容注入网页。
 5. `_posts`: 博文，文件名格式为 `YEAR-MONTH-DAY-title.MARKUP` 。
 6. `_data`: 数据，支持 `.yml`、`.yaml`、`.json`、`.csv`、`.tsv` ，可通过 `site.date` 访问。
 7. `_sass`: 存放可导入 `main.scss` 的 `scss` 文件( `main.scss` 最终会被转换为 `main.css`)。
@@ -105,11 +109,11 @@ tags: jkeyll
 
 ```html
 <ul>
-  {-% for post in site.posts %-}
+  {% for post in site.posts %}
     <li>
-      <a href="{ { post.url } }">{ { post.title } }</a>
+      <a href="{{ post.url }}">{{ post.title }}</a>
     </li>
-  {-% endfor %-}
+  {% endfor %}
 </ul>
 ```
 注：
@@ -123,14 +127,14 @@ tags: jkeyll
 们可以通过 `site.categories` 访问所有的分类：
 
 ```html
-{-% for category in site.categories %-}
-  <h3>{ { category[0] } }</h3>
+{% for category in site.categories %}
+  <h3>{{ category[0] }}</h3>
   <ul>
-    {-% for post in category[1] %-}
-      <li><a href="{ { post.url } }">{ { post.title } }</a></li>
-    {-% endfor %-}
+    {% for post in category[1] %}
+      <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
   </ul>
-{-% endfor %-}
+{% endfor %}
 ```
 注: `category` 为数组，第一项为分类名称，第二项为该类别中的博文数组。
 
@@ -140,12 +144,12 @@ tags: jkeyll
 
 ```html
 <ul>
-  {-% for post in site.posts %-}
+  {% for post in site.posts %}
     <li>
-      <a href="{ { post.url } }">{ { post.title } }</a>
-      { { post.excerpt } }
+      <a href="{{ post.url }}">{{ post.title }}</a>
+      {{ post.excerpt }}
     </li>
-  {-% endfor %-}
+  {% endfor %}
 </ul>
 ```
 
@@ -193,19 +197,19 @@ customCss: ["/css/custom-css/2019-06-01-css-secrets.css"]
 
 ```html
 <head>
-  {-% if page.customCss %-}
-    {-% for css in page.customCss %-}
-    <link rel="stylesheet" href="{ { css } }">
-    {-% endfor %-}
-  {-% endif %-}
+  {% if page.customCss %}
+    {% for css in page.customCss %}
+    <link rel="stylesheet" href="{{ css }}">
+    {% endfor %}
+  {% endif %}
 </head>
 ```
 
 ## 5. Liquid
 
 Jekyll 使用 Liquid 模板语言来处理模板。通常在 Liquid 中，
-+ 使用两个花括号输出内容，例如 `{ { variable } }` ，
-+ 使用大括号百分号将它们包围来执行逻辑语句，例如 `{-% if statement %-}` 。
++ 使用两个花括号输出内容，例如 `{{ variable }}` ，
++ 使用大括号百分号将它们包围来执行逻辑语句，例如 `{% if statement %}` 。
 
 ## 6. 变量
 
@@ -237,14 +241,14 @@ Jekyll 使用 Liquid 模板语言来处理模板。通常在 Liquid 中，
 ### 6.3 Page 变量
 
 + `page.content`: 内容。
-+ `page.title`: 标题，如 `{{page.title}}`。
++ `page.title`: 标题，如 `jekyll 要点`。
 + `page.excerpt`: 摘要。
-+ `page.url`: 没有域名的 url 地址，如 `{{page.url}}`。
-+ `page.date`: 日期，如 `{{page.date}}`。
-+ `page.id`: id，如 `{{page.id}}`。
-+ `page.categories`: 分类列表，如 `{{page.categories}}`。
-+ `page.collection`: 此文档所属的集合的标签，如 `{{page.collection}}`。
-+ `page.tags`: 标签列表，如 `{{page.tags}}`。
++ `page.url`: 没有域名的 url 地址，如 `/2019/07/05/jekyll-keypoint/`。
++ `page.date`: 日期，如 `2019-07-05 14:26:00 +0800`。
++ `page.id`: id，如 `/2019/07/05/jekyll-keypoint`。
++ `page.categories`: 分类列表，如 `learning-notes`。
++ `page.collection`: 此文档所属的集合的标签，如 `posts`。
++ `page.tags`: 标签列表，如 `jekyll`。
 + `page.dir`: 源目录与帖子或页面文件之间的路径。
 + `page.name`: 帖子或页面的文件名。
 + `page.path`: 原始帖子或页面的路径。
@@ -264,3 +268,4 @@ Jekyll 使用 Liquid 模板语言来处理模板。通常在 Liquid 中，
 + `paginator.next_page_path`: 下一页的路径，不存在则为 `nil`。
 
 
+{% endraw %}

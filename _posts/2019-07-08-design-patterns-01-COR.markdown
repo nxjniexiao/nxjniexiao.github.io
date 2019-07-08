@@ -15,6 +15,9 @@ tags: js
 
 `Request` --> `A` --> `B` --> `C` --> `D`。
 
+
+
+
 ## 2. 面向对象的职责链
 
 ### 2.1 构造函数 Chain
@@ -130,8 +133,7 @@ var createMeeting = createLocalMeeting
   ._after(createMixedMeeting);
 ```
 
-1. 创建本地会议:
-
+1. 创建本地会议:<br>
 ```js
 var createLocalMeeting = function(meeting) {
   if (meeting.type !== 1) {
