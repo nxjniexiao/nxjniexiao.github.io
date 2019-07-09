@@ -267,5 +267,150 @@ Jekyll 使用 Liquid 模板语言来处理模板。通常在 Liquid 中，
 + `paginator.next_page`: 下一页的页码，不存在则为 `nil`。
 + `paginator.next_page_path`: 下一页的路径，不存在则为 `nil`。
 
+## 7. Includes
+
+`include` 标签能让我们插入位于 `_includes` 文件夹中指定文件的内容。<br>
+
+例如 `{% include footer.html %}` 能插入位于 `_includes` 文件夹中的 `footer.html` 的内容。
+
+### 7.1 include_relative
+
+使用 `include_relative` 标签可以插入相对当前文件的指定文件的内容。<br>
+
+例如 `{% include_relative fragments/footer.html %}` 会插入位于当前文件夹下 `fragments` 文件夹中的 `footer.html` 。<br>
+
+注：不能使用 `../` 选择上一级文件夹。
+
+### 7.2 使用变量表示 include 文件名
+
+可以使用变量来表示要插入的文件名。例如我们在页面前页中定义了变量 `footerFileName`:
+
+```yaml
+title: My Page
+footerFileName: 'footer.html'
+```
+
+在 `include` 标签中使用此变量: 
+
+```
+{% if page.footerFileName %}
+  {% include {{ page.footerFileName }} %}
+{% endif %}
+```
+
+### 7.3 includes 传参
+
+`include` 可以接受参数: 
+
+```
+{% include note.html content="This is my sample note." %}
+```
+
+其中参数名为 `content` ，其对应的值为 `This is my sample note.` 。在 `note.html` 中我们可以使用此参数: 
+
+```html
+<div markdown="span" class="alert alert-info" role="alert">
+  <i class="fa fa-info-circle"></i>
+  <b>Note:</b>
+  {{ include.content }}
+</div>
+```
+
+参数 `content` 的值将插入至 `{{ include.content }}` 。
+
+### 7.4 把变量的值传给 includes
+
+除了给 `includes` 传值为字符串的参数外，我们还可以传递某个变量的值。<br>
+
+我们先使用 `capture` 标签创建一个变量 `download_note` : 
+
+```
+{% capture download_note %}
+The latest version of {{ site.product_name }} is now available.
+{% endcapture %}
+```
+注: 我们给 `includes` 传递的值中不能包含双大括号，即我们无法直接通过 `content="The latest version of {{ site.product_name }} is now available."` 来传递值。
+
+然后在 `includes` 中使用它: 
+
+```
+{% include note.html content=download_note %}
+```
+注: `download_note` 没有使用双引号包裹。
+
+## 8. Layouts
+
+布局是包裹内容的模板。它们允许我们将模板的源代码放在一个位置(`_layouts` 文件夹中)，这样就不必在每个页面上重复导航和页脚等内容。<br>
+
+### 8.1 基本使用
+
+首先在 Post 前页中指定 `layout` 为 `default`: 
+
+```
+---
+title: My First Page
+layout: default
+---
+
+This is the content of my page
+```
+
+然后完成布局文件 `default.html`: 
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{{ page.title }}</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/blog/">Blog</a>
+    </nav>
+    <h1>{{ page.title }}</h1>
+    <section>
+      {{ content }}
+    </section>
+    <footer>
+      &copy; to me
+    </footer>
+  </body>
+</html>
+```
+
+注: 其中 `content` 是一个特殊变量，Post 中的内容将插入至 `{{ content }}` 处。
+
+### 8.2 继承
+
+一个布局可以继承另一个布局，例如新建一个布局文件 `post.html` 继承 `default.html`: 
+
+```
+---
+layout: default
+---
+<p>{{ page.date }} - Written by {{ page.author }}</p>
+
+{{ content }}
+```
+
+相对于使用 `default` 布局的页面，使用 `post` 布局的页面将额外显示日期和作者。
+
+### 8.3 Layouts 中定义变量
+
+我们可以在 `layout` 前页中定义变量，然后在此 `layout` 文件中通过 `layout.VARIABLE_NAME` 使用此变量: 
+
+```
+---
+city: San Francisco
+---
+<p>{{ layout.city }}</p>
+
+{{ content }}
+```
+
+
 
 {% endraw %}
