@@ -8,7 +8,9 @@ tags: Ruby jkeyll software-install
 * content
 {:toc}
 此文描述了Jekyll的安装过程，及如何关联github上的远程仓库。
+
 ## 1. 安装Jekyll
+
 windows版本的安装地址：[Jekyll on Windows](https://jekyllrb.com/docs/windows/)。
 + 1) 安装Ruby+Devkit<br>
 选择官网推荐版本[Ruby+Devkit 2.4.4-2 (x64)](https://www.ruby-lang.org/en/downloads/) 下载。<br>
@@ -23,7 +25,9 @@ gem install jekyll bundler
 jekyll -v
 ```
 查看版本号，从而验证是否安装成功。
+
 ## 2. 新建博客
+
 + 1) CMD中cd到自己想要的目录，运行：
 ```
 jekyll new my-blog
@@ -38,6 +42,7 @@ jekyll new my-blog
 
 
 ## 3. 关联github远程仓库
+
 关联自己github账户中名为USERNAME.github.io远程仓库和本地的博客仓库。<br>
 若还未新建此远程仓库，可根据[pages.github.com](https://pages.github.com/)中的第一步创建。<br>
 **注意：**USERNAME为你自己github的账户名。
@@ -51,7 +56,9 @@ git clone git@github.com:USERNAME/USERNAME.github.io.git
 + 4) 提交至远程仓库：<br>
 `git add .` ==> `git commit -m "说明"` ==> `git push -u origin master`
 + 5) 提交完成后，在浏览器中输入`https://USERNAME.github.io/`查看自己的远程博客。
+
 ## 4. 新建博客文件
+
 在_posts文件夹下面新建博客文件，格式为YYYY-MM-DD-name-of-post.ext，例如：
 ```
 2018-08-16-welcome-to-jekyll.markdown
