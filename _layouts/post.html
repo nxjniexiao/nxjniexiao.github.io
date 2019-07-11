@@ -3,7 +3,7 @@ layout: default
 ---
 
 <div class="page clearfix" post>
-    <div class="left">
+    <div id="content" class="left">
         <h1>{{page.title}}</h1>
         <div class="label">
 
@@ -72,11 +72,10 @@ layout: default
     <button class="anchor"><i class="fa fa-anchor"></i></button>
     <div class="right">
         <div class="wrap">
-
             <!-- Content -->
             <div class="side content">
                 <div>
-                    Content
+                    目录
                 </div>
                 <ul id="content-side" class="content-ul">
                     {% if hasSimilar.size > 0 %}

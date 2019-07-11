@@ -4,7 +4,8 @@ title: "《CSS揭秘》学习笔记"
 date: 2019-06-01 22:45:12 +0800
 categories: learning-notes CSS
 tags: css
-customCss: ["/css/custom-css/2019-06-01-css-secrets.css"]
+custom_css: ["2019-06-01-css-secrets.css"]
+custom_js: ["2019-06-01-css-secrets.js"]
 ---
 
 * content
@@ -41,6 +42,8 @@ CSS 代码如下：
 
 
 
+
+{% raw %}
 
 实际效果如下，子元素的红色背景(#ff7875)延伸到了边框下面，所以父元素的白色背景被遮住了。
 
@@ -933,4 +936,270 @@ CSS:
 
 ### 3.5 梯形标签页
 
+我们可以 3D 旋转伪元素生成梯形:
 
+<div class="trapezoid margin-btm-14">trapezoid</div>
+
+HTML:
+```html
+<div class="trapezoid">trapezoid</div>
+```
+CSS:
+```css
+.trapezoid {
+  position: relative;
+  width: fit-content;
+  padding: 0 .8em;
+  z-index: 0;
+}
+.trapezoid::after {
+  position: absolute;
+  content: '';
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: scaleY(1.3) perspective(.5em) rotateX(5deg);
+  transform-origin: bottom;
+  background: #ff7875;
+  z-index: -1;
+}
+```
+要点：
+1. 元素本身相对定位，其伪元素绝对定位；
+2. 伪元素通过 `transform` 属性缩放和旋转：
+   + `scaleY(1.3)` Y 方向拉伸 1.3 倍，抵消 X 方向旋转 5 度后视觉上高度降低的效果；
+   + `rotateX(5deg)` X 方向旋转 5 度，用于生成视觉上的梯形效果；
+   + `perspective(.5em)` 指定了观察者与 z=0 平面的距离；
+3. `transform-origin: bottom;` 指定元素变形的原点。
+
+根据上述特点，我们可以设计出复杂的梯形标签页: 
+
+<ul class="nav-3-5">
+  <li>Home</li>
+  <li class="selected">Projects</li>
+  <li>About</li>
+</ul>
+<div class="content-3-5">Projects</div>
+
+HTML:
+```html
+<ul class="nav-3-5">
+  <li>Home</li>
+  <li class="selected">Projects</li>
+  <li>About</li>
+</ul>
+<div class="content-3-5">Projects</div>
+```
+CSS:
+```css
+ul.nav-3-5 {
+  padding-left: .8em;
+  margin-bottom: 0;
+}
+ul.nav-3-5 > li {
+  position: relative;
+  display: inline-block;
+  margin: 0 -.4em !important;
+  padding: .3em 1em 0;
+  cursor: pointer;
+  z-index: 0;
+}
+ul.nav-3-5 > li::before,
+.content-3-5 {
+  border: 1px solid rgba(0, 0, 0, .4);
+}
+ul.nav-3-5 > li::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: #ccc;
+  background-image: linear-gradient(
+    hsla(0, 0%, 100%, .6), 
+    hsla(0, 0%, 100%, 0));
+  border: 1px solid rgba(0, 0, 0, .4);
+  border-bottom: none;
+  border-radius: .5em .5em 0 0;
+  box-shadow: 0 .15em white inset;
+  transform: scale(1, 1.3) perspective(.5em) rotateX(5deg);
+  transform-origin: bottom;
+  z-index: -1;
+}
+.content-3-5 {
+  margin-bottom: 1em;
+  background: #eee;
+  padding: 1em;
+  border-radius: .15em;
+}
+ul.nav-3-5 li.selected {
+  z-index: 2;
+}
+ul.nav-3-5 li.selected::before {
+  background-color: #eee;
+  margin-bottom: -1px;
+}
+```
+JS:
+```js
+(function() {
+  var navDom = document.querySelector('.nav-3-5');
+  var liDomArr = navDom.querySelectorAll('li');
+  var contentDom = document.querySelector('.content-3-5');
+  navDom.addEventListener('click', clickTab);
+  // 点击 tab 页的回调函数
+  function clickTab(event) {
+    removeClass();
+    event.target.classList.add('selected');
+    contentDom.innerHTML = event.target.innerHTML;
+  }
+  // 移除所有 li 元素的 'selected' 类
+  function removeClass() {
+    liDomArr.forEach(function(dom) {
+      dom.classList.remove('selected');
+    });
+  }
+})();
+```
+
+### 3.6 简单的饼图
+
+我们来一步一步完成一个 20% + 80% 的饼图。
+
+**首先**完成一个左右颜色不一样的圆形: 
+
+<div class="circle-3-6"></div>
+
+HTML
+```html
+<div class="circle-3-6"></div>
+```
+CSS:
+```css
+.circle-3-6 {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #ff7875;
+  background-image: linear-gradient(to right, transparent 50%, #69c0ff 0);
+}
+```
+
+**第二步**，设置伪元素的样式，让它起到遮罩层的作用(见虚线方框)。
+
+<div class="circle-3-6 stage-2"></div>
+
+```css
+.circle-3-6.stage-2::after {
+  content: '';
+  display: block;
+  margin-left: 50%;
+  height: 100%;
+  border: 1px dashed #ccc;
+}
+```
+
+**第三步**，给伪元素设置背景色，并以左中为中心旋转 `(20% * 360)` 度，即 `0.2turn`。
+
+<div class="circle-3-6 stage-2 stage-3 margin-btm-14"></div>
+
+HTML
+```html
+<div class="circle-3-6 stage-2 stage-3 margin-btm-14"></div>
+```
+CSS
+```css
+.circle-3-6.stage-3::after {
+  background-color: inherit;
+  transform: rotate(0.2turn);
+  transform-origin: left;
+}
+```
+
+**第四步**，把伪元素变为半圆形，并去掉虚线方框。
+
+<div class="circle-3-6 stage-2 stage-3 stage-4"></div>
+
+HTML
+```html
+<div class="circle-3-6 stage-2 stage-3 stage-4"></div>
+```
+CSS
+```css
+.circle-3-6.stage-4::after {
+  border-radius: 0 100% 100% 0 / 50%;
+  border: none;
+}
+```
+注：除了把伪元素变为半圆形外，给`.circle-3-6` 设置 `overflow: hidden;` 也可以达到同样的效果。<br>
+
+最终的 CSS 如下：
+
+```css
+.circle-3-6::after {
+  content: '';
+  display: block;
+  margin-left: 50%;
+  height: 100%;
+  border-radius: 0 100% 100% 0 / 50%;
+  background-color: inherit;
+  transform: rotate(0.2turn);
+  transform-origin: left;
+}
+```
+
+现在我们可以调整 `transform: rotate(0.2turn);` 中的角度来调整蓝色部分的比例。<br>
+
+但是，当角度调整至 `0.5turn` 以上时，如 `0.7turn` 会得到不符合我们预期的情况：
+
+<div class="circle-3-6 turn-70"></div>
+
+CSS
+```css
+.circle-3-6.turn-70::after {
+  transform: rotate(0.7turn);
+}
+```
+我们预期的是，蓝色占 `70%` ，而当前蓝色占 `30%` 。
+
+从另一个角度考虑，我们把伪元素的颜色改为蓝色，然后把旋转角度减去 `0.5turn` ，就会得到预期的情况：
+
+<div class="circle-3-6 turn-70 turn-70-right"></div>
+
+CSS
+```css
+.circle-3-6.turn-70-right::after {
+  background-color: #69c0ff;
+  transform: rotate(0.2turn);
+}
+```
+
+我们还可以结合动画，生成一个从 `0%` 变为 `100%` 的饼图。
+
+<div class="circle-3-6 pointer auto-run"></div>
+
+CSS
+```css
+@keyframes bg-color {
+  50% {
+    background-color: #69c0ff;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(0.5turn);
+  }
+}
+.pointer::after {
+  content: '';
+  display: block;
+  margin-left: 50%;
+  height: 100%;
+  border-radius: 0 100% 100% 0 / 50%;
+  background-color: inherit;
+  transform-origin: left;
+}
+.circle-3-6.auto-run::after {
+  animation: bg-color 6s step-end infinite,
+             spin 3s linear infinite;
+}
+```
+
+
+{% endraw %}

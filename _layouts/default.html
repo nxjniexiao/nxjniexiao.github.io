@@ -7,7 +7,7 @@
 
     {% include header.html %}
 
-        {{ content }}
+    {{ content }}
 
     {% include footer.html %}
     {% include backToTop.html %}
@@ -21,6 +21,11 @@
       });
     </script>
     <!-- <script src="{{ " /js/scroll.min.js " | prepend: site.baseurl }}" charset="utf-8"></script> -->
+    {% if page.custom_js %}
+      {% for js in page.custom_js %}
+      <script src="{{js | prepend: '/js/custom-js/'}}"></script>
+      {% endfor %}
+    {% endif %}
   </body>
 
 </html>

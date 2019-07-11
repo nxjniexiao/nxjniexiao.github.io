@@ -11,10 +11,10 @@
     <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://at.alicdn.com/t/font_8v3czwksspqlg14i.css">
     <link rel="stylesheet" href="{{ "/css/main.css " | prepend: site.baseurl }}">
-    {% if page.customCss %}
-      {% for css in page.customCss %}
+    {% if page.custom_css %}
+      {% for css in page.custom_css %}
       <!-- <link rel="stylesheet" href="{{ css | prepend: site.baseurl }}"> -->
-      <link rel="stylesheet" href="{{ css }}">
+      <link rel="stylesheet" href="{{ css | prepend: '/css/custom-css/' }}">
       {% endfor %}
     {% endif %}
     <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
