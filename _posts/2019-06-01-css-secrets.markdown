@@ -1060,6 +1060,8 @@ JS:
 
 ### 3.6 简单的饼图
 
+#### 3.6.1 固定比例的饼图
+
 我们来一步一步完成一个 20% + 80% 的饼图。
 
 **首先**完成一个左右颜色不一样的圆形: 
@@ -1170,6 +1172,8 @@ CSS
 }
 ```
 
+#### 3.6.2 饼图进度指示器
+
 我们还可以结合动画，生成一个从 `0%` 变为 `100%` 的饼图。
 
 <div class="circle-3-6 pointer auto-run"></div>
@@ -1200,6 +1204,66 @@ CSS
              spin 3s linear infinite;
 }
 ```
+
+#### 3.6.3 静态饼图封装
+
+用同一套代码实现不同比例的饼图这个需求更加常见，比如我们希望通过如下方式来生成两个不同比例的饼图：
+
+```html
+<div class="pie">20%</div> 
+<div class="pie">60%</div> 
+```
+
+由于无法给伪元素设置内联样式，因此我们通过让上一节中的动画暂定的方式来封装代码。
+
+<div class="pie">20%</div> 
+<div class="pie">60%</div> 
+
+CSS
+```css
+.pie {
+  position: relative;
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  line-height: 100px; /* 文字垂直居中 */
+  border-radius: 50%;
+  background-color: #ff7875;
+  background-image: linear-gradient(to right, transparent 50%, #69c0ff 0);
+  text-align: center; /* 文字水平居中 */
+  color: transparent; /* 隐藏文字 */
+}
+.pie::after {
+  content: '';
+  position: absolute; /* 绝对定位 */
+  display: block;
+  top: 0; right: 0;
+  width: 50%;
+  height: 100%;
+  border-radius: 0 100% 100% 0 / 50%;
+  background-color: inherit;
+  transform-origin: left;
+  animation: bg-color 100s step-end infinite,
+             spin 50s linear infinite;
+  animation-delay: inherit; /* 继承自 .pie 元素 */
+  animation-play-state: paused; /* 动画暂定 */
+}
+```
+JS
+```js
+(function() {
+  var pieDomArr = document.querySelectorAll(".pie");
+  pieDomArr.forEach(function(pieDom) {
+    var ratial = parseFloat(pieDom.innerHTML); // `20%` 转 20 
+    pieDom.style.animationDelay = -ratial + "s";
+  });
+})();
+```
+重点：
+1. 给伪元素设置 `animation-delay: inherit;`，使其值继承自 `.pie` 元素。
+2. 通过 js ，给每个 `.pie` 元素设置内联样式 `pieDom.style.animationDelay = -ratial + "s";`。
+3. 负的延时是合法的，就好像动画在过去已经播了指定延时的时间一样。因此动画第一帧为延时值的**绝对值**处的状态。
+4. `animation-play-state: paused;` 让动画永久暂停。
 
 
 {% endraw %}
