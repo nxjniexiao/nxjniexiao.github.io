@@ -1265,5 +1265,236 @@ JS
 3. 负的延时是合法的，就好像动画在过去已经播了指定延时的时间一样。因此动画第一帧为延时值的**绝对值**处的状态。
 4. `animation-play-state: paused;` 让动画永久暂停。
 
+#### 3.6.4 SVG 方案
+
+首先生成一个圆形，并加上描边。
+
+<svg width="100" height="100">
+<circle class="stage-1" r="30" cx="50" cy="50" />
+</svg>
+
+HTML
+```html
+<svg width="100" height="100">
+<circle class="stage-1" r="30" cx="50" cy="50" />
+</svg>
+```
+CSS
+```css
+circle.stage-1 {
+  fill: #ff7875;
+  stroke: #69c0ff;
+  stroke-width: 30;
+}
+```
+注：
+1. `stroke` 属性定义了给定图形元素的外轮廓的颜色。
+2. `stroke-width` 属性指定了当前对象的轮廓的宽度，分布在**轮廓线**的两侧。
+
+第二步，我们给它添加 `stroke-dasharray: 20 11.5;` 属性，第一个值指定了线段的长度，第二个指定了缺口的长度。
+<svg width="100" height="100">
+<circle class="stage-1 stage-2" r="30" cx="50" cy="50" />
+</svg>
+此圆形的周长为: `2πr = 2 x 3.14 x 30 ≈ 189` ，当我们把缺口长度设为其周长时:<br>
+即 `stroke-dasharray: 20 189;` ，会出现如下情况。
+<svg width="100" height="100">
+<circle class="stage-1 stage-2 stage-3" r="30" cx="50" cy="50" />
+</svg>
+图中的线段长度就是我们指定的 `20px`。
+
+第三步，调整圆形半径和线段的宽度，就可以得到我们想要的扇形了。
+<svg width="100" height="100">
+<circle class="stage-4" r="25" cx="50" cy="50" />
+</svg>
+HTML
+```html
+<svg width="100" height="100">
+<circle class="stage-4" r="25" cx="50" cy="50" />
+</svg>
+```
+CSS
+```css
+circle.stage-4 {
+  fill: #ff7875;
+  stroke: #69c0ff;
+  stroke-width: 50;
+  stroke-dasharray: 20 158;
+}
+```
+
+最后，我们给 `svg` 元素添加背景颜色，并把它逆时针旋转 `90deg` 。
+<svg class="final" width="100" height="100">
+<circle class="stage-4" r="25" cx="50" cy="50" />
+</svg>
+HTML
+```html
+<svg class="final" width="100" height="100">
+<circle class="stage-4" r="25" cx="50" cy="50" />
+</svg>
+```
+CSS
+```css
+svg.final {
+  transform: rotate(-90deg);
+  border-radius: 50%;
+  background-color: #ff7875;
+}
+```
+
+#### 3.6.5 饼图进度指示器(SVG)
+
+我们创建一个动画，把 `stroke-dasharray` 的值从 `0 158` 变为 `158 158` 。
+
+<svg class="final" width="100" height="100">
+<circle class="animation" r="25" cx="50" cy="50" />
+</svg>
+HTML
+```html
+<svg class="final" width="100" height="100">
+<circle class="animation" r="25" cx="50" cy="50" />
+</svg>
+```
+CSS
+```css
+@keyframes fillup {
+  to {
+    stroke-dasharray: 158 158;
+  }
+}
+circle.animation {
+  fill: #ff7875;
+  stroke: #69c0ff;
+  stroke-width: 50;
+  stroke-dasharray: 0 158;
+  animation: fillup 6s linear infinite;
+}
+```
+
+#### 3.6.6 静态饼图封装(SVG)
+
+我们按照 3.6.3 的方式去封装饼图，使用方式如下：<br>
+HTML
+```html
+<div class="pie-svg">20%</div> 
+<div class="pie-svg">60%</div>
+<div class="pie-svg animated">0%</div>
+```
+效果如下：
+<div class="pie-svg">20%</div> 
+<div class="pie-svg">60%</div>
+<div class="pie-svg animated">0%</div>
+
+CSS
+```css
+.pie-svg {
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+}
+@keyframes grow {
+  to {
+    stroke-dasharray: 100 100;
+  }
+}
+.pie-svg.animated circle {
+  animation: grow 6s linear infinite;
+}
+```
+
+JS
+```js
+(function() {
+  var pieDomArr = document.querySelectorAll('.pie-svg');
+  pieDomArr.forEach(function(pieDom) {
+    var ratial = parseFloat(pieDom.innerHTML); // `20%` 转 20
+    var ns = 'http://www.w3.org/2000/svg';
+    var svgDom = document.createElementNS(ns, 'svg');
+    var titleDom = document.createElementNS(ns, 'title');
+    var circleDom = document.createElementNS(ns, 'circle');
+    /* svg 元素 */
+    svgDom.setAttribute('viewBox', '0 0 32 32'); //四个参数为: min-x min-y width height
+    svgDom.style.transform = 'rotate(-90deg)';
+    svgDom.style.borderRadius = '50%';
+    /* title 元素 */
+    titleDom.innerHTML = pieDom.innerHTML;
+    /* circle 元素 */
+    circleDom.setAttribute('r', 16);
+    circleDom.setAttribute('cx', 16);
+    circleDom.setAttribute('cy', 16);
+    circleDom.setAttribute('fill', '#ff7875');
+    circleDom.setAttribute('stroke', '#69c0ff');
+    circleDom.setAttribute('stroke-width', 32);
+    circleDom.setAttribute('stroke-dasharray', ratial + ' 100');
+    /* 插入至 DOM 中 */
+    svgDom.appendChild(titleDom);
+    svgDom.appendChild(circleDom);
+    pieDom.innerHTML = '';
+    pieDom.appendChild(svgDom);
+  });
+})();
+```
+通过 js 生成的 HTML 代码如下：<br>
+HTML
+```html
+<div class="pie-svg">
+  <svg viewBox="0 0 32 32" style="transform: rotate(-90deg); border-radius: 50%;">
+    <title>20%</title>
+    <circle r="16" cx="16" cy="16" fill="#ff7875" stroke="#69c0ff" stroke-width="32" 
+            stroke-dasharray="20 100"></circle>
+  </svg>
+</div>
+<div class="pie-svg">
+  <svg viewBox="0 0 32 32" style="transform: rotate(-90deg); border-radius: 50%;">
+    <title>60%</title>
+    <circle r="16" cx="16" cy="16" fill="#ff7875" stroke="#69c0ff" stroke-width="32" 
+            stroke-dasharray="60 100"></circle>
+  </svg>
+</div>
+<div class="pie-svg animated">
+  <svg viewBox="0 0 32 32" style="transform: rotate(-90deg); border-radius: 50%;">
+    <title>0%</title>
+    <circle r="16" cx="16" cy="16" fill="#ff7875" stroke="#69c0ff" stroke-width="32" 
+            stroke-dasharray="0 100"></circle>
+  </svg>
+</div>
+```
+注：
+1. 给 `svg` 元素设置 `viewBox="0 0 32 32"` ，四个值分别为 `min-x min-y width height` ，此元素将自动适应容器的大小。
+2. 我们调整 `circle` 元素的半径，使其周长接近 `100` ，最终其 `r` 为 `100 / 2π ≈ 16` ，
+这样设置饼图的比例时更加方便，如 `stroke-dasharray: 38 100` 会得到比例为 `38%` 的饼图。
+3. `createElementNS(namespaceURI, qualifiedName)`: 创建一个具有指定的命名空间URI和限定名称的元素。
+4. 为确保可访问性，在 `<svg>` 内增加一个 `<title>` 元素，这样屏幕阅读器的读者也可以知道这个图像显示的是什么比率了。
+
+## 4. 视觉效果
+
+### 4.1 单侧投影
+
+尝试实现单侧投影的代码如下：
+HTML
+```html
+<div class="box-100 bg-red-4 bottom-shadow-4-1"></div>
+```
+CSS
+```css
+.bottom-shadow-4-1 {
+  box-shadow: 0 5px 4px black;
+}
+```
+效果如下：
+<div class="box-100 bg-red-4 bottom-shadow-4-1 margin-btm-14"></div>
+
+第三个值阴影模糊半径 `4px` 会导致模糊后的阴影显示在两侧，多出来的长度大约为 `4px`。<bt>
+
+我们可以使用第四个长度参数 —— **阴影扩散半径**来消除两侧的阴影。当我们设置负的扩散半径时，阴影会根据指定的值缩小。<br>
+CSS
+```css
+.bottom-shadow-4-1 {
+  box-shadow: 0 5px 4px -4px black;
+}
+```
+注：前后几个值分别为 `x偏移量 | y偏移量 | 阴影模糊半径 | 阴影扩散半径 | 阴影颜色`。<br>
+最终效果如下：
+<div class="box-100 bg-red-4 bottom-shadow-4-1-correct margin-btm-14"></div>
+
 
 {% endraw %}
