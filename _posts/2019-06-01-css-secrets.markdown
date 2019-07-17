@@ -1496,5 +1496,44 @@ CSS
 最终效果如下：
 <div class="box-100 bg-red-4 bottom-shadow-4-1-correct margin-btm-14"></div>
 
+### 4.2 邻边投影
+
+<div class="box-100 bg-red-4 sides-shadow-4-2 margin-btm-14"></div>
+
+HTML
+```html
+<div class="box-100 bg-red-4 sides-shadow-4-2 margin-btm-14"></div>
+```
+
+CSS
+```css
+.sides-shadow-4-2 {
+  box-shadow: 4px 4px 6px -3px black;
+}
+```
+注: 
+1. 扩张半径（-3px）为模糊半径（6px）的相反值的一半。
+2. 偏移值要大于等于模糊半径（6px）的一半，这样投影才能被藏进另外两条边之内。
+
+### 4.3 双侧投影
+
+`box-shadow` 支持使用逗号分隔多个阴影效果。因此我们可以使用两个投影来实现双侧投影。
+
+<div class="box-100 bg-red-4 opposite-sides-shadow-4-3 margin-btm-14"></div>
+
+HTML
+```html
+<div class="box-100 bg-red-4 opposite-sides-shadow-4-3 margin-btm-14"></div>
+```
+CSS
+```css
+.opposite-sides-shadow-4-3 {
+  box-shadow: 5px 0 5px -5px black,
+             -5px 0 5px -5px black;
+}
+```
+
+
+
 
 {% endraw %}
