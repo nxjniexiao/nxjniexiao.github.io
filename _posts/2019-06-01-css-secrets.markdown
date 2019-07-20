@@ -1496,7 +1496,7 @@ CSS
 最终效果如下：
 <div class="box-100 bg-red-4 bottom-shadow-4-1-correct margin-btm-14"></div>
 
-### 4.2 邻边投影
+**邻边投影**
 
 <div class="box-100 bg-red-4 sides-shadow-4-2 margin-btm-14"></div>
 
@@ -1515,7 +1515,7 @@ CSS
 1. 扩张半径（-3px）为模糊半径（6px）的相反值的一半。
 2. 偏移值要大于等于模糊半径（6px）的一半，这样投影才能被藏进另外两条边之内。
 
-### 4.3 双侧投影
+**双侧投影**
 
 `box-shadow` 支持使用逗号分隔多个阴影效果。因此我们可以使用两个投影来实现双侧投影。
 
@@ -1533,6 +1533,48 @@ CSS
 }
 ```
 
+### 4.2 不规则投影
+
+在某些情况下， `box-shadow` 会忽略掉元素的一部分。如下面三种情况：
+
+<div class="box-4-2 speech-bubble">对话气泡</div>
+<div class="box-4-2 dotted-border">虚线边框</div>
+<div class="box-4-2 cutout-corners">切角效果</div>
+
+给这几个元素添加 `box-shadow` 后效果如下：
+
+<div class="box-4-2 shadow-4-2 speech-bubble">对话气泡</div>
+<div class="box-4-2 shadow-4-2 dotted-border">虚线边框</div>
+<div class="box-4-2 shadow-4-2 cutout-corners">切角效果</div>
+
+HTML
+```html
+<div class="box-4-2 shadow-4-2 speech-bubble">对话气泡</div>
+<div class="box-4-2 shadow-4-2 dotted-border">虚线边框</div>
+<div class="box-4-2 shadow-4-2 cutout-corners">切角效果</div>
+```
+CSS
+```css
+.shadow-4-2 {
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, .5);
+}
+```
+
+我们可以使用 `filter` 属性，并使用 `drop-shadow()` 方法，它接受和 `box-shadow` 属性一样的参数，但不包括扩张半径和 `inset` 关键字。<br>
+
+**注:** IE 浏览器不支持该属性。
+
+<div class="box-4-2 filter-4-2 speech-bubble">对话气泡</div>
+<div class="box-4-2 filter-4-2 dotted-border">虚线边框</div>
+<div class="box-4-2 filter-4-2 cutout-corners">切角效果</div>
+
+CSS
+```css
+.filter-4-2 {
+  filter: drop-shadow(2px 2px 6px rgba(0, 0, 0, .5));
+}
+```
+**注:** 任何非透明的部分都会被打上投影，例如虚线边框效果中的文字。
 
 
 
