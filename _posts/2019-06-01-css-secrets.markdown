@@ -1584,7 +1584,69 @@ CSS
   <div>毛玻璃效果思路：对伪元素进行模糊处理，然后将其定位到元素的下面。</div>
 </div>
 
+<iframe width="100%" height="500px" src="/html/2019-06-01-css-secrets.demo-01.html"></iframe>
 
+HTML
+```html
+<div class="frosted-glass">
+  <div>
+    <p>
+      由于我们不能直接对元素本身进行模糊处理，但可以对伪元素进行模糊处理，
+      然后将其定位到元素的下面，它的背景将会无缝匹配宿主元素的父元素的背景。
+    </p>
+    <p>
+      在使用负的 z-index 来把一个子元素移动到他的父元素下层时，请务必小心；
+      如果父元素的上级元素也有背景，则该子元素将出现在它们之后。
+    </p>
+  </div>
+</div>
+```
+
+CSS
+```css
+* {
+  margin: 0;
+  padding: 0;
+}
+.frosted-glass {
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+}
+.frosted-glass div {
+  position: relative;
+  margin: 150px auto;
+  width: 60%;
+  padding: 20px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: hsla(0, 0%, 100%, .3);
+  color: white;
+  text-shadow: black 0.1em 0.1em 0.2em;
+  z-index: 1;
+}
+.frosted-glass,
+.frosted-glass div::after {
+  background: url('/images/2019-06-01-css-secrets/book.jpg') 0 / cover fixed;
+}
+.frosted-glass div::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  filter: blur(4px);
+  z-index: -1;
+}
+```
+
+**注:** <br>
+
+由于为了使 `div.frosted-glass` 和 `div.frosted-glass div::after` 两个元素的背景无缝匹配，
+我们把 `background-attachment` 设为了 `fixed`。这会让背景不会随着元素的内容滚动。<br>
+
+为了不让图片在滚动的时候，出现背景和文字相对移动的情况，在这使用了 `<iframe>` 标签内嵌一个 `HTML` 页面。
 
 
 {% endraw %}
