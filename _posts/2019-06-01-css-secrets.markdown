@@ -1580,10 +1580,6 @@ CSS
 
 `filter` 属性有一个 `blur()` 方法可以设置高斯模糊。
 
-<div class="frosted-glass-4-2">
-  <div>毛玻璃效果思路：对伪元素进行模糊处理，然后将其定位到元素的下面。</div>
-</div>
-
 <iframe width="100%" height="500px" src="/html/2019-06-01-css-secrets.demo-01.html"></iframe>
 
 HTML
@@ -1611,7 +1607,7 @@ CSS
 .frosted-glass {
   width: 100%;
   height: 500px;
-  overflow: hidden;
+  overflow: hidden; /* 防止子元素的 margin-top 影响此元素的定位 */
 }
 .frosted-glass div {
   position: relative;
@@ -1619,7 +1615,7 @@ CSS
   width: 60%;
   padding: 20px;
   border-radius: 5px;
-  overflow: hidden;
+  overflow: hidden; /* 防止高斯模糊效果弱化元素边界 */
   background: hsla(0, 0%, 100%, .3);
   color: white;
   text-shadow: black 0.1em 0.1em 0.2em;
@@ -1632,21 +1628,41 @@ CSS
 .frosted-glass div::after {
   content: "";
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  filter: blur(4px);
-  z-index: -1;
+  top: 0; right: 0; bottom: 0; left: 0;
+  filter: blur(4px); /* 高斯模糊效果 */
+  z-index: -1; /* 让伪元素位于内容之后 */
 }
 ```
 
 **注:** <br>
 
-由于为了使 `div.frosted-glass` 和 `div.frosted-glass div::after` 两个元素的背景无缝匹配，
-我们把 `background-attachment` 设为了 `fixed`。这会让背景不会随着元素的内容滚动。<br>
+由于为了使 `div.frosted-glass` 和 `div.frosted-glass div::after` 两个元素的背景**无缝匹配**，
+我们把 `background-attachment` 设为了 `fixed`:
 
-为了不让图片在滚动的时候，出现背景和文字相对移动的情况，在这使用了 `<iframe>` 标签内嵌一个 `HTML` 页面。
+```css
+.frosted-glass,
+.frosted-glass div::after {
+  background: url('/images/2019-06-01-css-secrets/book.jpg') 0 / cover fixed;
+}
+```
+
+这会让背景不会随着元素的内容滚动。其中 `/` 前面的 `0` 为 `background-position` ，当只设置了一个值时，`Y` 方向的值为 `center` 。<br>
+
+为了不让图片在滚动的时候，出现背景和文字相对移动的情况，上图使用 `<iframe>` 标签内嵌了一个 `HTML` 页面，否则就会出现如下情况。
+
+<div class="frosted-glass-4-2">
+  <div>
+    <p>
+      由于我们不能直接对元素本身进行模糊处理，但可以对伪元素进行模糊处理，
+      然后将其定位到元素的下面，它的背景将会无缝匹配宿主元素的父元素的背景。
+    </p>
+    <p>
+      在使用负的 z-index 来把一个子元素移动到他的父元素下层时，请务必小心；
+      如果父元素的上级元素也有背景，则该子元素将出现在它们之后。
+    </p>
+  </div>
+</div>
+
 
 
 {% endraw %}
