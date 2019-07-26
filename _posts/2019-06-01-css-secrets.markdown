@@ -1663,6 +1663,105 @@ CSS
   </div>
 </div>
 
+### 4.4 折角效果
+
+**45°折角效果**
+
+我们可以利用 **3.4 切角效果** 一节中的渐变方法去实现此效果。<br>
+
+先实现缺角效果: 
+
+<div class="folded-corner-4-4 margin-btm-14 step-1">缺角效果</div>
+
+CSS
+```css
+.folded-corner-4-4.step-1 {
+  background: linear-gradient(-135deg, transparent .71em, #ff7873 0);
+}
+```
+
+再实现折角效果: 
+
+<div class="folded-corner-4-4 margin-btm-14 step-2">折角效果</div>
+
+CSS
+```css
+.folded-corner-4-4.step-2 {
+  background: linear-gradient(45deg, rgba(0, 0, 0, .4) .71em, transparent 0) top right / 1em 1em no-repeat;
+}
+```
+
+最后重叠: 
+
+<div class="folded-corner-4-4 margin-btm-14 step-3">最终效果</div>
+
+CSS
+```css
+.folded-corner-4-4.step-3 {
+  background: linear-gradient(45deg, rgba(0, 0, 0, .4) .71em, transparent 0) top right / 1em 1em no-repeat,
+              linear-gradient(-135deg, transparent .7em, #ff7873 0);
+}
+```
+注: 折角效果要放在切角效果后面。
+
+**其他角度折角效果**
+
+我们可以改变角度和折角背景的宽和高，就能形成如下 30° 折角效果: 
+
+<div class="folded-corner-4-4 margin-btm-14 step-4">30°折角</div>
+
+CSS
+```css
+.folded-corner-4-4.step-4 {
+  background: linear-gradient(30deg, rgba(0, 0, 0, .4) .71em, transparent 0) 
+                  top right / 1.42em .82em no-repeat,
+              linear-gradient(-150deg, transparent .71em, #ff7873 0);
+}
+```
+
+我们发现折角效果并不真实，折角和缺角应该是沿着斜边对称的。<br>
+
+由于背景无法旋转，我们可以**旋转伪元素**。
+
+<div class="folded-corner-4-4 margin-btm-14 step-5">30°折角(伪元素)</div>
+<div class="folded-corner-4-4 margin-btm-14 step-5 step-6">30°折角(旋转伪元素)</div>
+
+HTML
+```html
+<div class="folded-corner-4-4 margin-btm-14 step-5">30°折角(伪元素)</div>
+<div class="folded-corner-4-4 margin-btm-14 step-5 step-6">30°折角(旋转伪元素)</div>
+```
+
+CSS
+```css
+.folded-corner-4-4.step-5 {
+  display: inline-block;
+  position: relative;
+  margin-right: 14px;
+  background: linear-gradient(-150deg, transparent .71em, #ff7873 0);
+  border: none;
+}
+.folded-corner-4-4.step-5::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.42em;
+  height: .82em;
+  background: linear-gradient(-30deg, rgba(0, 0, 0, .4) .71em, transparent 0);
+}
+.folded-corner-4-4.step-6::before {
+  transform: rotate(60deg);
+}
+```
+重点：
+1. 切角效果放在 `div` 元素上，折角效果放在 `div::before` 伪元素上；
+2. 伪元素的宽高为之前折角效果背景的宽高；
+3. 伪元素的背景的线性角度由 `30deg` 变为 `-30deg`（左图）；
+4. 最后把伪元素旋转 `60deg` （右图）。
+
+
+
 
 
 {% endraw %}
