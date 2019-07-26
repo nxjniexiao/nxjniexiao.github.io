@@ -1676,7 +1676,7 @@ CSS
 CSS
 ```css
 .folded-corner-4-4.step-1 {
-  background: linear-gradient(-135deg, transparent .71em, #ff7873 0);
+  background: linear-gradient(-135deg, transparent 1.42em, #ff7873 0);
 }
 ```
 
@@ -1687,7 +1687,7 @@ CSS
 CSS
 ```css
 .folded-corner-4-4.step-2 {
-  background: linear-gradient(45deg, rgba(0, 0, 0, .4) .71em, transparent 0) top right / 1em 1em no-repeat;
+  background: linear-gradient(45deg, rgba(0, 0, 0, .4) 1.42em, transparent 0) top right / 2em 2em no-repeat;
 }
 ```
 
@@ -1698,8 +1698,8 @@ CSS
 CSS
 ```css
 .folded-corner-4-4.step-3 {
-  background: linear-gradient(45deg, rgba(0, 0, 0, .4) .71em, transparent 0) top right / 1em 1em no-repeat,
-              linear-gradient(-135deg, transparent .7em, #ff7873 0);
+  background: linear-gradient(45deg, rgba(0, 0, 0, .4) 1.42em, transparent 0) top right / 2em 2em no-repeat,
+              linear-gradient(-135deg, transparent 1.42em, #ff7873 0);
 }
 ```
 注: 折角效果要放在切角效果后面。
@@ -1713,9 +1713,9 @@ CSS
 CSS
 ```css
 .folded-corner-4-4.step-4 {
-  background: linear-gradient(30deg, rgba(0, 0, 0, .4) .71em, transparent 0) 
-                  top right / 1.42em .82em no-repeat,
-              linear-gradient(-150deg, transparent .71em, #ff7873 0);
+  background: linear-gradient(30deg, rgba(0, 0, 0, .4) 1.42em, transparent 0) 
+                  top right / 2.84em 1.64em no-repeat,
+              linear-gradient(-150deg, transparent 1.42em, #ff7873 0);
 }
 ```
 
@@ -1725,11 +1725,13 @@ CSS
 
 <div class="folded-corner-4-4 margin-btm-14 step-5">30°折角(伪元素)</div>
 <div class="folded-corner-4-4 margin-btm-14 step-5 step-6">30°折角(旋转伪元素)</div>
+<div class="folded-corner-4-4 margin-btm-14 step-5 step-6 step-7">30°折角(最终效果)</div>
 
 HTML
 ```html
 <div class="folded-corner-4-4 margin-btm-14 step-5">30°折角(伪元素)</div>
 <div class="folded-corner-4-4 margin-btm-14 step-5 step-6">30°折角(旋转伪元素)</div>
+<div class="folded-corner-4-4 margin-btm-14 step-5 step-6 step-7">30°折角(最终效果)</div>
 ```
 
 CSS
@@ -1738,7 +1740,7 @@ CSS
   display: inline-block;
   position: relative;
   margin-right: 14px;
-  background: linear-gradient(-150deg, transparent .71em, #ff7873 0);
+  background: linear-gradient(-150deg, transparent 1.42em, #ff7873 0);
   border: none;
 }
 .folded-corner-4-4.step-5::before {
@@ -1746,12 +1748,23 @@ CSS
   position: absolute;
   top: 0;
   right: 0;
-  width: 1.42em;
-  height: .82em;
-  background: linear-gradient(-30deg, rgba(0, 0, 0, .4) .71em, transparent 0);
+  width: 2.84em;
+  height: 1.64em;
+  background: linear-gradient(-30deg, rgba(0, 0, 0, .4) 50%, transparent 0);
 }
 .folded-corner-4-4.step-6::before {
   transform: rotate(60deg);
+}
+.folded-corner-4-4.step-7 {
+  border-radius: .4em;
+}
+.folded-corner-4-4.step-7::before {
+  background: linear-gradient(-30deg, 
+              rgba(0, 0, 0, .4) 0, 
+              rgba(0, 0, 0, .2) 50%, 
+              transparent 0);
+  border-bottom-right-radius: inherit;
+  box-shadow: .2em .2em .3em -.1em rgba(0, 0, 0, .15);
 }
 ```
 重点：
