@@ -1773,6 +1773,28 @@ CSS
 3. 伪元素的背景的线性角度由 `30deg` 变为 `-30deg`（左图）；
 4. 最后把伪元素旋转 `60deg` （右图）。
 
+## 5. 字体排印
+
+### 5.1 连字符断行
+
+当文字超出容器元素的宽度时，会换行。默认情况下，文字左对齐且一个完整的单词不会跨行显示，这样每行的末尾会产生参差不齐的空白（见下面左图）。<br>
+
+`text-align: justify;` 属性能够使文字两端对齐，最后一行无效（见下方右图）。<br>
+
+此属性有个缺点：当容器宽度很小，且单词长度差距很大时，会导致每行文字间隙的差异很大。
+
+<div class="box-5-1">The hyphens CSS property specifies how words should be hyphenated when text wraps across multiple lines.</div>
+<div class="box-5-1 step-1">The hyphens CSS property specifies how words should be hyphenated when text wraps across multiple lines.</div>
+
+CSS3 中引入了一个新的属性 `hyphens` 告知浏览器在换行时如何使用连字符连接单词。它接受三个值：
++ `none`: 即使文字中的字符表示换行符，文字也不会在换行符处断开；
++ `manual`: 只有在单词内部的字符（`&shy;`）表示换行的情况下，单词才会被断开；
++ `auto`: 只要遵循它所选择使用的任何规则，浏览器就可以自由地在合适的连字点处自动分词。
+
+注: 部分支持，如谷歌浏览器目前仅在安卓和 Mac 平台支持该属性。
+
+<div class="box-5-1 step-2">The hyphens CSS property specifies how words should be hyphenated when text wraps across multiple lines.</div>
+
 
 
 
