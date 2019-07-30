@@ -1860,6 +1860,61 @@ dl.wrap-5-2 dd + dd::before {
 2. `white-space: pre;`: 连续的空白符会被保留。在遇到**换行符**或者 `<br>` 元素时才会换行。
 3.  `+` 为**相邻**兄弟选择器， `dd + dt` 表示 dd 元素的下一个 dt 兄弟元素（两者相邻）；`~` 则为**通用**兄弟选择器。
 
+### 5.3 文本行的斑马条纹
+
+我们会经常在表格中使用 `:nth-child()` 和 `:nth-of-type()` 伪类实现斑马条纹。<br>
+
+此方法并不适用于文本行，但我们可以使用渐变来给文本生成一个条纹背景。<br>
+
+让我们用这个方法给代码加上斑马条纹。
+
+HTML
+```html
+<pre class="zebra-5-3">
+  <code>
+    代码省略...
+  </code>
+</pre>
+```
+效果及 CSS 代码如下:
+<pre class="zebra-5-3">
+<code>
+pre.zebra-5-3{
+  padding: 0 1em;
+  line-height: 1.5;
+  background-color: #f2f2f2;
+  background-image: linear-gradient(rgba(255,120,115,.1) 50%, transparent 0);
+  background-size: auto 3em;
+  background-origin: content-box;
+}
+pre.zebra-5-3 code {
+  background: none;
+  color: #333;
+}
+</code>
+</pre>
+
+注:
+1. 条纹背景尺寸使用 `em` 单位来自适应 `font-size` 的变化。
+2. 由于 `line-height: 1.5;` ，所以条纹背景高度为 `3em` ，因此这两个值要相互匹配。
+3. `background-origin: content-box;` 使背景图片的摆放以 content 区域为参考。
+
+### 5.4 下划线
+
+<div class="box-5-4 underline-5-4">
+  The <span>linear-gradient() CSS function</span> creates an image consisting of a progressive transition
+  between two or more colors along <span>a straight line</span>.
+</div>
+<div class="box-5-4 underline-5-4-dashed">
+  The <span>linear-gradient() CSS function</span> creates an image consisting of a progressive transition
+  between two or more colors along <span>a straight line</span>.
+</div>
+<div class="box-5-4 underline-5-4-wave">
+  The <span>linear-gradient() CSS function</span> creates an image consisting of a progressive transition
+  between two or more colors along <span>a straight line</span>.
+</div>
+
+
 
 
 
