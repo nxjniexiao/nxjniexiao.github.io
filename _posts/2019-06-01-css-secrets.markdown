@@ -1901,19 +1901,178 @@ pre.zebra-5-3 code {
 
 ### 5.4 下划线
 
+使用 `text-decoration: underline;` 生成下划线很方便，但当我们想要自定义此下划线时就不那么简单了。<br>
+
+我们可以通过设置背景来生成自定义样式的下划线。<br>
+
+**直线下划线**
 <div class="box-5-4 underline-5-4">
   The <span>linear-gradient() CSS function</span> creates an image consisting of a progressive transition
   between two or more colors along <span>a straight line</span>.
 </div>
+
+CSS
+```css
+.underline-5-4 span {
+  background: linear-gradient(gray, gray) no-repeat;
+  background-size: 100% 1px;
+  background-position: 0 1em;
+}
+```
+**虚线下划线**
 <div class="box-5-4 underline-5-4-dashed">
   The <span>linear-gradient() CSS function</span> creates an image consisting of a progressive transition
   between two or more colors along <span>a straight line</span>.
 </div>
+
+CSS
+```css
+.underline-5-4-dashed span {
+  background: linear-gradient(90deg, gray 66%, transparent 0) repeat-x;
+  background-size: 1em 1px;
+  background-position: 0 1em;
+}
+```
+**波浪下划线**
 <div class="box-5-4 underline-5-4-wave">
   The <span>linear-gradient() CSS function</span> creates an image consisting of a progressive transition
   between two or more colors along <span>a straight line</span>.
 </div>
 
+CSS
+```css
+.underline-5-4-wave span {
+  font-size: 20px;
+  background: linear-gradient(-45deg, 
+              transparent 40%, 
+              red 0, 
+              red 60%, 
+              transparent 0) 
+              0 1em, /* 0 1em 为 background-position */
+              linear-gradient(45deg, 
+              transparent 40%, 
+              red 0, 
+              red 60%, 
+              transparent 0) 
+              .1em 1em; /* .1em 1em 为 background-position */
+  background-repeat: repeat-x;
+  background-size: .2em .1em;
+}
+```
+
+### 5.5 字体效果
+
+#### 5.5.1 凸版印刷效果
+
+>在拟物化风格的网页中，凸版印刷效果是最流行的文字美化手法之一。
+
+>这种效果尤其适用于中等亮度背景配上深色文字的场景；但它也可用于深色底、浅色字的场景，只要文字不是黑色并且背景不是纯黑或纯白就行。
+
+>实际上，在最早期的图形界面中，为按钮生成按下或浮起效果就用到了类似的原理：出现在底部的浅色投影（或者出现在顶部的暗色投影）会让人产生**物体是凹进平面内的错觉**。同理，出现在底部的暗色投影（或者出现在顶部的浅色投影）会让人产生**物体从平面上凸起**的错觉。这种方法之所以奏效，是因为我们在现实世界中早已习惯了**光源总是悬在头顶**。在这样的环境里，凸起物的下方会产生阴影，而凹陷的底部边缘则会被打亮。
+
+<div class="font-5-5-1">The text-shadow CSS property adds shadows to text.</div>
+<div class="font-5-5-1 shadow-1">The text-shadow CSS property adds shadows to text.</div>
+
+CSS
+```css
+.font-5-5-1 {
+  display: inline-block;
+  margin: 0 14px 14px 0;
+  padding: 10px;
+  width: 200px;
+  font-size: 20px;
+  border-radius: 5px;
+  background: hsl(210, 13%, 60%);
+  color: hsl(210, 13%, 30%);
+}
+.font-5-5-1.shadow-1 {
+  /* offset-x | offset-y | blur-radius | color */
+  text-shadow: 0 .05em .05em hsla(0, 0%, 100%, .8);
+}
+```
+注: `text-shadow` 前后四个值分别为x偏移、y偏移、模糊半径和颜色，颜色也可以放在第一位。<br>
+
+当背景为深色，字体为浅色时，我们需要把 `text-shadow` 颜色改为深色，并把阴影改为 -Y 方向偏移。
+
+<div class="font-5-5-1 reverse">The text-shadow CSS property adds shadows to text.</div>
+<div class="font-5-5-1 reverse shadow-1">The text-shadow CSS property adds shadows to text.</div>
+
+CSS
+```css
+.font-5-5-1.reverse {
+  background: hsl(210, 13%, 40%);
+  color: hsl(210, 13%, 75%);
+}
+.font-5-5-1.reverse.shadow-1 {
+  text-shadow: 0 -.05em .05em black;
+}
+```
+
+#### 5.5.2 空心字效果
+
+目前浏览器还不支持 `text-shadow` 属性中的扩张参数，因此我们可以使用多个 `text-shadow` 来生成空心字效果。
+
+<div class="font-5-5-2 stroked-text">空心字 stroked-text</div>
+
+HTML
+```html
+<div class="font-5-5-2 stroked-text">空心字 stroked-text</div>
+```
+
+CSS
+```css
+.font-5-5-2.stroked-text {
+  text-shadow: 1px 1px #333, 1px -1px #333,
+               -1px 1px #333, -1px -1px #333;
+}
+```
+
+#### 5.5.3 文字发光效果
+
+>在某些类型的网站中，文字外发光效果常用于凸显标题，或给链接添加鼠标悬停效果。
+
+<div class="font-5-5-3 glow">文字发光效果</div>
+
+CSS
+```css
+.font-5-5-3.glow {
+  text-shadow: 0 0 .1em, 0 0 .3em;
+}
+```
+
+<div class="font-5-5-3 glow-hover">鼠标移入时文字发光</div>
+
+CSS
+```css
+.font-5-5-3.glow-hover {
+  cursor: pointer;
+  transition: text-shadow 1s;
+}
+.font-5-5-3.glow-hover:hover {
+  text-shadow: 0 0 .1em, 0 0 .3em;
+}
+```
+
+#### 5.5.4 文字凸起效果
+
+>另一种在拟物化风格的网站中流行（且被滥用）的效果是文字凸起（伪3D）效果。
+
+>这其中的主要思路就是使用一长串累加的投影，不设模糊并以 1px 的跨度逐渐错开，使颜色逐渐变暗，然后在底部加一层强烈模糊的暗投影，从而模拟完整的立体效果。
+
+<div class="font-5-5-4">CSS3d</div>
+<div class="font-5-5-4 extruded">CSS3d</div>
+
+CSS
+```css
+.font-5-5-4.extruded {
+  text-shadow: 0 1px hsl(0,0%,85%),
+               0 2px hsl(0,0%,80%),
+               0 3px hsl(0,0%,75%),
+               0 4px hsl(0,0%,70%),
+               0 5px hsl(0,0%,65%),
+               0 5px 10px black;
+}
+```
 
 
 
