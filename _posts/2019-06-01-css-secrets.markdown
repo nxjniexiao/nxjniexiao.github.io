@@ -2074,6 +2074,59 @@ CSS
 }
 ```
 
+## 6. 用户体验
+
+### 6.1 扩大可点击区域
+
+对于那些较小、难以瞄准的控件来说，如果不能放大其视觉尺寸，将其可点击区域扩大也可以提升用户体验。<br>
+
+**透明边框**
+
+扩张热区最简单的办法就是为它设置一圈透明边框，如下方右边的按钮有 `10px` 宽的透明边框。
+
+<div class="btn-6-1" title="扩大可点击区域之前">+</div>
+<div class="btn-6-1 hit-area-border" title="扩大可点击区域之后">+</div>
+
+HTML
+```html
+<div class="btn-6-1" title="扩大可点击区域之前">+</div>
+<div class="btn-6-1 hit-area-border" title="扩大可点击区域之后">+</div>
+```
+
+CSS
+```css
+.btn-6-1.hit-area-border {
+  box-sizing: content-box;
+  border: 10px solid transparent;
+  background-clip: padding-box;
+}
+```
+
+注: `background-clip: padding-box;` 使背景延伸至内边距（padding）外沿，而不会绘制到边框处。
+
+**伪元素方案**
+
+伪元素同样可以代表其宿主元素来响应鼠标交互。
+
+<div class="btn-6-1" title="扩大可点击区域之前">+</div>
+<div class="btn-6-1 hit-area" title="扩大可点击区域之后(伪元素方案)">+</div>
+
+CSS
+```css
+.btn-6-1.hit-area {
+  position: relative;
+}
+.btn-6-1.hit-area::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  bottom: -10px;
+  left: -10px;
+}
+```
+
+注: 伪元素方案比透明边框更加灵活，因为后者会影响布局，且会影响一些样式，如 `box-shadow` 等。
 
 
 
