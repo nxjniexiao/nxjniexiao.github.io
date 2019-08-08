@@ -2128,6 +2128,59 @@ CSS
 
 注: 伪元素方案比透明边框更加灵活，因为后者会影响布局，且会影响一些样式，如 `box-shadow` 等。
 
+### 6.2 自定义复选框
+
+复选框和单选框在不同浏览器中的默认样式不一样，且 CSS 对他们样式的控制力很有限。<br>
+
+但是我们可以基于选框的勾选状态并借助组合选择器来给其他元素设置样式。<br>
+
+<input type="checkbox" id="ck-box-6-2_1" class="checkbox">
+<label for="ck-box-6-2_1">选项1</label>
+<input type="checkbox" id="ck-box-6-2_2" class="checkbox">
+<label for="ck-box-6-2_2">选项2</label>
+
+HTML
+```html
+<input type="checkbox" id="ck-box-6-2_1" class="checkbox">
+<label for="ck-box-6-2_1">选项1</label>
+<input type="checkbox" id="ck-box-6-2_2" class="checkbox">
+<label for="ck-box-6-2_2">选项2</label>
+```
+
+CSS
+```css
+input.checkbox {
+  /* 隐藏 input 元素 */
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+}
+input.checkbox + label {
+  position: relative;
+  cursor: pointer;
+  padding-left: 1.4em;
+  margin-right: 1em;
+}
+input.checkbox + label::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family:'FontAwesome'; 
+  content: '\f096'; /* fa-square-o */
+  font-size: 1.2em;
+  line-height: 100%; /* 重要，行高为文字的高度 */
+}
+input.checkbox:checked + label::before {
+  content: '\f14a'; /* fa-check-square */
+  color: #69c0ff;
+}
+```
+
+注：
+1. 使用了 `position: absolute;` 和 `clip: rect(0, 0, 0, 0);` 隐藏 `<input>` 元素，因为使用 `display: none;` 会把它从键盘 tab 键切换焦点的队列中完全删除。
+2. 使用了图标字体 Font Awesome ，`content: '\f096';` 对应 `fa-square-o` 图标，`content: '\f14a';` 对应 `fa-check-square` 图标。
+3. 伪类选择器 `:checked` 和属性选择器 `[checked]`的区别是，**后者不会根据用户的交互行为进行更新**，因为用户的交互并不会影响到 HTML 标签上的属性。
+
+
 
 
 {% endraw %}
