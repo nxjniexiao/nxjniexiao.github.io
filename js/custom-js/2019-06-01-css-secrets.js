@@ -1,3 +1,44 @@
+// 判断 DOM 元素是否有指定的类名
+function hasClass(dom, className) {
+  return dom.className.indexOf(className) >= 0;
+}
+// 获取 DOM 元素的 class 名称数组
+function getClassArr(dom, obmitedClassName) {
+  var classNameArr = dom.className.split(/\s+/);
+  if (obmitedClassName) {
+    return classNameArr.filter(function(className) {
+      return className !== obmitedClassName;
+    });
+  }
+  return classNameArr;
+}
+// 给 DOM 元素添加类名
+function addClass(dom, addClassName) {
+  var classNameArr = getClassArr(dom, addClassName);
+  classNameArr.push(addClassName);
+  dom.setAttribute('class', classNameArr.join(' '));
+}
+// 从 DOM 元素上移除类名
+function removeClass(dom, removeClassName) {
+  var classNameArr = getClassArr(dom, removeClassName);
+  dom.setAttribute('class', classNameArr.join(' '));
+}
+// 给 NodeList 数组中的每个节点添加类名
+function addClassForDomArr(domArr, addClassName) {
+  if (domArr instanceof NodeList) {
+    Array.prototype.forEach.call(domArr, function(dom) {
+      addClass(dom, addClassName);
+    });
+  }
+}
+// 从 NodeList 数组的每个节点上移除类名
+function removeClassForDomArr(domArr, removeClassName) {
+  if (domArr instanceof NodeList) {
+    Array.prototype.forEach.call(domArr, function(dom) {
+      removeClass(dom, removeClassName);
+    });
+  }
+}
 /* 3.5 */
 (function() {
   var navDom = document.querySelector('.nav-3-5');
@@ -6,15 +47,9 @@
   navDom.addEventListener('click', clickTab);
   // 点击 tab 页的回调函数
   function clickTab(event) {
-    removeClass();
-    event.target.classList.add('selected');
+    removeClassForDomArr(liDomArr, 'selected');
+    addClass(event.target, 'selected');
     contentDom.innerHTML = event.target.innerHTML;
-  }
-  // 移除所有 li 元素的 'selected' 类
-  function removeClass() {
-    liDomArr.forEach(function(dom) {
-      dom.classList.remove('selected');
-    });
   }
 })();
 
@@ -54,5 +89,33 @@
     svgDom.appendChild(circleDom);
     pieDom.innerHTML = '';
     pieDom.appendChild(svgDom);
+  });
+})();
+
+/* 6.3 & 6.4 */
+(function() {
+  /* 6.3 */
+  var btn_6_3_1 = document.querySelector('#btn-6-3_1');
+  btn_6_3_1.addEventListener('click', function() {
+    var modal_6_3_1 = document.querySelector('#modal-6-3_1');
+    addClass(modal_6_3_1, 'show');
+  });
+  var overlayArr = document.querySelectorAll('.overlay');
+  // 隐藏弹窗函数
+  function hideModal() {
+    removeClassForDomArr(overlayArr, 'show');
+  }
+  // 给所有隐藏弹窗按钮绑定点击回调
+  var cancelBtnsArr = document.querySelectorAll('.hide-modal-btn');
+  cancelBtnsArr.forEach(function(btn) {
+    btn.addEventListener('click', hideModal);
+  });
+  // 给所有背景绑定点击回调
+  overlayArr.forEach(function(overlay) {
+    overlay.addEventListener('click', function(event) {
+      if (hasClass(event.target, 'overlay')) {
+        hideModal(event);
+      }
+    });
   });
 })();
