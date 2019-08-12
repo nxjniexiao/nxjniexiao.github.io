@@ -2180,7 +2180,86 @@ input.checkbox:checked + label::before {
 2. 使用了图标字体 Font Awesome ，`content: '\f096';` 对应 `fa-square-o` 图标，`content: '\f14a';` 对应 `fa-check-square` 图标。
 3. 伪类选择器 `:checked` 和属性选择器 `[checked]`的区别是，**后者不会根据用户的交互行为进行更新**，因为用户的交互并不会影响到 HTML 标签上的属性。
 
-### 6.3 滚动提示
+### 6.3 通过阴影弱化背景
+
+为弱化背景，我们通常会增加一个额外的元素(`.overlay`)用于遮挡背景。
+
+<button id="btn-6-3_1" class="btn btn-primary">显示弹窗</button>
+
+<div id="modal-6-3_1" class="overlay">
+  <div class="lightbox">
+    <div class="lightbox-header">
+      <h5 class="title">提示框</h5>
+      <i class="fa fa-times hide-modal-btn"></i>
+    </div>
+    <div class="lightbox-content">
+      <p>通过阴影来弱化弹窗背景:</p>
+      <p>background: rgba(0, 0, 0, 0.5);</p>
+    </div>
+    <div class="lightbox-footer">
+      <button class="btn btn-secondary hide-modal-btn">取消</button>
+    </div>
+  </div>
+</div>
+
+HTML
+```html
+<div id="modal-6-3_1" class="overlay">
+  <div class="lightbox">
+    <!-- 弹窗内容 -->
+  </div>
+</div>
+```
+
+CSS
+```css
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 999;
+}
+.overlay .lightbox {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -100px;
+  margin-left: -150px;
+  width: 300px;
+  height: 200px;
+  background: #eee;
+}
+```
+
+### 6.4 通过模糊弱化背景
+
+6.3 中我们通过阴影弱化了背景，此外我们还可以通过模糊来弱化背景。<br>
+
+模糊背景更真实，它营造出了"**景深效果**"：当我们的视线聚焦在距离较近的物体上时，远处的背景是虚化的。
+
+<iframe width="100%" height="500px" src="/html/2019-06-01-css-secrets.demo-02.html"></iframe>
+
+HTML
+```html
+<main>
+  <!-- 文章内容 -->
+</main>
+<dialog id="modal" class="overlay">
+  <!-- 弹窗内容 -->
+</dialog>
+```
+
+当弹窗打开时，给 `<main>` 元素添加 `blur` 类，以便对它应用模糊滤镜。
+
+CSS
+```css
+.blur {
+  filter: blur(1px);
+}
+```
+
+### 6.5 滚动提示
 
 `background-attachment` 的取值如下：
 + `scroll`: 此关键字表示背景相对于元素本身固定， **而不是随着它的内容滚动**；
@@ -2235,7 +2314,6 @@ input.checkbox:checked + label::before {
   <li>background-size</li>
   <li>background-attachment</li>
 </ul>
-
 
 
 
