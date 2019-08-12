@@ -2180,6 +2180,64 @@ input.checkbox:checked + label::before {
 2. 使用了图标字体 Font Awesome ，`content: '\f096';` 对应 `fa-square-o` 图标，`content: '\f14a';` 对应 `fa-check-square` 图标。
 3. 伪类选择器 `:checked` 和属性选择器 `[checked]`的区别是，**后者不会根据用户的交互行为进行更新**，因为用户的交互并不会影响到 HTML 标签上的属性。
 
+### 6.3 滚动提示
+
+`background-attachment` 的取值如下：
++ `scroll`: 此关键字表示背景相对于元素本身固定， **而不是随着它的内容滚动**；
++ `local`: 此关键字表示背景相对于元素的内容固定。如果一个元素拥有滚动机制，**背景将会随着元素的内容滚动**，并且背景的绘制区域和定位区域是相对于可滚动的区域而不是包含他们的边框。；
++ `fixed`: 此关键字表示**背景相对于视口固定**。即使一个元素拥有滚动机制，背景也不会随着元素的内容滚动。
+
+<ul class="scrolling-hints step1">
+  <li>background-clip</li>
+  <li>background-color</li>
+  <li>background-image</li>
+  <li>background-origin</li>
+  <li>background-position</li>
+  <li>background-position-x（实验性API）</li>
+  <li>background-position-y（实验性API）</li>
+  <li>background-repeat</li>
+  <li>background-size</li>
+  <li>background-attachment</li>
+</ul>
+<ul class="scrolling-hints step2">
+  <li>background-clip</li>
+  <li>background-color</li>
+  <li>background-image</li>
+  <li>background-origin</li>
+  <li>background-position</li>
+  <li>background-position-x（实验性API）</li>
+  <li>background-position-y（实验性API）</li>
+  <li>background-repeat</li>
+  <li>background-size</li>
+  <li>background-attachment</li>
+</ul>
+<ul class="scrolling-hints step3">
+  <li>background-clip</li>
+  <li>background-color</li>
+  <li>background-image</li>
+  <li>background-origin</li>
+  <li>background-position</li>
+  <li>background-position-x（实验性API）</li>
+  <li>background-position-y（实验性API）</li>
+  <li>background-repeat</li>
+  <li>background-size</li>
+  <li>background-attachment</li>
+</ul>
+<ul class="scrolling-hints step4">
+  <li>background-clip</li>
+  <li>background-color</li>
+  <li>background-image</li>
+  <li>background-origin</li>
+  <li>background-position</li>
+  <li>background-position-x（实验性API）</li>
+  <li>background-position-y（实验性API）</li>
+  <li>background-repeat</li>
+  <li>background-size</li>
+  <li>background-attachment</li>
+</ul>
+
+
+
 
 
 
