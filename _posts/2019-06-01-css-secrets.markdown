@@ -2261,10 +2261,11 @@ CSS
 
 ### 6.5 滚动提示
 
-`background-attachment` 的取值如下：
-+ `scroll`: 此关键字表示背景相对于元素本身固定， **而不是随着它的内容滚动**；
-+ `local`: 此关键字表示背景相对于元素的内容固定。如果一个元素拥有滚动机制，**背景将会随着元素的内容滚动**，并且背景的绘制区域和定位区域是相对于可滚动的区域而不是包含他们的边框。；
-+ `fixed`: 此关键字表示**背景相对于视口固定**。即使一个元素拥有滚动机制，背景也不会随着元素的内容滚动。
+Google Reader 的用户体验设计师找到了一种非常优雅的方式来提示用户元素的内容可以滚动: 当侧边栏的容器还有更多内容时，一层淡淡的阴影会出现在容器的顶部和/或底部。<br>
+
+**第一步**
+
+我们先使用 `radial-gradient()` 生成一条阴影。当页面滚动时，阴影相对于元素本身固定，不会随着内容一起滚动。<br>
 
 <ul class="scrolling-hints step1">
   <li>background-clip</li>
@@ -2278,6 +2279,22 @@ CSS
   <li>background-size</li>
   <li>background-attachment</li>
 </ul>
+
+CSS
+```css
+.scrolling-hints.step1 {
+  background: radial-gradient(at top, rgba(0, 0, 0, .2), transparent 70%);
+  background-size: 100% 15px;
+  background-repeat: no-repeat;
+}
+```
+
+**第二步**
+
+添加第二层与原始内容背景相同的背景(#f8f8fd)作为**遮罩层**，并通过设置 `background-attachment: local` 使阴影跟随内容滚动。<br>
+
+当页面滚动到最顶层时，此遮罩层会盖住第一层阴影。
+
 <ul class="scrolling-hints step2">
   <li>background-clip</li>
   <li>background-color</li>
@@ -2290,6 +2307,24 @@ CSS
   <li>background-size</li>
   <li>background-attachment</li>
 </ul>
+
+CSS
+```css
+.scrolling-hints.step2 {
+  background: linear-gradient(#f8f8fd, #f8f8fd),
+              radial-gradient(at top, rgba(0, 0, 0, .2), transparent 70%);
+  background-size: 100% 15px;
+  background-repeat: no-repeat;
+  background-attachment: local, scroll; /*scroll为默认值*/
+}
+```
+
+**第三步**
+
+第二步中有个缺点：当向下滚动一点点距离（小于15px）时，会出现一条明显的横线，那是遮罩层的边界。<br>
+
+因此我们可以扩大遮罩层的尺寸，并把它改为从 `#f8f8fd` 到**透明白色** `rgba(255, 255, 255,0)` （不要使用transparent）的渐变背景。
+
 <ul class="scrolling-hints step3">
   <li>background-clip</li>
   <li>background-color</li>
@@ -2302,6 +2337,37 @@ CSS
   <li>background-size</li>
   <li>background-attachment</li>
 </ul>
+
+CSS
+```css
+.scrolling-hints.step3 {
+  background: linear-gradient(#f8f8fd 30%, rgba(255, 255, 255,0)),
+              radial-gradient(at top, rgba(0, 0, 0, .2), transparent 70%);
+  background-size: 100% 50px, 100% 15px;
+  background-repeat: no-repeat;
+  background-attachment: local, scroll;
+}
+```
+
+**第四步**
+
+根据相同的原理实现底部的阴影和遮罩层。
+
+CSS
+```css
+.scrolling-hints.step4 {
+  background: linear-gradient(#f8f8fd 30%, rgba(255, 255, 255,0)) 
+                top / 100% 50px local,
+              radial-gradient(at top, rgba(0, 0, 0, .2), transparent 70%) 
+                top / 100% 15px scroll,
+              linear-gradient(to top, #f8f8fd 30%, rgba(255, 255, 255,0)) 
+                bottom / 100% 50px local,
+              radial-gradient(at bottom, rgba(0, 0, 0, .2), transparent 70%) 
+                bottom / 100% 15px scroll;
+  background-repeat: no-repeat;
+}
+```
+
 <ul class="scrolling-hints step4">
   <li>background-clip</li>
   <li>background-color</li>
@@ -2315,6 +2381,10 @@ CSS
   <li>background-attachment</li>
 </ul>
 
+注: `background-attachment` 的取值如下：
++ `scroll`: 此关键字表示背景相对于元素本身固定， **而不是随着它的内容滚动**；
++ `local`: 此关键字表示背景相对于元素的内容固定。如果一个元素拥有滚动机制，**背景将会随着元素的内容滚动**，并且背景的绘制区域和定位区域是相对于可滚动的区域而不是包含他们的边框。；
++ `fixed`: 此关键字表示**背景相对于视口固定**。即使一个元素拥有滚动机制，背景也不会随着元素的内容滚动。
 
 
 
