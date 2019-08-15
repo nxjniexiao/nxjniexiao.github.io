@@ -70,7 +70,24 @@ tags: GIT
 2. `git merge hotfix`: 合并;
 3. `git branch -d hotfix`: 删除 `hotfix` 分支。
 
-### 4.5 删除分支
+### 4.5 撤销合并
+
+**修复引用**
+
+`git reset --hard HEAD~`: 在 `get merge` 之后使用此命令，被合并的两个分支的指针会回到合并前的状态。<br>
+
+对于只存在于**本地仓库**中的合并来说，使用这个命令会很方便。但是它会**重写历史**，在一个**共享仓库**中会造成问题。
+
+**还原提交**
+
+`git revert -m 1 HEAD`: `topic` 分支合并至 `master` 分支后，使用此命令会生成一个新提交，该提交会撤销前一个合并产生的修改。
+
+注: 
+1. `-m 1` 标记指出 `mainline` 需要被保留下来的父结点。`1` 号节点为合并前 `master` 分支所在节点；`2`号节点则为 `topic`。
+2. 还原提交后，再使用 `git merge topic`，时会提示 `Already up-to-date.`，因为此时 `topic` 分支为 `master` 分支的父节点。<br>
+如果想把 `topic` 分支上的内容再合并到 `master`，应使用 `git revert [commit]` 还原**上一次还原**。其中 `[commit]` 为还原提交的 `SHA1 ID`。
+
+### 4.6 删除分支
 
 + `git branch -d hotfix`: 删除 `hotfix` 分支(用于删除已被 merged 的分支);
 + `git branch -D hotfix`: 强制删除 `hotfix` 分支。
@@ -81,31 +98,97 @@ tags: GIT
 + `git remote -v`: 列出所有远程主机及其网址;
 + `git remote add <主机名> <网址>`: 添加远程主机，如 `git remote add origin git@github.com:nxjniexiao/test.git`
 
-## 6. 从远程仓库中抓取与拉取
-
-### 6.1 git fetch
+### 5.1 git fetch
 
 `git fetch` 命令用于从服务器上抓取本地没有的数据时，它并不会修改工作目录中的内容。 它只会获取数据然后让你自己合并。
 
 如果要同步你的工作，运行 `git fetch origin` 命令。 这个命令查找 `"origin"` 是哪一个服务器（在本例中，它是 git.ourcompany.com），从中抓取本地没有的数据，并且更新本地数据库，移动 `origin/master` 指针指向新的、更新后的位置。
 
-### 6.2 git pull
+`get fetch --all`: 抓取所有远程仓库。
+
+### 5.2 git pull
 
 `git pull` 在大多数情况下它的含义是一个 `git fetch` 紧接着一个 `git merge` 命令。 如果有一个像之前章节中演示的设置好的跟踪分支，不管它是显式地设置还是通过 `clone` 或 `checkout` 命令为你创建的，`git pull` 都会查找当前分支所跟踪的服务器与分支，从服务器上抓取数据然后尝试合并入那个远程分支。
 
 `git pull <远程主机名> <远程分支名>:<本地分支名>`: 取回远程主机某个分支的更新，再与本地的指定分支合并。<br>
 `git pull origin next:master` 表示：取回origin主机的next分支，与本地的master分支合并。
 
-## 7. 推送到远程仓库
+### 5.3 跟踪分支
+
+命令: `git checkout -b [branch] [remotename]/[branch]`<br>
+
+从一个**远程跟踪分支**检出一个**本地分支**会自动创建所谓的**跟踪分支**。跟踪分支是与远程分支有直接关系的本地分支。 如果在一个跟踪分支上输入 `git pull`，Git 能自动地识别去哪个服务器上抓取、合并到哪个分支。<br>
+
+当克隆一个仓库时，它通常会自动地创建一个跟踪 `origin/master` 的 `master` 分支。<br>
+
+如 `git checkout -b serverfix origin/serverfix` 会创建一个本地分支 `serverfix` ，并且起点位于 `origin/serverfix`。本地分支和远程分支同名时，可以使用如下命令：
+```
+git checkout --track origin/serverfix
+```
+**注**: 使用 `git checkout serverfix` 时，如果本地没有此分支，且远程仓库里有，我们会得到和上述两个命令相同的结果。
+
+`git branch -u origin/serverfix`: 添加、修改跟踪分支，`-u origin/serverfix` 是 `--set-upstream-to=origin/serverfix` 的简写。
+
+`git branch -vv`: 查看设置的所有跟踪分支。
+
+### 5.4 推送到远程仓库
 
 `git push [remote-name] [branch-name]`: 当你想要将 `master` 分支推送到 `origin` 服务器时（再次说明，克隆时通常会自动帮你设置好那两个名字），那么运行这个命令就可以将你所做的备份到服务器：
 ```
 $ git push origin master
 ```
 
-## 8. 撤销
+`git push origin --delete serverfix`: 删除远程仓库 `origin` 的 `serverfix` 分支。
 
-### 8.1 重新提交
+## 6. 变基
+
+在 Git 中整合来自不同分支的修改主要有两种方法：`merge` 以及 `rebase`。<br>
+
+### 6.1 常规用法
+
+```
+          A---B---C topic
+         /
+    D---E---F---G master
+```
+
+使用 `git merge master topic` 合并后:
+```
+          A---B---C topic
+         /         \
+    D---E---F---G---H master
+```
+使用 `git rebase master topic` （`git checkout topic` + `git rebase master`）变基后：
+```
+                  A'--B'--C' topic
+                 /
+    D---E---F---G master
+```
+
+### 6.2 --onto 选项
+
+```
+    o---o---o---o---o  master
+         \
+          D---E---F---G---H  next
+                           \
+                            A---B---C  topic
+```
+假设你希望将 `topic` 中的修改合并到主分支并发布，但暂时并不想合并 `next` 中的修改，因为它们还需要经过更全面的测试。 <br>
+
+这时，你就可以使用 `git rebase` 命令的 `--onto` 选项，选中在 `topic` 分支里但不在 `next` 分支里的修改（即 D-H ），将它们在 `master` 分支上重放（`git rebase --onto master next topic`）：
+
+```
+    o---o---o---o---o  master
+        |            \
+        |             A'--B'--C'  topic
+         \
+          D---E---F---G---H  next
+```
+
+## 7. 撤销
+
+### 7.1 重新提交
 
 比如 `commit` 后发现漏掉了一个文件，则可以进行如下操作：
 ```
