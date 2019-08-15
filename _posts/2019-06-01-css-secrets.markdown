@@ -2386,6 +2386,52 @@ CSS
 + `local`: 此关键字表示背景相对于元素的内容固定。如果一个元素拥有滚动机制，**背景将会随着元素的内容滚动**，并且背景的绘制区域和定位区域是相对于可滚动的区域而不是包含他们的边框。；
 + `fixed`: 此关键字表示**背景相对于视口固定**。即使一个元素拥有滚动机制，背景也不会随着元素的内容滚动。
 
+## 7. 结构与布局
+
+### 7.1 自适应布局
+
+>众所周知，如果不给元素指定一个具体的 height ，它就会自动适应其内容的高度。
+
+我们如何才能让 width 也具有类似的行为呢？
+
+<figure class="self-adaption-7-1">
+  <img src="/images/2019-06-01-css-secrets/cat.jpg" />
+  <figcaption><b>min-content size</b>: The smallest size a box could take that doesn’t lead to overflow that could be avoided by choosing a larger size.</figcaption>
+</figure>
+
+HTML
+```html
+<figure class="self-adaption-7-1">
+  <img src="/images/2019-06-01-css-secrets/cat.jpg" />
+  <figcaption><b>min-content size</b>: The smallest size a box could take that doesn’t lead to overflow that could be avoided by choosing a larger size.</figcaption>
+</figure>
+```
+
+现在我们希望 `<figure>` 元素（实线方框）的宽度跟它所包含的图片一样宽。
+
+效果如下：
+<figure class="self-adaption-7-1 step1">
+  <img src="/images/2019-06-01-css-secrets/cat.jpg" />
+  <figcaption><b>min-content size</b>: The smallest size a box could take that doesn’t lead to overflow that could be avoided by choosing a larger size.</figcaption>
+</figure>
+
+CSS
+```css
+.self-adaption-7-1.step1 {
+  max-width: 300px; /* 回退样式 */
+  max-width: min-content;
+}
+.self-adaption-7-1.step1 > img {
+  max-width: inherit;/* 重要 */
+}
+```
+
+注：
+1. `min-content` 将解析为这个容器内部**最大的不可断行元素的宽度**，即最宽的单词、图片或具有固定宽度的盒元素。
+2. `max-width: 300px;` 为回退样式，当浏览器无法解析 `min-content` 时，此属性将生效。
+3. 给 img 元素设置 `max-width: inherit;` 来继承父元素的 `max-width`。如果 figure 的尺寸由内部元素决定时，此属性不会生效。<br>
+**此外**，由于网页公共样式 `img {max-width: 100%:}` 的影响，如果不设置 `max-width: inherit;` ，`<figure>` 元素的宽度将变为最宽文字的宽度，且图片会被缩小至此宽度。
+
 
 
 
