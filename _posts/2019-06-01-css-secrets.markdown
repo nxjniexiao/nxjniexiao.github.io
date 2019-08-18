@@ -2432,6 +2432,58 @@ CSS
 3. 给 img 元素设置 `max-width: inherit;` 来继承父元素的 `max-width`。如果 figure 的尺寸由内部元素决定时，此属性不会生效。<br>
 **此外**，由于网页公共样式 `img {max-width: 100%:}` 的影响，如果不设置 `max-width: inherit;` ，`<figure>` 元素的宽度将变为最宽文字的宽度，且图片会被缩小至此宽度。
 
+### 7.2 根据兄弟元素的数量来设置样式
+
+在某些场景下，我们需要根据兄弟元素的总数来为它们设置样式。<br>
+
+我们可以使用 `:only-chid` 伪类来选择只有一个列表项的情况。试着拖动滑块增加元素的数量看看效果吧。
+
+<div class="sibling-count-7-2 demo1">
+  <span>1</span>
+  <input type="range" min="1" max="8" value="1">
+</div>
+
+CSS
+```css
+li {
+  apacity: .65;
+}
+li:only-child {
+  opacity: 1;
+}
+```
+
+实际上，`:only-child` 等效于 `:first-child:last-child`，因为如果既是**第一项**又是**最后一项**，那说明列表**只有一项**。<br>
+
+而 `:last-child` 相当于 `:nth-last-child(1)`。因此我们可以通过 `:first-child:nth-last-child(4)` 来命中总数为 4 的列表中的第一项。
+
+<div class="sibling-count-7-2 demo2">
+  <span>4</span>
+  <input type="range" min="1" max="8" value="4">
+</div>
+
+CSS
+```css
+.sibling-count-7-2.demo2 li:first-child:nth-last-child(4){
+  opacity: 1;
+}
+```
+
+最后在结合兄弟选择符 `~` 选择另外三个选项：
+
+<div class="sibling-count-7-2 demo3">
+  <span>4</span>
+  <input type="range" min="1" max="8" value="4">
+</div>
+
+CSS
+```css
+.sibling-count-7-2.demo3 li:first-child:nth-last-child(4),
+.sibling-count-7-2.demo3 li:first-child:nth-last-child(4) ~ li {
+  opacity: 1;
+}
+```
+
 
 
 
