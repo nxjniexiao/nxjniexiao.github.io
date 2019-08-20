@@ -4,6 +4,9 @@ title: "JS 一维数组和树形数组"
 date: 2018-12-07 17:08:12 +0800
 categories: learning-notes
 tags: WEB前端 JS
+custom_css: ["2019-06-01-css-secrets/common.css"]
+custom_js: ["2018-12-07-Linear-Array-Tree-Array/data.js", "2018-12-07-Linear-Array-Tree-Array/fn.js"]
+
 ---
 * content
 {:toc}
@@ -235,6 +238,9 @@ var arr = [
 + 3) 循环 res 数组，递归调用自身，找出 res 中每个对象的 children 数组；
 + 4) 返回数组。
 
+<button id="btn-3-1" class="btn btn-primary btn-calc">运行</button>
+<span class="result"></span>
+
 ```js
 function arrayToTreeRecursion(array, parentId) {
   var arrayCopy = array.slice(); // 浅拷贝
@@ -265,6 +271,9 @@ function arrayToTreeRecursion(array, parentId) {
 + 4) 遍历 array 的循环结束后，更新 array：`array = arrayCopy.slice();`(重要)；
 + 5) 遍历 currLevel 的循环结束后，把 nextLevel 的值赋给 currLevel，然后重置 nextLevel；
 + 6) 循环继续的条件为，currLevel 和 array 的长度都不为 0 。
+
+<button id="btn-3-2" class="btn btn-primary btn-calc">运行</button>
+<span class="result"></span>
 
 ```js
 function arrayToTreeLoop(array, parentId) {
@@ -311,5 +320,49 @@ function arrayToTreeLoop(array, parentId) {
     nextLevel = []; // 重置 nextLevel
   } while (array.length && currLevel.length);
   return res;
+}
+```
+
+### 3.3 zTree 组件中的实现
+
+思路: 
+1. 先循环整个数组，把它转为对象 `tempMap` ，键值为 `key` 指定的值；
+2. 再循环整个数组，根据其 `parentKey` 在 `tempMap` 中寻找其父节点：
+   + 如果找到了父节点，则把此节点放入其 `children` 属性中；
+   + 如果没找到，则放入数组 `res` 中；
+3. 最后返回数组 `res` 。
+
+<button id="btn-3-3" class="btn btn-primary btn-calc">运行</button>
+<span class="result"></span>
+
+```js
+function arrayToTree(arr, key, parentKey) {
+  var i, l;
+  key = key || 'id';
+  parentKey = parentKey || 'pid';
+  if (!key || key == '' || !arr) {
+    return [];
+  }
+  if (arr instanceof Array) {
+    var res = [];
+    var tmpMap = {};
+    for (i = 0, l = arr.length; i < l; i++) {
+      tmpMap[arr[i][key]] = arr[i];
+    }
+    for (i = 0, l = arr.length; i < l; i++) {
+      var parent = tmpMap[arr[i][parentKey]]; // 当前节点的父节点(对象)
+      if (parent && arr[i][key] != arr[i][parentKey]) {
+        if (!parent.children) {
+          parent.children = [];
+        }
+        parent.children.push(arr[i]);
+      } else {
+        res.push(arr[i]); //当前节点没有父节点
+      }
+    }
+    return res;
+  } else {
+    return [arr];
+  }
 }
 ```
