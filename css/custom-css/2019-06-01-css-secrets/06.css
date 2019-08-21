@@ -44,3 +44,18 @@
 .sibling-count-7-2.demo3 li:first-child:nth-last-child(4) ~ li {
   opacity: 1;
 }
+.sibling-count-7-2.demo4 li:nth-child(n+3) {
+  opacity: 1;
+}
+.sibling-count-7-2.demo5 li:first-child:nth-last-child(n+4),
+.sibling-count-7-2.demo5 li:first-child:nth-last-child(n+4) ~ li {
+  opacity: 1;
+}
+.sibling-count-7-2.demo6 li:first-child:nth-last-child(-n+6),
+.sibling-count-7-2.demo6 li:first-child:nth-last-child(-n+6) ~ li {
+  opacity: 1;
+}
+.sibling-count-7-2.demo7 li:first-child:nth-last-child(n+4):nth-last-child(-n+6),
+.sibling-count-7-2.demo7 li:first-child:nth-last-child(n+4):nth-last-child(-n+6) ~ li {
+  opacity: 1;
+}
