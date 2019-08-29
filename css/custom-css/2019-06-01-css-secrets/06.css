@@ -59,3 +59,33 @@
 .sibling-count-7-2.demo7 li:first-child:nth-last-child(n+4):nth-last-child(-n+6) ~ li {
   opacity: 1;
 }
+/* 7.3 */
+.wrapper-7-3 {
+  padding: 10px;
+  border-radius: 5px;
+  color: #f5f5f5;
+  background: #40a9ff;
+}
+.wrapper-7-3 div {
+  width: 300px;
+  margin: auto;
+  text-align: justify;
+}
+.wrapper-7-3 div h5 {
+  font-weight: bold;
+  text-align: center;
+}
+.fluid-fixed-7-3 {
+  padding: 10px; /* 回退方案 */
+  padding: 10px calc(50% - 150px);
+  border-radius: 5px;
+  color: #f5f5f5;
+  background: #40a9ff;
+}
+.fluid-fixed-7-3 h5 {
+  font-weight: bold;
+  text-align: center;
+}
+.fluid-fixed-7-3 p {
+  text-align: justify;
+}
