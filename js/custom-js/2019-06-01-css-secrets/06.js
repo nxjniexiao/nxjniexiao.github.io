@@ -1,4 +1,3 @@
-
 /* 7.2 */
 (function() {
   var rangeInputs = document.querySelectorAll(".sibling-count-7-2 input");
@@ -34,4 +33,18 @@
     }
     return ul;
   }
+})();
+/* 7.5 */
+(function() {
+  var mainDomArr = document.querySelectorAll(".container-7-5 main");
+  mainDomArr.forEach(function(main) {
+    main.addEventListener('click', function(e) {
+      console.log(main.offsetHeight);
+      if (main.offsetHeight < 500) {
+        main.style = "height: 600px;";
+      } else {
+        main.style = "";
+      }
+    });
+  })
 })();
