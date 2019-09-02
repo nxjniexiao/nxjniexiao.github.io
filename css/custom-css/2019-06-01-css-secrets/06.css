@@ -89,3 +89,44 @@
 .fluid-fixed-7-3 p {
   text-align: justify;
 }
+/* 7.4 */
+.container-7-4 {
+  height: 150px;
+  background: #ff7873;
+}
+.container-7-4,
+.container-7-4  .center {
+  padding: 10px;
+  border-radius: 5px;
+}
+.container-7-4 .center {
+  border: 1px solid white;
+}
+.container-7-4.plan1 {
+  display: table;
+  width: 100%;
+}
+.container-7-4.plan1 .center {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+}
+.container-7-4.plan2 {
+  position: relative;
+}
+.container-7-4.plan2 .center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -75px;
+  margin-top: -55px;
+  width: 150px;
+  height: 110px;
+  box-sizing: border-box;
+}
+.container-7-4.plan3 {
+  display: flex;
+}
+.container-7-4.plan3 .center {
+  margin: auto;
+}
