@@ -177,3 +177,91 @@ var createMixedMeeting = function(meeting) {
    + 当不需要某个类型的会议时，直接在链条中取消创建此类型会议的函数即可。
    + 当需要增加某个类型会议时，直接在链条的任意位置插入新函数即可，不需要去修改其他类型会议的创建函数。
 4. 每个函数(对象)更加符合单一职责原则。
+
+## 4. 使用闭包实现异步职责链
+
+Vue Router 的导航守卫 API 就是一个异步职责链:
+```js
+router.beforeEach((to, from, next) => {
+  /* 必须调用 `next` */
+})
+```
+当我们调用 `next()` 时，才会进行管道中的下一个钩子。
+
+现在我们利用闭包来实现一个简单的导航守卫。
+
+```js
+const router = (function () {
+  const fnsArr = [];
+  return {
+    beforeEach(fn) {
+      fnsArr.push(fn);
+    },
+    navigate(to, from) {
+      // 职责链中所有回调运行完成后运行
+      const fnComplete = () => {
+        console.log('运行完成');
+      };
+      // 递归生成职责链
+      const chain = fnsArr.reduceRight((acc, fn) => {
+        acc = createChain(fn, to, from, acc);
+        return acc;
+      }, fnComplete);
+      // 运行
+      chain();
+    },
+  };
+  /**
+   * 利用闭包生成职责链
+   * @param {Function} fn 当前节点
+   * @param {Object} to 进入的路由
+   * @param {Object} from 离开的路由
+   * @param {Function} nextFn 后一个节点
+   */
+  function createChain(fn, to, from, nextFn) {
+    if (!fn) return nextFn;
+    return function () {
+      fn.call(fn, to, from, nextFn);
+    };
+  }
+})();
+```
+
+测试代码：
+JS
+```js
+router.beforeEach((to, from, next) => {
+  console.log('节点1');
+  console.log(`to: ${JSON.stringify(to)} from: ${JSON.stringify(from)}`);
+  next();
+});
+
+router.beforeEach((to, from, next) => {
+  // 模拟异步
+  setTimeout(() => {
+    console.log('节点2');
+    console.log(`to: ${JSON.stringify(to)} from: ${JSON.stringify(from)}`);
+    next();
+  }, 2000);
+});
+
+router.beforeEach((to, from, next) => {
+  console.log('节点3');
+  console.log(`to: ${JSON.stringify(to)} from: ${JSON.stringify(from)}`);
+  next();
+});
+
+// 开始导航
+router.navigate({ name: 'to' }, { name: 'from' });
+```
+
+调试窗口将打印：
+```
+节点1
+to: {"name":"to"} from: {"name":"from"}
+节点2
+to: {"name":"to"} from: {"name":"from"}
+节点3
+to: {"name":"to"} from: {"name":"from"}
+运行完成
+```
