@@ -17,7 +17,19 @@ tags: js
 
 
 
-## 2. 简单实现
+## 2. 案例
+
+`Vue2` 中有四个事件相关的 `API`:
+1. `vm.$on`：监听当前实例上的自定义事件。
+2. `vm.$once`：监听一个自定义事件，但是只触发一次。
+3. `vm.$off`：移除自定义事件监听器。
+4. `vm.$emit`：触发当前实例上的事件。
+
+这四个 `API` 不能跨组件通信，下一节我们将其作为参考实现全局的**发布-订阅模式**。
+
+## 3. 简单实现
+
+>发布—订阅模式可以用一个全局的 Event 对象来实现，订阅者不需要了解消息来自哪个发布者，发布者也不知道消息会推送给哪些订阅者，Event 作为一个类似“中介者”的角色，把订阅者和发布者联系起来。见如下代码：
 
 JS
 ```js
@@ -30,7 +42,11 @@ const Events = (function() {
     emit: emit
   }
 
-  // 监听
+  /**
+  *  监听
+  *  @params {string | Array<string>} event 事件名或包含多个事件名的数组
+  *  @params {Function} fn 回调函数
+  */
   function on(event, fn) {
     if (!event) return;
     if (Array.isArray(event)) {
@@ -42,17 +58,31 @@ const Events = (function() {
     }
   }
 
-  // 监听一次
+  /**
+  *  监听一次。一旦触发之后，监听器就会被移除。
+  *  @params {string | Array<string>} event 事件名或包含多个事件名的数组
+  *  @params {Function} fn 回调函数
+  */
   function once(event, fn) {
-    const fnWrapper = () => {
-      // 注意这里取消监听的是 fnWrapper ，而不是 fn
-      this.off(event, fnWrapper);
-      fn.apply(this, arguments);
+    if (Array.isArray(event)) {
+      for (let i = 0, len = event.length; i < len; i++) {
+        this.once(event[i], fn);
+      }
+    } else {
+      const fnWrapper = function() {
+        // 注意这里取消监听的是 fnWrapper ，而不是 fn
+        this.off(event, fnWrapper);
+        fn.apply(this, arguments);
+      }
+      this.on(event, fnWrapper);
     }
-    this.on(event, fnWrapper);
   }
 
-  // 取消监听
+  /**
+  *  取消监听
+  *  @params {string | Array<string>} event 事件名或包含多个事件名的数组
+  *  @params {Function} fn 取消监听的回调函数
+  */
   function off(event, fn) {
     if (!event) return;
     if (Array.isArray(event)) {
@@ -71,11 +101,16 @@ const Events = (function() {
     }
   }
 
-  // 触发事件
+  /**
+  *  触发事件
+  *  @params {string } event 触发的事件名
+  *  @params {Array} [args] 剩余参数
+  */
   function emit(event) {
     const eventsList = events[event] || [];
+    const args = Array.prototype.slice.call(arguments, 1); // 移除第一个参数
     eventsList.forEach(ev => {
-      ev.apply(this, arguments);
+      ev.apply(this, args);
     });
   }
 })();
