@@ -69,7 +69,7 @@ submit({
 
 1. `submit` 函数比较庞大，包含了很多 `if/else` 语句。
 2. `submit` 函数缺乏弹性，如果需要新增规则，或者最大会议名称长度变为了 `40` ，都需要深入此函数的内部实现。
-3. `submit` 函数中逻辑的复用性差，当其他表单也需要验证某个**必填项**参数时，也需要实现一遍 `meeting.name` 的判断逻辑：
+3. `submit` 函数中逻辑的复用性差，比如当其他表单也需要验证某个**必填项**参数时，也需要实现一遍 `meeting.name` 的判断逻辑：
    ```js
    var submit = function (user) {
      // 1. 用户名称
@@ -83,13 +83,37 @@ submit({
 
 ## 3. JS 版策略模式
 
-### 3.1 Context
+>将不变的部分和变化的部分隔开是每个设计模式的主题，策略模式也不例外，策略模式的目的就是将**算法的使用**与**算法的实现**分离开来。
 
-我们先是实现作为 `Context` 的 `Validator` 类，它负责接收用户的请求并委托给**策略对象**。
+>一个基于策略模式的程序至少由两部分组成。第一个部分是一组**策略类**，策略类封装了具体的算法，并负责具体的计算过程。
+> 第二个部分是**环境类**Context，Context 接受客户的请求，随后把请求委托给某一个策略类。要做到这点，说明Context 中要维持对某个策略对象的引用。
+
+### 3.1 环境类 Context
+
+我们先实现作为 `Context` 的 `Validator` 类，它负责接收用户的请求并委托给**策略对象**：
+
+1. `Validator` 有一个属性 `rulesMap` 用于存放针对每个 `key` 的规则数组，数组中每个对象都有个 `strategy` 指定的验证函数，即**策略对象**。
+   JS
+   ```js
+   this.rulesMap =
+   {
+     name: [
+       { strategy: validateFn1 },
+       { strategy: validateFn2 }
+     ]
+   }
+   ```
+2. `Validator` 原型上有两个方法：用于添加验证规则的 `add()` 和 进行验证的 `validate()`。
+
+最终实现如下：
 
 JS
 ```js
-// Validator 类
+/**
+ *  Validator 类
+ *  @params {Object} rulesObj 规则对象，key 为需要验证的键名，value 为验证规则数组。
+ *          内部会遍历该对象并调用 this.add() 去添加验证规则。
+ */
 var Validator = function (rulesObj) {
   this.rulesMap = Object.create(null); // 验证规则
   var keys = Object.keys(rulesObj || {});
@@ -98,7 +122,11 @@ var Validator = function (rulesObj) {
   });
 };
 
-// 添加验证规则
+/**
+ *  添加验证规则
+ *  @params {String} key 指定参数对象中需要验证的键名
+ *  @params {Array} rules 验证规则数组
+ */
 Validator.prototype.add = function (key, rules) {
   this.rulesMap[key] = rules;
   rules.forEach((rule) => {
@@ -106,7 +134,10 @@ Validator.prototype.add = function (key, rules) {
   });
 };
 
-// 验证参数
+/**
+ *  验证参数
+ *  @params {Object} params 需要验证的参数对象。
+ */
 Validator.prototype.validate = function (params) {
   var keys = Object.keys(this.rulesMap);
   for (var i = 0, len = keys.length; i < len; i++) {
@@ -132,7 +163,40 @@ Validator.prototype.validate = function (params) {
 
 ### 3.2 策略对象
 
-JavaScript 语言中函数是一等对象，可以作为参数四处传递，因此我们可以直接用函数封装策略。
+JavaScript 语言中函数是一等对象，可以作为参数四处传递，因此我们可以直接用**函数**封装**策略**。
+
+例如添加会议开始时间验证规则的代码如下：
+
+JS
+```js
+validator.add('startTime', [
+  {
+    strategy: function (value) {
+      if (value < new Date()) {
+        return '会议开始时间不能小于当前时间';
+      }
+    }
+  }
+]);
+```
+
+此外，由于**必填项**、**数值范围**和**字符串长度**的验证很常见，因此这些验证被设计成以配置项方式传入，如：
+
+JS
+```js
+validator.add('name', [
+  {
+    required: true,
+    msg: '会议名称不能为空'
+  },
+  {
+    maxLen: 10,
+    msg: '会议名称长度不能超过10'
+  }
+]);
+```
+
+因此需要一个工厂函数 `getStrategy()` 来生成策略对象:
 
 JS
 ```js
@@ -178,27 +242,9 @@ function len(value) {
 }
 ```
 
-由于必填项、数值范围和字符串长度验证很常见，因此把这些验证设计成以配置项方式传入，如：
-
-JS
-```js
-var rule = {
-  name: [
-    {
-      required: true,
-      msg: '会议名称不能为空',
-    },
-    {
-      maxLen: 10,
-      msg: '会议名称长度不能超过10',
-    }
-  ],
-};
-```
-
 ### 3.3 重构 submit
 
-重构后的 `submit` 函数：
+重构后的 `submit()` 函数：
 
 JS
 ```js
@@ -209,7 +255,7 @@ var submit = function (meeting) {
 };
 ```
 
-负责验证参数的 `validateMeeting` 函数如下：
+验证参数的逻辑被放在 `validateMeeting()` 函数中：
 
 JS
 ```js
@@ -277,4 +323,4 @@ function validateMeeting(meeting) {
      msg: '会议名称长度不能超过40',
    }
    ```
-2. 复用性高。`Validator` 类和计算策略对象的 `getStrategy` 可以在程序的其他地方复用，也可以很方便地移植到其他项目中。
+2. 复用性高。`Validator` 类和计算策略对象的 `getStrategy()` 可以在程序的其他地方复用，也可以很方便地移植到其他项目中。
