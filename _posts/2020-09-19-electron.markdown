@@ -1,0 +1,68 @@
+---
+layout: post
+title: 'Electron Tips'
+date: 2020-09-19 10:52:00 +0800
+categories: Electron
+tags: Electron
+---
+
+* content
+{:toc}
+
+# 1. Electron 安装很慢
+
+把 Electron 的镜像源设置为淘宝镜像源：
+
+```bash
+npm config set ELECTRON_MIRROR http://npm.taobao.org/mirrors/electron
+```
+
+## 2. Electron 日志
+
+日志文件位置：
+
+- windows: `C:\Users\用户名\AppData\Roaming\UmeetPro\logs` 。
+
+- mac: `/Users/用户名/Library/Logs/UmeetPro`。
+
+其中 UmeetPro 为 app 名称。
+
+## 3. Electron 缓存
+
+electron-store 文件地址：
+
+- mac 端：`~/Library/Application\ Support/UmeetPro/`
+- windows 端：`C:\Users\用户名\AppData\Roaming\UmeetPro\config.json`
+
+**tips:** mac 端删除缓存命令如下
+
+```bash
+rm -rf  ~/Library/Application\ Support/UmeetPro/
+```
+
+## 4. 调试环境和安装环境的路径对比
+
+本地调试：
+
+```
+     app.getAppPath(): D:\projects\Umeet3\SE\umeet-pc
+        process.cwd(): D:\projects\Umeet3\SE\umeet-pc
+process.resourcesPath: D:\projects\Umeet3\SE\umeet-pc\node_modules\electron\dist\resources
+```
+
+安装后：
+
+```
+     app.getAppPath(): C:\Users\Nie Xiaojun\AppData\Roaming\Umeet\resources\app
+        process.cwd(): C:\Users\Nie Xiaojun\AppData\Roaming\Umeet
+process.resourcesPath: C:\Users\Nie Xiaojun\AppData\Roaming\Umeet\resources
+```
+
+## 5. windows 通过命令行查看进程
+
+```
+查看进程
+tasklist /
+杀进程
+taskkill /f /t /pid 23276
+```
