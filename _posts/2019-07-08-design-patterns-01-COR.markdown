@@ -3,7 +3,7 @@ layout: post
 title: '设计模式 01 — 职责链模式'
 date: 2019-07-08 11:20:00 +0800
 categories: 设计模式
-tags: js
+tags: JS
 ---
 
 * content

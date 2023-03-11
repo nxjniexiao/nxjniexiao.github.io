@@ -3,7 +3,7 @@ layout: post
 title:  "Redux搭配React完成包含异步action的应用 Async Subreddit"
 date:   2018-09-04 15:36:12 +0800
 categories: learning-notes
-tags: WEB前端 redux react
+tags: WEB前端 Redux React
 ---
 * content
 {:toc}

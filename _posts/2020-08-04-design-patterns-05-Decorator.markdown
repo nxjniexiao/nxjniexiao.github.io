@@ -3,7 +3,7 @@ layout: post
 title: '设计模式 05 — 装饰者模式'
 date: 2020-08-04 16:03:00 +0800
 categories: 设计模式
-tags: js
+tags: JS
 ---
 
 * content

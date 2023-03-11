@@ -3,7 +3,7 @@ layout: post
 title: '设计模式 02 — 观察者模式'
 date: 2020-07-02 16:56:00 +0800
 categories: 设计模式
-tags: js
+tags: JS
 ---
 
 * content

@@ -3,7 +3,7 @@ layout: post
 title:  "webpack学习笔记"
 date:   2018-08-18 10:16:12 +0800
 categories: learning-notes
-tags: webpack WEB前端
+tags: Webpack WEB前端
 ---
 * content
 {:toc}

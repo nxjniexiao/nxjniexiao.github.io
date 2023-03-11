@@ -3,7 +3,7 @@ layout: post
 title: '如何修改windows命令行的默认编码为utf-8'
 date: 2021-02-24 11:33:00 +0800
 categories: Tips
-tags: windows cmd encoding
+tags: Windows CMD Encoding
 ---
 
 * content

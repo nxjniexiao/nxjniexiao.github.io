@@ -3,7 +3,7 @@ layout: post
 title:  "jkeyll的安装步骤"
 date:   2018-08-17 17:54:12 +0800
 categories: learning-notes
-tags: Ruby jkeyll software-install
+tags: Ruby Jekyll Software-install
 ---
 * content
 {:toc}

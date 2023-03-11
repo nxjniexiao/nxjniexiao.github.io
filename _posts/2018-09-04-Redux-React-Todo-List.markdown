@@ -3,7 +3,7 @@ layout: post
 title:  "Redux搭配React完成迷你型任务管理应用 Todo List"
 date:   2018-09-04 15:36:12 +0800
 categories: learning-notes
-tags: WEB前端 redux react
+tags: WEB前端 Redux React
 ---
 * content
 {:toc}

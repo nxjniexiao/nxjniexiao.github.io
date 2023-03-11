@@ -3,7 +3,7 @@ layout: post
 title: '设计模式 04 — 中介者模式'
 date: 2020-08-04 09:25:00 +0800
 categories: 设计模式
-tags: js
+tags: JS
 ---
 
 * content

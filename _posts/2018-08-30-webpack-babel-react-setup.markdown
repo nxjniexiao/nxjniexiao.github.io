@@ -3,7 +3,7 @@ layout: post
 title:  "在webpack中使用react和babel"
 date:   2018-08-30 14:10:12 +0800
 categories: learning-notes
-tags: WEB前端 webpack react
+tags: WEB前端 Webpack React
 ---
 * content
 {:toc}

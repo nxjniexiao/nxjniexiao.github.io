@@ -3,7 +3,7 @@ layout: post
 title: '设计模式 03 — 策略模式'
 date: 2020-07-29 09:13:00 +0800
 categories: 设计模式
-tags: js
+tags: JS
 ---
 
 * content

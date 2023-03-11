@@ -3,7 +3,7 @@ layout: post
 title: "Jekyll 要点"
 date: 2019-07-05 14:26:00 +0800
 categories: learning-notes
-tags: jekyll
+tags: Jekyll
 ---
 
 * content
