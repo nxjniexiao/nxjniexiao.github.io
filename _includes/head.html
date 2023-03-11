@@ -95,6 +95,12 @@
   <link rel="stylesheet" href="{{ site.data.assets[origin].fontawesome.css | relative_url }}">
 
   <link rel="stylesheet" href="{{ '/css/style.css' | relative_url }}">
+  <!-- Custom css -->
+  {% if page.custom_css %}
+    {% for css in page.custom_css %}
+      <link rel="stylesheet" href="{{ css | prepend: '/css/custom-css/' }}">
+    {% endfor %}
+  {% endif %}
 
   {% if site.toc and page.toc %}
     <link rel="stylesheet" href="{{ site.data.assets[origin].bootstrap-toc.css | relative_url }}">

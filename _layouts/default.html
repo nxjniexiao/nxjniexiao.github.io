@@ -62,6 +62,12 @@ layout: compress
       </div>
     {% endif %}
 
+    {% if page.custom_js %}
+      {% for js in page.custom_js %}
+        <script src="{{js | prepend: '/js/custom-js/'}}"></script>
+      {% endfor %}
+    {% endif %}
+
     {% include search-loader.html %}
 
     {% include js-selector.html %}
