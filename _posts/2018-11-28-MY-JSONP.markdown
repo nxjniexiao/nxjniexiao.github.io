@@ -5,8 +5,7 @@ date:   2018-11-28 11:25:12 +0800
 categories: learning-notes
 tags: WEB前端 JS Node.js
 ---
-* content
-{:toc}
+
 
 ## 1. Ajax
 

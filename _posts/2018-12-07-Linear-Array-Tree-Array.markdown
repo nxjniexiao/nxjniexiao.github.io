@@ -6,10 +6,8 @@ categories: learning-notes
 tags: WEB前端 JS
 custom_css: ["2019-06-01-css-secrets/common.css"]
 custom_js: ["2018-12-07-Linear-Array-Tree-Array/data.js", "2018-12-07-Linear-Array-Tree-Array/fn.js"]
-
 ---
-* content
-{:toc}
+
 
 最近在面试中碰到一道题：使用两种方法将有联系的**一维数组**转成**树形数组**。一维数组格式如下：
 ```js

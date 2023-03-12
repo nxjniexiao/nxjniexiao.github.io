@@ -6,9 +6,6 @@ categories: Tips
 tags: Windows CMD Encoding
 ---
 
-* content
-{:toc}
-
 
 详情见：[stackoverflow](https://stackoverflow.com/questions/57131654/using-utf-8-encoding-chcp-65001-in-command-prompt-windows-powershell-window)
 

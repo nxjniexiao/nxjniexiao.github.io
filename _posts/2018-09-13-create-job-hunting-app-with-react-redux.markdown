@@ -5,8 +5,7 @@ date:   2018-09-13 11:08:12 +0800
 categories: learning-notes
 tags: React Redux WEB前端 HTML CSS JS
 ---
-* content
-{:toc}
+
 
 本文记录了使用 Redux 和 React 制作找工作APP过程中的一些要点。
 

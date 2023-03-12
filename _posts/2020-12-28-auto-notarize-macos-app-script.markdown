@@ -6,8 +6,6 @@ categories: Electron
 tags: Electron
 ---
 
-* content
-{:toc}
 
 参考链接：[https://github.com/CaicaiNo/Apple-Mac-Notarized-script](https://github.com/CaicaiNo/Apple-Mac-Notarized-script)
 

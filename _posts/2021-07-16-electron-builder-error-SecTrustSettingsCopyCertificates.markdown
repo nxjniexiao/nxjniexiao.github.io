@@ -6,8 +6,6 @@ categories: Electron
 tags: Electron
 ---
 
-* content
-{:toc}
 
 ## 1. electron builder 因证书问题无法打包
 

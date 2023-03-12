@@ -5,8 +5,8 @@ date:   2018-08-18 10:16:12 +0800
 categories: learning-notes
 tags: Webpack WEB前端
 ---
-* content
-{:toc}
+
+
 虽然在[商家单页面案例](https://nxjniexiao.github.io/2018/08/16/Sell-APP-Learning-Notes/)中使用了webpack，但其实不是很理解webpack的工作原理。因此还是很有必要去学习一下webpack。
 ## 1. 安装webpack
 在网上搜了一些教程，大都是全局安装并使用webpack。由于实际项目中大都是局部安装的。因此特意去搜了一下如何局部安装webpack：

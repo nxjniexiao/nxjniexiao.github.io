@@ -5,8 +5,7 @@ date:   2018-11-14 12:26:12 +0800
 categories: learning-notes
 tags: WEB前端 JS React Redux
 ---
-* content
-{:toc}
+
 
 此笔记是对 [Redux 中文官网 ](https://cn.redux.js.org/docs/recipes/reducers/NormalizingStateShape.html)中 state 范式化的总结。
 

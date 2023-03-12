@@ -5,8 +5,7 @@ date: 2018-12-06 16:51:12 +0800
 categories: learning-notes
 tags: WEB前端 JS
 ---
-* content
-{:toc}
+
 
 最近在面试中被问到了数据的双向绑定是如何实现的。当时只记得学习 Vue.js 时，有一个 `v-model` 指令能够实现数据双向绑定，实现的原理涉及到了事件监听。所以没有给出一个好的答案。
 

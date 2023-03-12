@@ -5,8 +5,7 @@ date:   2018-12-01 11:57:12 +0800
 categories: learning-notes
 tags: WEB前端 JS Node.js
 ---
-* content
-{:toc}
+
 
 最近写了一个不使用外部框架的情况下，使用 Node.js 开启一个托管文件的服务器，github 地址：[serving-static-files-without-frameworks](https://github.com/nxjniexiao/serving-static-files-without-frameworks)。<br>
 

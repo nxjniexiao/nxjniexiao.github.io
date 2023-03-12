@@ -5,8 +5,6 @@ date: 2019-01-06 14:50:12 +0800
 categories: learning-notes
 tags: AngularJS-1.x
 ---
-* content
-{:toc}
 
 
 ## 1. 指令(Directive)

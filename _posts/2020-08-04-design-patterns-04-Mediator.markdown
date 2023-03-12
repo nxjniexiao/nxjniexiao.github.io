@@ -6,8 +6,6 @@ categories: 设计模式
 tags: JS
 ---
 
-* content
-{:toc}
 
 ## 1. 定义
 

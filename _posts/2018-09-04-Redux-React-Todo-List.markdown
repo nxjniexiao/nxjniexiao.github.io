@@ -5,8 +5,7 @@ date:   2018-09-04 15:36:12 +0800
 categories: learning-notes
 tags: WEB前端 Redux React
 ---
-* content
-{:toc}
+
 
 Redux官网[cn.redux.js.org](https://cn.redux.js.org/docs/basics/ExampleTodoList.html)中有一个小例子：Todo List。官方源码地址：[redux-todos](https://github.com/reduxjs/redux/tree/master/examples/todos)。<br>
 此文记录了自己完成此例子的过程。

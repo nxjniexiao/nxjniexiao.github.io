@@ -5,8 +5,8 @@ date:   2018-08-22 10:21:12 +0800
 categories: learning-notes
 tags: JS WEB前端 ES6
 ---
-* content
-{:toc}
+
+
 此笔记的内容引用自官网[developer.mozilla.org—Promise](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)和[developer.mozilla.org—使用Promise](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Using_promises)。
 
 ## 1. 什么是Promise

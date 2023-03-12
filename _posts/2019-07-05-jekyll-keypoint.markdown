@@ -6,8 +6,6 @@ categories: learning-notes
 tags: Jekyll
 ---
 
-* content
-{:toc}
 
 {% raw %}
 

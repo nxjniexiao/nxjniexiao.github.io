@@ -5,8 +5,7 @@ date: 2018-12-29 21:03:12 +0800
 categories: learning-notes
 tags: WEB前端 AngularJS-1.x
 ---
-* content
-{:toc}
+
 
 最近在学习 AngularJS 1.x，跟着[ 官网教程 ](https://docs.angularjs.org/tutorial)敲了一遍代码。
 

@@ -5,8 +5,7 @@ date:   2018-11-08 17:56:12 +0800
 categories: learning-notes
 tags: WEB前端 JS React Redux
 ---
-* content
-{:toc}
+
 
 最近在使用 ant-design 完成网页的过程中，碰到了需要复用组件和 Reducer 的问题。详情可点击其[ github 仓库](https://github.com/nxjniexiao/douban-with-antd);
 

@@ -6,8 +6,6 @@ categories: Electron
 tags: Electron
 ---
 
-* content
-{:toc}
 
 此文章使用 [electron-webpack-quick-start](https://github.com/electron-userland/electron-webpack-quick-start) 仓库测试 Electron 打包相关问题。
 

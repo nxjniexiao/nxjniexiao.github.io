@@ -5,8 +5,7 @@ date:   2018-08-30 14:10:12 +0800
 categories: learning-notes
 tags: WEB前端 Webpack React
 ---
-* content
-{:toc}
+
 
 在学习react过程中，若不使用工具，总是要引入babel、react和react-dom：
 ```html

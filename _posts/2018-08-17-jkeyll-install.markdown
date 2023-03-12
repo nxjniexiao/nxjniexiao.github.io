@@ -5,8 +5,8 @@ date:   2018-08-17 17:54:12 +0800
 categories: learning-notes
 tags: Ruby Jekyll Software-install
 ---
-* content
-{:toc}
+
+
 此文描述了Jekyll的安装过程，及如何关联github上的远程仓库。
 
 ## 1. 安装Jekyll

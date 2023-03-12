@@ -5,8 +5,8 @@ date:   2018-08-16 19:40:12 +0800
 categories: learning-notes
 tags: Vue WEB前端 HTML CSS JS
 ---
-* content
-{:toc}
+
+
 此项目是使用Vue.js开发的一款外卖app商家页面。项目的github地址：[sell](https://github.com/nxjniexiao/SellExercise)。主要内容如下：
 + 使用Vue-cli脚手架，搭建基本代码框架；
 + 使用官方路由管理器Vue Router，将三大组件goods、ratings和seller 映射到路由，实现点击导航栏显示相应的内容；

@@ -5,8 +5,8 @@ date:   2018-08-23 15:41:12 +0800
 categories: learning-notes
 tags: CSS WEB前端
 ---
-* content
-{:toc}
+
+
 Stylus是一款CSS预处理语言，它提供了高效、动态和富有表现力的方式来生成CSS。Stylus支持缩进的语法和常规的CSS样式。
 
 ## 1. 安装Stylus

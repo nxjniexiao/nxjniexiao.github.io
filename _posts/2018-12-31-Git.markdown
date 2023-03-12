@@ -5,8 +5,7 @@ date: 2018-12-31 16:33:12 +0800
 categories: learning-notes
 tags: GIT
 ---
-* content
-{:toc}
+
 
 ## 1. 配置
 

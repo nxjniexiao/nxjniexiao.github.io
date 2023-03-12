@@ -6,8 +6,6 @@ categories: Electron
 tags: Electron
 ---
 
-* content
-{:toc}
 
 ## 1. 自定义 NSIS 脚本
 

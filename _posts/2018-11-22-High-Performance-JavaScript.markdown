@@ -5,8 +5,7 @@ date:   2018-11-22 09:13:12 +0800
 categories: learning-notes
 tags: WEB前端 JS
 ---
-* content
-{:toc}
+
 
 此笔记为《高性能 JavaScript 编程》一书的要点总结。
 
