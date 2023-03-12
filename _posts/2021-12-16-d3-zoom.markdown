@@ -1,0 +1,250 @@
+---
+layout: post
+title: 'D3-Zoom api 研究'
+date: 2021-12-16 10:59:00 +0800
+categories: learning-notes
+tags: D3
+---
+
+
+## 1. D3-Zoom暴露的api
+
+总共暴露三个api，如下：
+
+1.  zoom: `() => zoom`
+
+2.  zoomTransform: `(node) => zoomIdendity || __zoom`
+
+3.  zoomIdentity: 常量 *k* = 1, *tx* = *ty* = 0
+
+### 1.1 d3.zoom()
+
+创建一个新的缩放行为。返回的行为 **zoom** 既是一个对象也是一个函数，通常通过 `selection.call` 应用于选定的元素。
+
+```javascript
+// zoom.js
+export default function() {
+  function zoom(selection) {
+    selection
+      .property("__zoom", defaultTransform)
+      .on("wheel.zoom", wheeled)
+      .on("mousedown.zoom", mousedowned)
+      .on("dblclick.zoom", dblclicked)
+    .filter(touchable)
+      .on("touchstart.zoom", touchstarted)
+      .on("touchmove.zoom", touchmoved)
+      .on("touchend.zoom touchcancel.zoom", touchended)
+      .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
+  }
+  zoom.transform = function(collection, transform, point) { /* 省略 */ }
+  zoom.scaleBy = function(selection, k, p) { /* 省略 */ }
+  zoom.scaleTo = function(selection, k, p) { /* 省略 */ }
+  zoom.translateBy = function(selection, x, y) { /* 省略 */ }
+  zoom.translateTo = function(selection, x, y) { /* 省略 */ }
+  // 省略...
+  return zoom
+}
+```
+
+### 1.2 d3.zoomTransform(node)
+
+返回指定节点当前的 **transform**。请注意，node通常应该是一个 DOM 元素。
+
+在内部，元素的变换存储为 `element.__zoom`。但是，您应该使用此方法而不是直接访问它。
+
+缩放行为将缩放状态存储在应用了缩放行为的元素上，而不是存储在缩放行为本身。这是因为缩放行为可以同时应用于许多元素，并且每个元素都可以独立地被缩放。缩放状态可以在用户交互时改变，也可以通过`zoom.transform()` 以编程方式改变。
+
+```javascript
+var transform = d3.zoomTransform(dom);
+// 如果是selection, 先调用其node方法
+var transform = d3.zoomTransform(selection.node());
+```
+
+### 1.3 d3.zoomIdentity
+
+一个常量 transform， 其中 `k = 1` ，`tx = ty = 0`。
+
+```javascript
+// 源码中的 zoomIdentity
+export var identity = new Transform(1, 0, 0);
+```
+
+## 2. zoom对象上的方法
+
+由`d3.zoom()` 返回，它是一个对象也是一个函数。
+
+### 2.1 zoom(selection)
+
+对指定的选区应用这种缩放行为，绑定必要的事件监听器以允许平移和缩放，如果尚未定义，则将每个选定元素上的缩放变换初始化为 `zoomIdentity`。此函数通常不会直接调用，而是通过 `selection.call` 调用。
+
+```javascript
+selection.call(d3.zoom().on("zoom", zoomed));
+```
+
+在内部，缩放行为使用 `selection.on` 来绑定必要的事件监听器以进行缩放。这些监听器使用 `.zoom` 的名字，所以你可以随后取消对缩放行为的绑定，如下所示。
+
+```javascript
+selection.on(".zoom", null);
+```
+
+要想仅仅禁用滚轮驱动的缩放（比如说不干扰原生滚动），你可以在将缩放行为应用到选区后，移除缩放行为的滚轮事件监听器。
+
+```javascript
+selection
+    .call(zoom)
+    .on("wheel.zoom", null);
+```
+
+### 2.2 zoom.transform()
+
+zoom.transform(*selection*, *transform*\[, *point*])
+
+1.  selection 是一个 selection 或 一个 transition;
+
+2.  transform 是一个 zoom transform 或是一个返回 zoom transform 的函数；
+
+3.  point 是一个坐标 `[x, y]`，或返回一个坐标的函数。
+
+通常不直接调用 `zoom.transform` 。例子：
+
+1.  将缩放变换立即重置为 identity transform :
+
+    ```javascript
+    selection.call(zoom.transform, d3.zoomIdentity);
+    ```
+
+2.  在 750 毫秒内平滑地将缩放变换重置为 identity transform ：
+
+    ```javascript
+    selection.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+    ```
+
+### 2.3 zoom.translateBy()
+
+*zoom*.translateBy(*selection*, *x*, *y*)
+
+如果 selection 是 selection ，将所选元素的当前缩放变换按 x 和 y 进行平移，这样新的 `tx1 = tx0 + kx` 和 `ty1 = ty0 + ky`。
+
+```javascript
+// x方向移动100, Y方向移动100
+svg.transition().duration(750).call(zoom.translateBy, 100, 100)
+```
+
+### 2.4 zoom.translateTo()
+
+*zoom*.translateTo(*selection*, *x*, *y*\[, *p*])
+
+如果 selection 是一个 selection ，平移所选元素的当前缩放变换，使给定的位置 ⟨x, y⟩ 出现在给定的点 p 。新的 `tx = px - kx` ，`ty = py - ky` 。如果没有指定p，它默认为视口范围的中心。**如果指定了p, 则坐标的原点在视口左上角（视口左上角为\[0, 0]）。**
+
+**自己的理解**：移动使得 ⟨x, y⟩ 所在的点移动到p点（默认为视口中心点） 。**其中 ⟨x, y⟩ 的坐标原点不是视口左上角，是可移动元素（画布）的左上角。**
+
+```javascript
+// <0, 0>所在的点移动到视口区域<100, 100>所在的位置
+svg.transition().duration(750).call(zoom.translateTo, 0, 0, [100, 100])
+// <0, 0>所在的点移动到视口区域的中心点所在的位置
+svg.transition().duration(750).call(zoom.translateTo, 0, 0)
+
+```
+
+### 2.5 zoom.scaleBy()
+
+*zoom*.scaleBy(*selection*, *k*\[, *p*])
+
+如果 selection 是一个 selection ，则将所选元素的当前缩放变换缩放 k，这样新的 `k₁ = k₀k`。参考点 p 确实移动了（原文：*The reference point p does move*，没理解这句话什么意思）。如果未指定 p，则默认为视口范围的中心。**如果指定了 p ，则坐标的原点在视口左上角（视口左上角为 \[0, 0] ）。**
+
+**自己的理解**：以 p 点（默认为视口中心点）为中心点，在原有的缩放上再缩放 k 。
+
+```javascript
+// 以视口左上角为中心点，在原有的缩放上再放大一倍
+svg.transition().duration(750).call(zoom.scaleBy, 2, [0,0])
+// 以视口中心为中心点，在原有的缩放上再放大一倍
+svg.transition().duration(750).call(zoom.scaleBy, 2)
+
+```
+
+### 2.6 zoom.scaleTo()
+
+*zoom*.scaleTo(*selection*, *k*\[, *p*])
+
+如果 selection 是一个 selection ，则将所选元素的当前缩放变换缩放到 k，这样新的 `k₁ = k` 。 p 点的解释同 `zoom.scaleBy()` 。
+
+**自己的理解**：以p点（默认为视口中心点）为中心点，缩放至k。
+
+```javascript
+// 以视口左上角为中心点，缩放至 2 倍大小
+svg.transition().duration(750).call(zoom.scaleTo, 2, [0,0])
+// 以视口中心为中心点，缩放至 2 倍大小
+svg.transition().duration(750).call(zoom.scaleTo, 2)
+```
+
+## 3. transform对象上的方法
+
+由 `d3.zoomTransform(node)` 返回，或者通过 `new d3.ZoomTransform(k, x, y)` 返回一个 transform 。
+
+### 3.1 transform.scale()
+
+transform.scale(*k*)
+
+返回一个缩放 `k₁` 等于 `k₀k` 的新 transform，其中 `k₀` 是这个 transform 原来的缩放。
+
+### 3.2 transform.translate()
+
+transform.translate(*x*, *y*)
+
+返回一个 transform，其满足 `tx1 = tx0 + tk x` 和 `ty1 = ty0 + tk y` ，其中 `tx0 / ty0` 和 `tk` 是这个 transform 原来的平移和缩放。
+
+```javascript
+let t = d3.zoomIdentity.translate(100, 100) // {k: 1, x: 100, y: 100}
+t =  t.scale(0.5) // {k: 0.5, x: 100, y: 100}
+t =  t.translate(100, 100) // {k: 0.5, x: 150, y: 150}
+t =  t.scale(2) // {k: 1, x: 150, y: 150}
+t =  t.translate(100, 100) // {k: 1, x: 250, y: 250}
+```
+
+### 3.3 transform.toString()
+
+返回一个字符串，代表与此变换对应的 SVG 变换。实现方式为：
+
+```javascript
+function toString() {
+  return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
+}
+```
+
+### 3.4 transform.apply()
+
+transform.apply(point)
+
+返回**指定点**（画布上的点）的变换（transformation），该点是一个由数字 `[x, y]` 组成的二元素数组。返回点等于 `[xk + tx, yk + ty]`。
+
+**自己的理解**：返回未变换前画布上指定点在变换后的坐标值。
+
+1. 先平移再缩放：
+   ```javascript
+   let t = d3.zoomIdentity // {k: 1, x: 0, y: 0}
+   t.apply([0, 0]) // [0, 0]
+   t.apply([100, 100]) // [100, 100]
+
+   t = t.translate(100, 100) // {k: 1, x: 100, y: 100}
+   t.apply([0, 0]) // [100, 100]
+   t.apply([100, 100]) // [200, 200]
+
+   t = t.scale(0.5) // {k: 0.5, x: 100, y: 100}
+   t.apply([0, 0]) // [100, 100]
+   t.apply([100, 100]) // [150, 150]
+   ```
+
+2. 先缩放再平移：
+   ```javascript
+   let t = d3.zoomIdentity // {k: 1, x: 0, y: 0}
+   t.apply([0, 0]) // [0, 0]
+   t.apply([100, 100]) // [100, 100]
+   
+   t = t.scale(0.5) // {k: 0.5, x: 0, y: 0}
+   t.apply([0, 0]) // [0, 0]
+   t.apply([100, 100]) // [50, 50]
+   
+   t = t.translate(100, 100) // {k: 0.5, x: 50, y: 50}
+   t.apply([0, 0]) // [50, 50]
+   t.apply([100, 100]) // [100, 100]
+   ```
