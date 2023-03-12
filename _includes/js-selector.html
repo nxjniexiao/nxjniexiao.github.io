@@ -85,11 +85,11 @@
 
 {% if jekyll.environment == 'production' %}
   <!-- PWA -->
-  {% if site.pwa.enabled %}
+  <!-- {% if site.pwa.enabled %}
     <script defer src="{{ '/app.js' | relative_url }}"></script>
   {% else %}
     <script defer src="{{ '/unregister.js' | relative_url }}"></script>
-  {% endif %}
+  {% endif %} -->
 
   <!-- GA -->
   {% if site.google_analytics.id != empty and site.google_analytics.id %}

@@ -13,3 +13,6 @@ gem 'jekyll-sitemap'
 gem 'jekyll-archives'
 
 gem 'jekyll-seo-tag'
+
+# validate your HTML output
+gem "html-proofer"
