@@ -98,10 +98,10 @@ permalink: /:year/:month/:day/:title/
 
 # plugins
 plugins:
-  - jekyll-sitemap
   - jekyll-paginate
   - jekyll-archives
   - jekyll-seo-tag
+  - jekyll-sitemap
 
 # paginate
 paginate: 4
