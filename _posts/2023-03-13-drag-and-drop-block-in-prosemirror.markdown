@@ -7,7 +7,7 @@ tags: Prosemirror
 ---
 
 
-最近用于工作需要研究了 Prosemirror 和基于 React 的 Prosemirror 编辑器 [rich-markdown-editor](https://github.com/outline/rich-markdown-editor) ，并尝试在 rich-markdown-editor 的基础上实现能够拖拽块级节点的功能。
+最近由于工作需要研究了 Prosemirror 和基于 React 的 Prosemirror 编辑器 [rich-markdown-editor](https://github.com/outline/rich-markdown-editor) ，并尝试在 rich-markdown-editor 的基础上实现能够拖拽块级节点的功能。
 
 ## 1. 总体思路
 
