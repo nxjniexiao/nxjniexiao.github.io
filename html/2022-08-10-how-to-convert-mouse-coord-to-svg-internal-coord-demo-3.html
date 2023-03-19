@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo 3</title>
+</head>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  #container {
+    width: fit-content;
+  }
+  #container svg {
+    transform: translate(100px, 100px);
+  }
+</style>
+<body>
+  <div id="container">
+    <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+      <rect fill="skyblue" width="200" height="200"></rect>
+      <circle cx="0" cy="0" r="10" />
+    </svg>
+  </div>
+  <script>
+    var svg = document.querySelector("#container svg");
+    var circle = document.querySelector("#container circle")
+    var pt = svg.createSVGPoint();
+    function cursorPoint(evt){
+      pt.x = evt.clientX; pt.y = evt.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+    svg.addEventListener('mousemove',function(evt){
+      var loc = cursorPoint(evt);
+      circle.setAttribute("cx", loc.x);
+      circle.setAttribute("cy", loc.y);
+    }, false);
+  </script>
+</body>
+</html>
