@@ -1,7 +1,7 @@
 ---
 # the default layout is 'page'
 icon: fas fa-info-circle
-order: 4
+order: 5
 ---
 
 + 2011 年毕业于武汉理工，船舶与海洋工程专业；
